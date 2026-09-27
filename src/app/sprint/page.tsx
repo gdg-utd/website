@@ -183,6 +183,7 @@ export default function SprintPage() {
                     src="/pictures/sprint-community.jpg"
                     alt="SPRINT participants gathered in a lecture hall"
                     fill
+                    loading="eager"
                     sizes="(max-width: 760px) 100vw, 50vw"
                   />
                   <figcaption>SPRINT community</figcaption>
