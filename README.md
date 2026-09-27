@@ -1,8 +1,6 @@
 # GDG UTD Website
 
-Initial application scaffold for the independent GDG UTD website.
-
-This repository currently contains framework and development tooling only. The generated Next.js starter page is intentionally unchanged; homepage design and project-specific UI will be added in a later phase.
+Homepage for the independent GDG UTD developer community website.
 
 ## Stack
 
@@ -48,4 +46,12 @@ eslint.config.mjs ESLint configuration
 
 ## Current scope
 
-Only the initial project setup is included. No GDG homepage design, branding, illustrations, event content, or UTD assets have been implemented.
+The current release includes a responsive public homepage, a dedicated SPRINT program experience, locally bundled official GDG assets and unDraw illustrations, live chapter information, community links, event-photo gallery placeholders, and upcoming events synchronized from the official GDG chapter page.
+
+Placeholder routes are available for the future team directory and member authentication at `/team`, `/login`, and `/signup`.
+
+Upcoming event data is refreshed hourly. A verified local fallback keeps the page useful when the chapter platform is unavailable. RSVP links always send visitors to the official event page.
+
+The site intentionally makes no claim of affiliation with The University of Texas at Dallas and does not use UTD branding or photography.
+
+See [`ASSETS.md`](./ASSETS.md) for artwork sources and licensing notes.
