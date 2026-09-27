@@ -8,6 +8,7 @@ import {
   getChapterData,
   type ChapterEvent,
 } from "@/lib/gdg";
+import { createClient } from "@/lib/supabase/server";
 
 function eventDate(date: string) {
   const value = new Date(date);
@@ -54,8 +55,22 @@ function EventRow({ event, index }: { event: ChapterEvent; index: number }) {
   );
 }
 
-export default async function Home() {
-  const chapter = await getChapterData();
+export default async function Home({ searchParams }: PageProps<"/">) {
+  const supabase = await createClient();
+  const [chapter, { data: authData }, query] = await Promise.all([
+    getChapterData(),
+    supabase.auth.getClaims(),
+    searchParams,
+  ]);
+  const isSignedIn = Boolean(authData?.claims?.sub);
+  const authStatus = typeof query.auth === "string" ? query.auth : "";
+  const authNotice = authStatus === "check-email" && !isSignedIn
+    ? "Check your UT Dallas email to confirm your account."
+    : authStatus === "confirmed" && isSignedIn
+      ? "Your email is confirmed and you are signed in."
+      : authStatus === "welcome" && isSignedIn
+        ? "Your account is ready."
+        : "";
 
   return (
     <div className="page">
@@ -72,12 +87,24 @@ export default async function Home() {
             <Link href="/team">Team</Link>
           </nav>
           <a className="chapter-link" href={CHAPTER_URL} target="_blank" rel="noreferrer">Join chapter ↗</a>
-          <div className="auth-links">
-            <Link className="login-link" href="/login">Log in</Link>
-            <Link className="header-action" href="/signup">Sign up</Link>
-          </div>
+          {isSignedIn ? (
+            <Link className="header-action dashboard-link" href="/dashboard">Dashboard</Link>
+          ) : (
+            <div className="auth-links">
+              <Link className="login-link" href="/login">Log in</Link>
+              <Link className="header-action" href="/signup">Sign up</Link>
+            </div>
+          )}
         </div>
       </header>
+
+      {authNotice && (
+        <div className="auth-notice" role="status">
+          <span aria-hidden="true">✓</span>
+          <p>{authNotice}</p>
+          <Link href="/">Dismiss</Link>
+        </div>
+      )}
 
       <main id="top">
         <section className="hero shell" aria-labelledby="hero-title">
@@ -266,7 +293,11 @@ export default async function Home() {
             </div>
             <div className="footer-nav">
               <strong>Account</strong>
-              <Link href="/login">Log in</Link><Link href="/signup">Sign up</Link>
+              {isSignedIn ? (
+                <Link href="/dashboard">Dashboard</Link>
+              ) : (
+                <><Link href="/login">Log in</Link><Link href="/signup">Sign up</Link></>
+              )}
               <a href={CHAPTER_URL} target="_blank" rel="noreferrer">Official GDG page ↗</a>
             </div>
           </div>
