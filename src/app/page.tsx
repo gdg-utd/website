@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { SiteHeader } from "@/components/site-header";
 import {
   CHAPTER_URL,
   DISCORD_URL,
@@ -55,6 +56,25 @@ function EventRow({ event, index }: { event: ChapterEvent; index: number }) {
   );
 }
 
+const faqs = [
+  {
+    question: "Who can attend GDG UTDallas events?",
+    answer: "UT Dallas students interested in technology are welcome. Event pages list any capacity limits or specific requirements.",
+  },
+  {
+    question: "Do I need coding experience?",
+    answer: "No. Many workshops and the SPRINT program are designed to be approachable for beginners. If a session expects prior knowledge, it will be listed in the event description.",
+  },
+  {
+    question: "How do I RSVP for an event?",
+    answer: "Open an event from this website and complete the RSVP on the official Google Developer Groups event page.",
+  },
+  {
+    question: "How can I keep up with new events?",
+    answer: "Join the chapter and follow the Discord and Instagram links in the footer for announcements and program updates.",
+  },
+] as const;
+
 export default async function Home({ searchParams }: PageProps<"/">) {
   const supabase = await createClient();
   const [chapter, { data: authData }, query] = await Promise.all([
@@ -74,29 +94,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
 
   return (
     <div className="page">
-      <header className="header">
-        <div className="header-inner">
-          <a className="brand" href="#top" aria-label="GDG on Campus UTD home">
-            <Image src="/brand/gdg-lockup.svg" alt="Google Developer Groups" width={188} height={38} priority />
-            <span>The University of Texas at Dallas</span>
-          </a>
-          <nav className="nav" aria-label="Primary navigation">
-            <a href="#about">About</a>
-            <a href="#events">Events</a>
-            <a href="#gallery">Gallery</a>
-            <Link href="/team">Team</Link>
-          </nav>
-          <a className="chapter-link" href={CHAPTER_URL} target="_blank" rel="noreferrer">Join chapter ↗</a>
-          {isSignedIn ? (
-            <Link className="header-action dashboard-link" href="/dashboard">Dashboard</Link>
-          ) : (
-            <div className="auth-links">
-              <Link className="login-link" href="/login">Log in</Link>
-              <Link className="header-action" href="/signup">Sign up</Link>
-            </div>
-          )}
-        </div>
-      </header>
+      <SiteHeader isSignedIn={isSignedIn} />
 
       {authNotice && (
         <div className="auth-notice" role="status">
@@ -159,10 +157,10 @@ export default async function Home({ searchParams }: PageProps<"/">) {
           <div className="shell about-layout">
             <div className="about-illustration">
               <Image
-                src="/illustrations/education.svg"
-                alt="An unDraw illustration about learning and education"
-                width={800}
-                height={618}
+                src="/illustrations/about-hand-drawn.svg"
+                alt="A hand-drawn illustration of a person pointing toward the chapter information"
+                width={328}
+                height={370}
               />
             </div>
             <div className="about-copy">
@@ -176,7 +174,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
                   <strong>On the calendar:</strong> guided builds on Workshop Wednesdays,
                   focused Technical Thursday sessions, and casual Sprint Socials.
                 </p>
-                <a href="#events">See upcoming events <span aria-hidden="true">↓</span></a>
+                <Link href="/about">More about GDG UTDallas <span aria-hidden="true">→</span></Link>
               </div>
             </div>
           </div>
@@ -239,10 +237,10 @@ export default async function Home({ searchParams }: PageProps<"/">) {
             <div className="sprint-home-art">
               <span className="sprint-home-shape" aria-hidden="true" />
               <Image
-                src="/illustrations/sprint-team-assignment.svg"
-                alt="An illustration of a mentor and students working on a team assignment"
-                width={960}
-                height={654}
+                src="/illustrations/home-sprint-idea.svg"
+                alt="A colorful illustration representing a new project idea"
+                width={470}
+                height={516}
               />
             </div>
             <div className="sprint-home-copy">
@@ -256,20 +254,42 @@ export default async function Home({ searchParams }: PageProps<"/">) {
                 <span>Build together</span><i aria-hidden="true">→</i>
                 <span>Present the project</span>
               </div>
-              <Link className="primary-button" href="/sprint#sprint-top">Learn about SPRINT <span aria-hidden="true">→</span></Link>
+              <Link className="primary-button" href="/sprints#sprint-top">Learn about SPRINT <span aria-hidden="true">→</span></Link>
+            </div>
+          </div>
+        </section>
+
+        <section className="faq-section" id="faq" aria-labelledby="faq-title">
+          <div className="shell faq-layout">
+            <div className="faq-heading">
+              <p className="section-label">FAQ</p>
+              <h2 id="faq-title">A few common questions.</h2>
+              <p>Details about attending events, experience requirements, and staying connected.</p>
+            </div>
+            <div className="faq-list">
+              {faqs.map((faq, index) => (
+                <details key={faq.question}>
+                  <summary>
+                    <span>{String(index + 1).padStart(2, "0")}</span>
+                    <strong>{faq.question}</strong>
+                    <i aria-hidden="true">+</i>
+                  </summary>
+                  <p>{faq.answer}</p>
+                </details>
+              ))}
             </div>
           </div>
         </section>
 
         <section className="team-teaser shell" aria-labelledby="team-title">
           <div className="team-teaser-art">
-            <Image src="/illustrations/teamwork.svg" alt="An unDraw illustration representing teamwork" width={960} height={636} />
+            <Image src="/illustrations/home-team-collaboration.svg" alt="An illustration of two people collaborating at a desk" width={618} height={544} />
           </div>
           <div className="team-teaser-copy">
             <p className="section-label">Organizers</p>
-            <h2 id="team-title">Meet the team.</h2>
+            <h2 id="team-title">Meet the officers.</h2>
             <p>Meet the students who organize events and run GDG UTD.</p>
-            <Link className="primary-button" href="/team">Meet the team <span aria-hidden="true">→</span></Link>
+            <Link className="primary-button" href="/officers">Meet the officers <span aria-hidden="true">→</span></Link>
           </div>
         </section>
       </main>
@@ -283,13 +303,13 @@ export default async function Home({ searchParams }: PageProps<"/">) {
           <div className="footer-groups">
             <div className="footer-nav">
               <strong>Explore</strong>
-              <a href="#about">About</a><a href="#events">Events</a><Link href="/sprint">SPRINT</Link><Link href="/team">Team</Link>
+              <Link href="/about">About</Link><Link href="/officers">Officers</Link><Link href="/apply">Apply</Link><a href="#events">Events</a><Link href="/sprints">SPRINT</Link>
             </div>
             <div className="footer-nav">
               <strong>Connect</strong>
-              <a href={DISCORD_URL} target="_blank" rel="noreferrer">Discord ↗</a>
-              <a href={INSTAGRAM_URL} target="_blank" rel="noreferrer">Instagram ↗</a>
-              <a href={LINKTREE_URL} target="_blank" rel="noreferrer">Linktree ↗</a>
+              <a className="footer-social-link" href={DISCORD_URL} target="_blank" rel="noreferrer"><Image src="/icons/discord.svg" alt="" width={15} height={15} />Discord <span aria-hidden="true">↗</span></a>
+              <a className="footer-social-link" href={INSTAGRAM_URL} target="_blank" rel="noreferrer"><Image src="/icons/instagram.svg" alt="" width={15} height={15} />Instagram <span aria-hidden="true">↗</span></a>
+              <a className="footer-social-link" href={LINKTREE_URL} target="_blank" rel="noreferrer"><Image src="/icons/linktree.svg" alt="" width={15} height={15} />Linktree <span aria-hidden="true">↗</span></a>
             </div>
             <div className="footer-nav">
               <strong>Account</strong>

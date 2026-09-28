@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
-import Image from "next/image";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { logout } from "@/app/auth/actions";
+import { SiteHeader } from "@/components/site-header";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Your account" };
@@ -28,12 +27,7 @@ export default async function AccountPage() {
 
   return (
     <main className="account-page">
-      <header className="auth-header">
-        <Link href="/" aria-label="Return to the GDG UTD homepage">
-          <Image src="/brand/gdg-lockup.svg" alt="Google Developer Groups" width={188} height={38} priority />
-        </Link>
-        <Link href="/">Back home</Link>
-      </header>
+      <SiteHeader isSignedIn />
       <section className="account-content">
         <div className="account-mark" aria-hidden="true">
           {firstName.charAt(0).toUpperCase()}

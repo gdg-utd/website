@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { SiteHeader } from "@/components/site-header";
 import { CHAPTER_URL, DISCORD_URL } from "@/lib/gdg";
 
 export const metadata: Metadata = {
@@ -45,19 +46,7 @@ const projectSlots = [
 export default function SprintPage() {
   return (
     <div className="sprint-page">
-      <header className="sprint-header">
-        <div className="shell sprint-header-inner">
-          <Link href="/" aria-label="Return to the GDG UTDallas homepage">
-            <Image src="/brand/gdg-lockup.svg" alt="Google Developer Groups" width={188} height={38} priority />
-          </Link>
-          <nav aria-label="SPRINT page navigation">
-            <a href="#program">Program</a>
-            <a href="#projects">Projects</a>
-            <a href="#sprint-gallery">Photos</a>
-          </nav>
-          <Link className="sprint-home-link" href="/">Back to home</Link>
-        </div>
-      </header>
+      <SiteHeader />
 
       <main>
         <section className="sprint-hero shell" id="sprint-top">
@@ -69,7 +58,7 @@ export default function SprintPage() {
             </p>
             <div className="sprint-hero-actions">
               <a className="primary-button" href="#program">See how it works <span aria-hidden="true">↓</span></a>
-              <a className="secondary-link" href="#projects">Explore projects <span aria-hidden="true">→</span></a>
+              <Link className="secondary-link" href="/apply">Apply to SPRINT <span aria-hidden="true">→</span></Link>
             </div>
           </div>
           <div className="sprint-hero-art">
@@ -81,15 +70,6 @@ export default function SprintPage() {
               height={727}
               priority
             />
-          </div>
-        </section>
-
-        <section className="sprint-facts" aria-label="SPRINT program summary">
-          <div className="shell sprint-facts-inner">
-            <div><strong>8</strong><span>weeks</span></div>
-            <div><strong>Small</strong><span>project teams</span></div>
-            <div><strong>Mentor</strong><span>for each team</span></div>
-            <div><strong>Final</strong><span>project showcase</span></div>
           </div>
         </section>
 
@@ -116,6 +96,34 @@ export default function SprintPage() {
               <span>{phase.description}</span>
             </article>
           ))}
+        </section>
+
+        <section className="sprint-prerequisites" id="prerequisites" aria-labelledby="sprint-prerequisites-title">
+          <div className="shell sprint-prerequisites-layout">
+            <div className="sprint-prerequisites-heading">
+              <p className="section-label">Prerequisites</p>
+              <h2 id="sprint-prerequisites-title">No prior experience required.</h2>
+              <p>SPRINT is open to students who are ready to learn and contribute to a team.</p>
+            </div>
+            <ul className="sprint-prerequisites-list">
+              <li>
+                <span aria-hidden="true">✓</span>
+                <div><strong>No coding experience needed</strong><p>Beginners can participate.</p></div>
+              </li>
+              <li>
+                <span aria-hidden="true">✓</span>
+                <div><strong>No pre-formed team needed</strong><p>Participants are matched with teammates.</p></div>
+              </li>
+              <li>
+                <span aria-hidden="true">✓</span>
+                <div><strong>No project idea needed</strong><p>Teams choose and scope a project together.</p></div>
+              </li>
+              <li>
+                <span aria-hidden="true">✓</span>
+                <div><strong>Be ready to participate</strong><p>Make time to meet, communicate, and contribute throughout the program.</p></div>
+              </li>
+            </ul>
+          </div>
         </section>
 
         <section className="sprint-mentorship">

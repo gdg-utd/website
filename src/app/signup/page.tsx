@@ -1,19 +1,14 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import Link from "next/link";
 import { AuthForm } from "@/app/auth/auth-form";
+import { SiteHeader } from "@/components/site-header";
 
 export const metadata: Metadata = { title: "Sign up" };
 
 export default function SignupPage() {
   return (
     <main className="auth-page">
-      <header className="auth-header">
-        <Link href="/" aria-label="Return to the GDG UTD homepage">
-          <Image src="/brand/gdg-lockup.svg" alt="Google Developer Groups" width={188} height={38} priority />
-        </Link>
-        <Link href="/">Back home</Link>
-      </header>
+      <SiteHeader />
       <section className="auth-layout auth-layout-signup">
         <div className="auth-copy">
           <div>
