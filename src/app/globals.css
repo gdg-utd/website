@@ -4,11 +4,11 @@
   --ink: #202124;
   --body: #4f555c;
   --line: #d9dce1;
-  --blue: #1a73e8;
+  --blue: #4285f4;
   --blue-dark: #0b57d0;
-  --red: #ea4335;
-  --yellow: #f9ab00;
-  --green: #34a853;
+  --red: #e84435;
+  --yellow: #fbbc04;
+  --green: #0f9d58;
 }
 
 @theme inline {
