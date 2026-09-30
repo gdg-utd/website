@@ -3,7 +3,7 @@ export const CHAPTER_URL =
 
 export const DISCORD_URL = "https://discord.gg/bYNaQbaTQh";
 export const INSTAGRAM_URL = "https://www.instagram.com/gdscutd";
-export const LINKTREE_URL = "https://linktr.ee/dscutd";
+export const LINKTREE_URL = "https://linktr.ee/gdgutd";
 
 export type ChapterEvent = {
   description: string;
