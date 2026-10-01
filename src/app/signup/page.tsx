@@ -21,7 +21,7 @@ export default function SignupPage() {
             alt="An illustration of a team collaborating"
             width={780}
             height={560}
-            priority
+            loading="eager"
           />
         </div>
         <div className="auth-panel">

@@ -20,7 +20,7 @@ export async function SiteHeader({ isSignedIn: suppliedAuthState }: SiteHeaderPr
     <header className="header">
       <div className="header-inner">
         <Link className="brand" href="/#top" aria-label="GDG on Campus UTD home">
-          <Image src="/brand/gdg-lockup.svg" alt="Google Developer Groups" width={188} height={38} priority />
+          <Image src="/brand/gdg-lockup.svg" alt="Google Developer Groups" width={188} height={38} loading="eager" />
           <span>The University of Texas at Dallas</span>
         </Link>
         <nav className="nav" aria-label="Primary navigation">

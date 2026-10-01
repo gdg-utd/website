@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { HeroBackdrop } from "@/components/hero-backdrop";
 import { SiteHeader } from "@/components/site-header";
 import {
   CHAPTER_URL,
@@ -106,15 +107,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
 
       <main id="top">
         <section className="hero shell" aria-labelledby="hero-title">
-          <div className="hero-graphics" aria-hidden="true">
-            <span className="hero-grid" />
-            <span className="accent-line accent-blue" />
-            <span className="accent-line accent-red" />
-            <span className="accent-line accent-yellow" />
-            <span className="accent-line accent-green" />
-            <span className="accent-ring ring-blue" />
-            <span className="accent-ring ring-red" />
-          </div>
+          <HeroBackdrop />
           <div className="hero-copy">
             <p className="overline">Google Developer Groups</p>
             <h1 id="hero-title">GDG on Campus<br /><span>UT Dallas.</span></h1>
@@ -129,14 +122,19 @@ export default async function Home({ searchParams }: PageProps<"/">) {
                 Join Discord <span aria-hidden="true">→</span>
               </a>
             </div>
+            <ul className="hero-programs" aria-label="Chapter activities">
+              <li><span aria-hidden="true" />Workshops</li>
+              <li><span aria-hidden="true" />SPRINT projects</li>
+              <li><span aria-hidden="true" />Community events</li>
+            </ul>
           </div>
           <div className="hero-illustration">
             <Image
-              src="/illustrations/engineering-team.svg"
-              alt="An unDraw illustration of an engineering team collaborating around technology"
-              width={867}
-              height={443}
-              priority
+              src="/illustrations/hero-student-community.svg"
+              alt="A colorful illustration of three students celebrating together"
+              width={500}
+              height={500}
+              loading="eager"
             />
           </div>
         </section>
@@ -152,6 +150,32 @@ export default async function Home({ searchParams }: PageProps<"/">) {
             <span aria-hidden="true">↗</span>
           </a>
         )}
+
+        <section className="hackathon-feature shell" aria-labelledby="hackathon-title">
+          <Image
+            className="hackathon-feature-art"
+            src="/pictures/hackathon-dino-game.png"
+            alt=""
+            fill
+            sizes="(max-width: 720px) calc(100vw - 32px), 1180px"
+            unoptimized
+          />
+          <div className="hackathon-feature-shade" aria-hidden="true" />
+          <div className="hackathon-feature-copy">
+            <p className="hackathon-feature-label">New chapter event</p>
+            <h2 id="hackathon-title"><span>GDG UTDallas</span>Hackathon.</h2>
+            <p>A student hackathon is on the way. Applications and full event details will be announced soon.</p>
+            <div className="hackathon-feature-actions">
+              <button type="button" disabled>Coming soon!</button>
+              <div className="hackathon-pixels" aria-hidden="true">
+                <span />
+                <span />
+                <span />
+                <span />
+              </div>
+            </div>
+          </div>
+        </section>
 
         <section className="about-section" id="about" aria-labelledby="about-title">
           <div className="shell about-layout">
@@ -176,6 +200,47 @@ export default async function Home({ searchParams }: PageProps<"/">) {
                 </p>
                 <Link href="/about">More about GDG UTDallas <span aria-hidden="true">→</span></Link>
               </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="gallery-section" id="gallery" aria-labelledby="gallery-title">
+          <div className="shell">
+            <div className="gallery-heading">
+              <div>
+                <p className="section-label">Around the chapter</p>
+                <h2 id="gallery-title">Workshops, projects, and community.</h2>
+              </div>
+              <p>A look at recent GDG UTDallas events and the students who make them happen.</p>
+            </div>
+            <div className="gallery-grid">
+              <figure className="event-photo event-photo-large">
+                <Image
+                  src="/pictures/chapter-outreach.png"
+                  alt="GDG UTDallas students welcoming people at an outdoor chapter table"
+                  fill
+                  sizes="(max-width: 720px) 100vw, 66vw"
+                />
+                <figcaption>Meet the chapter</figcaption>
+              </figure>
+              <figure className="event-photo">
+                <Image
+                  src="/pictures/technical-workshop.webp"
+                  alt="Students attending a GDG UTDallas technical workshop"
+                  fill
+                  sizes="(max-width: 720px) 100vw, 34vw"
+                />
+                <figcaption>Technical workshops</figcaption>
+              </figure>
+              <figure className="event-photo event-photo-community">
+                <Image
+                  src="/pictures/community-meetup.png"
+                  alt="Three GDG UTDallas students at a community event"
+                  fill
+                  sizes="(max-width: 720px) 100vw, 34vw"
+                />
+                <figcaption>Community events</figcaption>
+              </figure>
             </div>
           </div>
         </section>
@@ -211,23 +276,6 @@ export default async function Home({ searchParams }: PageProps<"/">) {
               <p className="section-label">Event archive</p>
               <h3>View complete event details and past sessions on the chapter page.</h3>
               <a href={CHAPTER_URL} target="_blank" rel="noreferrer">Open the chapter calendar <span aria-hidden="true">↗</span></a>
-            </div>
-          </div>
-        </section>
-
-        <section className="gallery-section" id="gallery" aria-labelledby="gallery-title">
-          <div className="shell">
-            <div className="gallery-heading">
-              <div>
-                <p className="section-label">Event gallery</p>
-                <h2 id="gallery-title">Photos from GDG UTD.</h2>
-              </div>
-              <p>Photos from workshops and meetups will be added here.</p>
-            </div>
-            <div className="gallery-grid">
-              <div className="photo-slot photo-slot-large"><span>Event photo</span><small>01</small></div>
-              <div className="photo-slot photo-slot-blue"><span>Workshop photo</span><small>02</small></div>
-              <div className="photo-slot photo-slot-yellow"><span>Community photo</span><small>03</small></div>
             </div>
           </div>
         </section>

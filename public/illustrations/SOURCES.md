@@ -6,12 +6,8 @@ The files below are stored locally so the site does not depend on third-party im
 
 SketchValley's license permits personal and commercial use without attribution. It does not permit reselling or redistributing the original files as a standalone illustration library.
 
-- `about-community.svg` — Education Learning Illustration
-  - Source: https://sketchvalley.com/illustration/education-learning-illustration/
 - `about-hand-drawn.svg` — Illustration Three from the Doodles Character collection
   - Source: https://sketchvalley.com/illustration/illustration-three-doodles-character-illustration-svg-png/
-- `officers-collaboration.svg` — Team Meeting & Collaboration Illustration
-  - Source: https://www.sketchvalley.com/illustration/team-meeting-collaboration-illustration/
 - `apply-workflow.svg` — Workflow Design Illustration
   - Source: https://www.sketchvalley.com/illustration/workflow-design-illustration/
 - `home-team-collaboration.svg` — Business Collaboration Illustration
@@ -20,3 +16,20 @@ SketchValley's license permits personal and commercial use without attribution. 
   - Source: https://sketchvalley.com/illustration/bright-idea-illustration-creative-learning/
 
 License: https://sketchvalley.com/license/
+
+## ManyPixels
+
+- `hero-student-community.svg` — Team Success 5
+- `officers-collaboration.svg` — Team Presentation 9
+  - Source gallery: https://www.manypixels.co/gallery
+
+License: https://www.manypixels.co/gallery#license
+
+## unDraw
+
+The primary color in this SVG was customized to match the site's Google blue.
+
+- `about-community.svg` — Studying
+  - Source: https://undraw.co/illustration/studying_n5uj
+
+License: https://undraw.co/license

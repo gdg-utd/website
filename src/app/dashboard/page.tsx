@@ -18,7 +18,7 @@ export default async function DashboardPage() {
     <main className="dashboard-page">
       <header className="auth-header">
         <Link href="/" aria-label="Return to the GDG UTD homepage">
-          <Image src="/brand/gdg-lockup.svg" alt="Google Developer Groups" width={188} height={38} priority />
+          <Image src="/brand/gdg-lockup.svg" alt="Google Developer Groups" width={188} height={38} loading="eager" />
         </Link>
         <Link href="/">Back home</Link>
       </header>

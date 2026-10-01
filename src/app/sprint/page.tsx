@@ -68,7 +68,7 @@ export default function SprintPage() {
               alt="An illustration of a mentor sharing knowledge with a student"
               width={800}
               height={727}
-              priority
+              loading="eager"
             />
           </div>
         </section>

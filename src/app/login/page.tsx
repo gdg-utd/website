@@ -21,7 +21,7 @@ export default function LoginPage() {
             alt="An illustration of students learning together"
             width={780}
             height={560}
-            priority
+            loading="eager"
           />
         </div>
         <div className="auth-panel">

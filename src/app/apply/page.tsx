@@ -66,7 +66,7 @@ export default function ApplyPage() {
               alt="An illustration of a person arranging a project workflow"
               width={784}
               height={725}
-              priority
+              loading="eager"
             />
           </div>
         </section>

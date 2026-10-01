@@ -49,10 +49,10 @@ export default function AboutPage() {
             <span aria-hidden="true" />
             <Image
               src="/illustrations/about-community.svg"
-              alt="A colorful illustration of a person reading and learning"
-              width={908}
-              height={715}
-              priority
+              alt="An illustration of a student studying at a desk"
+              width={849}
+              height={842}
+              loading="eager"
             />
           </div>
         </section>
