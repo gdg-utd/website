@@ -3,13 +3,21 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="color-scheme" content="light dark" />
-    <meta name="supported-color-schemes" content="light dark" />
+    <meta name="color-scheme" content="light" />
+    <meta name="supported-color-schemes" content="light" />
     <title>Your GDG UTDallas confirmation code</title>
     <style>
       :root {
-        color-scheme: light dark;
-        supported-color-schemes: light dark;
+        color-scheme: light only;
+        supported-color-schemes: light;
+      }
+
+      .email-shell,
+      .email-content,
+      .email-footer,
+      .email-code-wrap {
+        color-scheme: light only !important;
+        forced-color-adjust: none !important;
       }
 
       @media only screen and (max-width: 620px) {
@@ -65,6 +73,16 @@
       [data-ogsc] .email-title { color: #202124 !important; }
       [data-ogsc] .email-code-wrap { background: #eef4ff !important; border-color: #c8d8f3 !important; }
       [data-ogsc] .email-code { color: #0b57d0 !important; }
+      [data-ogsb] .email-shell,
+      [data-ogsb] .email-content,
+      [data-ogsb] .email-footer {
+        background: #ffffff !important;
+        background-image: linear-gradient(#ffffff, #ffffff) !important;
+      }
+      [data-ogsb] .email-code-wrap {
+        background: #eef4ff !important;
+        background-image: linear-gradient(#eef4ff, #eef4ff) !important;
+      }
     </style>
   </head>
   <body class="email-background" style="margin:0; padding:0; background:#ffffff; background-image:linear-gradient(#ffffff,#ffffff); color:#202124; font-family:Arial,Helvetica,sans-serif;">
@@ -75,7 +93,7 @@
     <table class="email-background" role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#ffffff" style="width:100%; background:#ffffff; background-image:linear-gradient(#ffffff,#ffffff);">
       <tr>
         <td class="email-gutter" align="center" bgcolor="#ffffff" style="padding:40px 16px; background:#ffffff; background-image:linear-gradient(#ffffff,#ffffff);">
-          <table class="email-shell" role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" bgcolor="#ffffff" style="width:600px; max-width:600px; background:#ffffff; background-image:linear-gradient(#ffffff,#ffffff); border:1px solid #dfe3eb; border-collapse:separate;">
+          <table class="email-shell" role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" bgcolor="#ffffff" style="width:600px; max-width:600px; background:#ffffff !important; background-color:#ffffff !important; background-image:linear-gradient(#ffffff,#ffffff) !important; border:1px solid #dfe3eb; border-collapse:separate; color-scheme:light only; forced-color-adjust:none;">
             <tr>
               <td style="font-size:0; line-height:0;">
                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
@@ -90,7 +108,7 @@
             </tr>
 
             <tr>
-              <td class="email-content" bgcolor="#ffffff" style="padding:46px 48px 40px; background:#ffffff; background-image:linear-gradient(#ffffff,#ffffff);">
+              <td class="email-content" bgcolor="#ffffff" style="padding:46px 48px 40px; background:#ffffff !important; background-color:#ffffff !important; background-image:linear-gradient(#ffffff,#ffffff) !important; color-scheme:light only; forced-color-adjust:none;">
                 <p class="email-brand" style="margin:0 0 32px; color:#5f6368; font-size:14px; font-weight:700; letter-spacing:0.04em;">
                   GDG UTDallas
                 </p>
@@ -109,7 +127,7 @@
 
                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:30px 0 0;">
                   <tr>
-                    <td class="email-code-wrap" align="center" bgcolor="#eef4ff" style="padding:24px 16px; background:#eef4ff; background-image:linear-gradient(#eef4ff,#eef4ff); border:1px solid #c8d8f3;">
+                    <td class="email-code-wrap" align="center" bgcolor="#eef4ff" style="padding:24px 16px; background:#eef4ff !important; background-color:#eef4ff !important; background-image:linear-gradient(#eef4ff,#eef4ff) !important; border:1px solid #c8d8f3; color-scheme:light only; forced-color-adjust:none;">
                       <span class="email-code" style="color:#0b57d0; font-family:'Courier New',Courier,monospace; font-size:36px; font-weight:700; line-height:44px; letter-spacing:0.22em;">
                         {{ .Token }}
                       </span>
@@ -124,7 +142,7 @@
             </tr>
 
             <tr>
-              <td class="email-footer" bgcolor="#ffffff" style="padding:22px 48px; background:#ffffff; background-image:linear-gradient(#ffffff,#ffffff); border-top:1px solid #e3e6eb;">
+              <td class="email-footer" bgcolor="#ffffff" style="padding:22px 48px; background:#ffffff !important; background-color:#ffffff !important; background-image:linear-gradient(#ffffff,#ffffff) !important; border-top:1px solid #e3e6eb; color-scheme:light only; forced-color-adjust:none;">
                 <p class="email-footer-copy" style="margin:0; color:#80868b; font-size:12px; line-height:19px;">
                   GDG UTDallas &middot; An independent student developer community
                 </p>

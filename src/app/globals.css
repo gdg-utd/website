@@ -428,7 +428,7 @@ img { display: block; }
 .email-confirm-resend p { margin: 0; color: #747a81; font-size: 13px; }
 .email-confirm-resend button { padding: 0; border: 0; background: transparent; color: var(--blue-dark); font: inherit; font-size: 13px; font-weight: 680; cursor: pointer; }
 .email-confirm-resend button:hover:not(:disabled) { text-decoration: underline; text-underline-offset: 3px; }
-.email-confirm-resend button:disabled { opacity: .62; cursor: wait; }
+.email-confirm-resend button:disabled { color: #9aa0a6; opacity: 1; cursor: default; }
 .email-confirm-actions > .auth-message { margin-top: 16px; }
 
 .account-content { width: min(760px, calc(100% - 48px)); min-height: calc(100svh - 78px); margin-inline: auto; padding-block: 90px; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; }
