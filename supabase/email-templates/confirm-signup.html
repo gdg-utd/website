@@ -3,27 +3,79 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="color-scheme" content="light" />
-    <meta name="supported-color-schemes" content="light" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="supported-color-schemes" content="light dark" />
     <title>Confirm your GDG UTDallas account</title>
     <style>
+      :root {
+        color-scheme: light dark;
+        supported-color-schemes: light dark;
+      }
+
       @media only screen and (max-width: 620px) {
         .email-shell { width: 100% !important; }
         .email-content { padding: 34px 24px 30px !important; }
         .email-title { font-size: 30px !important; line-height: 36px !important; }
         .email-button { display: block !important; text-align: center !important; }
       }
+
+      @media (prefers-color-scheme: dark) {
+        body,
+        .email-background,
+        .email-gutter {
+          background: #202124 !important;
+          background-image: linear-gradient(#202124, #202124) !important;
+        }
+        .email-shell,
+        .email-content,
+        .email-footer {
+          background: #ffffff !important;
+          background-image: linear-gradient(#ffffff, #ffffff) !important;
+        }
+        .email-shell { border-color: #dfe3eb !important; }
+        .email-footer { border-top-color: #e3e6eb !important; }
+        .email-brand,
+        .email-copy,
+        .email-muted,
+        .email-helper,
+        .email-footer-copy { color: #5f6368 !important; -webkit-text-fill-color: #5f6368 !important; }
+        .email-label,
+        .email-link { color: #0b57d0 !important; -webkit-text-fill-color: #0b57d0 !important; }
+        .email-title { color: #202124 !important; -webkit-text-fill-color: #202124 !important; }
+      }
+
+      [data-ogsc] .email-background,
+      [data-ogsc] .email-gutter {
+        background: #202124 !important;
+        background-image: linear-gradient(#202124, #202124) !important;
+      }
+      [data-ogsc] .email-shell,
+      [data-ogsc] .email-content,
+      [data-ogsc] .email-footer {
+        background: #ffffff !important;
+        background-image: linear-gradient(#ffffff, #ffffff) !important;
+      }
+      [data-ogsc] .email-shell { border-color: #dfe3eb !important; }
+      [data-ogsc] .email-footer { border-top-color: #e3e6eb !important; }
+      [data-ogsc] .email-brand,
+      [data-ogsc] .email-copy,
+      [data-ogsc] .email-muted,
+      [data-ogsc] .email-helper,
+      [data-ogsc] .email-footer-copy { color: #5f6368 !important; }
+      [data-ogsc] .email-label,
+      [data-ogsc] .email-link { color: #0b57d0 !important; }
+      [data-ogsc] .email-title { color: #202124 !important; }
     </style>
   </head>
-  <body style="margin:0; padding:0; background:#f6f8fc; color:#202124; font-family:Arial,Helvetica,sans-serif;">
+  <body class="email-background" style="margin:0; padding:0; background:#ffffff; background-image:linear-gradient(#ffffff,#ffffff); color:#202124; font-family:Arial,Helvetica,sans-serif;">
     <div style="display:none; max-height:0; overflow:hidden; opacity:0; color:transparent;">
       Confirm your email address to finish creating your GDG UTDallas account.
     </div>
 
-    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%; background:#f6f8fc;">
+    <table class="email-background" role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#ffffff" style="width:100%; background:#ffffff; background-image:linear-gradient(#ffffff,#ffffff);">
       <tr>
-        <td align="center" style="padding:40px 16px;">
-          <table class="email-shell" role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="width:600px; max-width:600px; background:#ffffff; border:1px solid #dfe3eb; border-collapse:separate;">
+        <td class="email-gutter" align="center" bgcolor="#ffffff" style="padding:40px 16px; background:#ffffff; background-image:linear-gradient(#ffffff,#ffffff);">
+          <table class="email-shell" role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" bgcolor="#ffffff" style="width:600px; max-width:600px; background:#ffffff; background-image:linear-gradient(#ffffff,#ffffff); border:1px solid #dfe3eb; border-collapse:separate;">
             <tr>
               <td style="font-size:0; line-height:0;">
                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
@@ -38,12 +90,12 @@
             </tr>
 
             <tr>
-              <td class="email-content" style="padding:46px 48px 40px;">
-                <p style="margin:0 0 32px; color:#5f6368; font-size:14px; font-weight:700; letter-spacing:0.04em;">
+              <td class="email-content" bgcolor="#ffffff" style="padding:46px 48px 40px; background:#ffffff; background-image:linear-gradient(#ffffff,#ffffff);">
+                <p class="email-brand" style="margin:0 0 32px; color:#5f6368; font-size:14px; font-weight:700; letter-spacing:0.04em;">
                   GDG UTDallas
                 </p>
 
-                <p style="margin:0 0 12px; color:#0b57d0; font-size:12px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;">
+                <p class="email-label" style="margin:0 0 12px; color:#0b57d0; font-size:12px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;">
                   Account verification
                 </p>
 
@@ -51,42 +103,42 @@
                   Confirm your email
                 </h1>
 
-                <p style="margin:22px 0 0; color:#5f6368; font-size:16px; line-height:26px;">
+                <p class="email-copy" style="margin:22px 0 0; color:#5f6368; font-size:16px; line-height:26px;">
                   Confirm your email address to finish creating your GDG UTDallas account.
                 </p>
 
                 <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:30px 0 0;">
                   <tr>
                     <td bgcolor="#0b57d0" style="background:#0b57d0;">
-                      <a class="email-button" href="{{ .ConfirmationURL }}" style="display:inline-block; padding:14px 24px; color:#ffffff; font-size:15px; font-weight:700; line-height:20px; text-decoration:none;">
+                      <a class="email-button" href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=email&amp;next={{ .RedirectTo }}" style="display:inline-block; padding:14px 24px; color:#ffffff; font-size:15px; font-weight:700; line-height:20px; text-decoration:none;">
                         Confirm email address
                       </a>
                     </td>
                   </tr>
                 </table>
 
-                <p style="margin:30px 0 0; color:#7a8087; font-size:13px; line-height:21px;">
+                <p class="email-muted" style="margin:30px 0 0; color:#7a8087; font-size:13px; line-height:21px;">
                   If you did not create this account, you can ignore this email.
                 </p>
 
                 <div style="margin:34px 0 0; padding-top:24px; border-top:1px solid #e3e6eb;">
-                  <p style="margin:0; color:#7a8087; font-size:12px; line-height:19px;">
+                  <p class="email-helper" style="margin:0; color:#7a8087; font-size:12px; line-height:19px;">
                     Button not working? Copy and paste this link into your browser:
                   </p>
                   <p style="margin:8px 0 0; font-size:12px; line-height:19px; word-break:break-all;">
-                    <a href="{{ .ConfirmationURL }}" style="color:#0b57d0; text-decoration:underline;">{{ .ConfirmationURL }}</a>
+                    <a class="email-link" href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=email&amp;next={{ .RedirectTo }}" style="color:#0b57d0; text-decoration:underline;">{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=email&amp;next={{ .RedirectTo }}</a>
                   </p>
                 </div>
               </td>
             </tr>
 
             <tr>
-              <td style="padding:22px 48px; background:#f8fafd; border-top:1px solid #e3e6eb;">
-                <p style="margin:0; color:#80868b; font-size:12px; line-height:19px;">
+              <td class="email-footer" bgcolor="#ffffff" style="padding:22px 48px; background:#ffffff; background-image:linear-gradient(#ffffff,#ffffff); border-top:1px solid #e3e6eb;">
+                <p class="email-footer-copy" style="margin:0; color:#80868b; font-size:12px; line-height:19px;">
                   GDG UTDallas &middot; An independent student developer community
                 </p>
                 <p style="margin:5px 0 0; font-size:12px; line-height:19px;">
-                  <a href="https://www.gdgutd.com" style="color:#5f6368; text-decoration:underline;">gdgutd.com</a>
+                  <a class="email-footer-copy" href="https://www.gdgutd.com" style="color:#5f6368; text-decoration:underline;">gdgutd.com</a>
                 </p>
               </td>
             </tr>
