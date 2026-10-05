@@ -86,7 +86,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
   const isSignedIn = Boolean(authData?.claims?.sub);
   const authStatus = typeof query.auth === "string" ? query.auth : "";
   const authNotice = authStatus === "check-email" && !isSignedIn
-    ? "Check your UT Dallas email to confirm your account."
+    ? "Check your UT Dallas email to confirm your account. It may take a few minutes to arrive, so check your junk folder if you do not see it."
     : authStatus === "confirmed" && isSignedIn
       ? "Your email is confirmed and you are signed in."
       : authStatus === "welcome" && isSignedIn

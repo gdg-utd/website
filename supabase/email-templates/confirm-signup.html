@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <meta name="supported-color-schemes" content="light" />
+    <title>Confirm your GDG UTDallas account</title>
+    <style>
+      @media only screen and (max-width: 620px) {
+        .email-shell { width: 100% !important; }
+        .email-content { padding: 34px 24px 30px !important; }
+        .email-title { font-size: 30px !important; line-height: 36px !important; }
+        .email-button { display: block !important; text-align: center !important; }
+      }
+    </style>
+  </head>
+  <body style="margin:0; padding:0; background:#f6f8fc; color:#202124; font-family:Arial,Helvetica,sans-serif;">
+    <div style="display:none; max-height:0; overflow:hidden; opacity:0; color:transparent;">
+      Confirm your email address to finish creating your GDG UTDallas account.
+    </div>
+
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%; background:#f6f8fc;">
+      <tr>
+        <td align="center" style="padding:40px 16px;">
+          <table class="email-shell" role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="width:600px; max-width:600px; background:#ffffff; border:1px solid #dfe3eb; border-collapse:separate;">
+            <tr>
+              <td style="font-size:0; line-height:0;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                  <tr>
+                    <td width="25%" height="6" style="background:#4285f4; font-size:0; line-height:0;">&nbsp;</td>
+                    <td width="25%" height="6" style="background:#ea4335; font-size:0; line-height:0;">&nbsp;</td>
+                    <td width="25%" height="6" style="background:#fbbc04; font-size:0; line-height:0;">&nbsp;</td>
+                    <td width="25%" height="6" style="background:#0f9d58; font-size:0; line-height:0;">&nbsp;</td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr>
+              <td class="email-content" style="padding:46px 48px 40px;">
+                <p style="margin:0 0 32px; color:#5f6368; font-size:14px; font-weight:700; letter-spacing:0.04em;">
+                  GDG UTDallas
+                </p>
+
+                <p style="margin:0 0 12px; color:#0b57d0; font-size:12px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;">
+                  Account verification
+                </p>
+
+                <h1 class="email-title" style="margin:0; color:#202124; font-size:36px; font-weight:700; line-height:43px; letter-spacing:-0.02em;">
+                  Confirm your email
+                </h1>
+
+                <p style="margin:22px 0 0; color:#5f6368; font-size:16px; line-height:26px;">
+                  Confirm your email address to finish creating your GDG UTDallas account.
+                </p>
+
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:30px 0 0;">
+                  <tr>
+                    <td bgcolor="#0b57d0" style="background:#0b57d0;">
+                      <a class="email-button" href="{{ .ConfirmationURL }}" style="display:inline-block; padding:14px 24px; color:#ffffff; font-size:15px; font-weight:700; line-height:20px; text-decoration:none;">
+                        Confirm email address
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+
+                <p style="margin:30px 0 0; color:#7a8087; font-size:13px; line-height:21px;">
+                  If you did not create this account, you can ignore this email.
+                </p>
+
+                <div style="margin:34px 0 0; padding-top:24px; border-top:1px solid #e3e6eb;">
+                  <p style="margin:0; color:#7a8087; font-size:12px; line-height:19px;">
+                    Button not working? Copy and paste this link into your browser:
+                  </p>
+                  <p style="margin:8px 0 0; font-size:12px; line-height:19px; word-break:break-all;">
+                    <a href="{{ .ConfirmationURL }}" style="color:#0b57d0; text-decoration:underline;">{{ .ConfirmationURL }}</a>
+                  </p>
+                </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:22px 48px; background:#f8fafd; border-top:1px solid #e3e6eb;">
+                <p style="margin:0; color:#80868b; font-size:12px; line-height:19px;">
+                  GDG UTDallas &middot; An independent student developer community
+                </p>
+                <p style="margin:5px 0 0; font-size:12px; line-height:19px;">
+                  <a href="https://www.gdgutd.com" style="color:#5f6368; text-decoration:underline;">gdgutd.com</a>
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
