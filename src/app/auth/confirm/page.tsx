@@ -1,27 +1,30 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SiteHeader } from "@/components/site-header";
-import { confirmEmail } from "./actions";
+import { ConfirmationForm } from "./confirmation-form";
 
 export const metadata: Metadata = { title: "Confirm email" };
 
 type ConfirmEmailPageProps = {
   searchParams: Promise<{
-    error?: string;
+    email?: string;
     next?: string;
-    token_hash?: string;
-    type?: string;
   }>;
 };
+
+function safeNextPath(value?: string) {
+  return value?.startsWith("/") && !value.startsWith("//") && !value.includes("\\")
+    ? value
+    : "/?auth=confirmed";
+}
 
 export default async function ConfirmEmailPage({
   searchParams,
 }: ConfirmEmailPageProps) {
   const params = await searchParams;
-  const tokenHash = typeof params.token_hash === "string" ? params.token_hash : "";
-  const type = typeof params.type === "string" ? params.type : "";
-  const next = typeof params.next === "string" ? params.next : "/?auth=confirmed";
-  const isInvalid = params.error === "invalid" || !tokenHash || type !== "email";
+  const email = typeof params.email === "string" ? params.email.trim().toLowerCase() : "";
+  const next = safeNextPath(params.next);
+  const hasValidEmail = /^[^@\s]+@utdallas\.edu$/i.test(email);
 
   return (
     <main className="auth-page">
@@ -29,31 +32,29 @@ export default async function ConfirmEmailPage({
       <section className="email-confirm-layout" aria-labelledby="email-confirm-title">
         <div className="email-confirm-card">
           <span className="email-confirm-mark" aria-hidden="true">
-            {isInvalid ? "!" : "✓"}
+            {hasValidEmail ? "6" : "!"}
           </span>
           <p className="section-label">Account verification</p>
           <h1 id="email-confirm-title">
-            {isInvalid ? "This confirmation link is unavailable." : "Confirm your email address."}
+            {hasValidEmail ? "Enter your confirmation code." : "Confirmation details unavailable."}
           </h1>
           <p>
-            {isInvalid
-              ? "The link may have expired or already been used. Return to login and try again with a new confirmation email."
-              : "Email providers sometimes inspect links automatically. Confirm below to finish creating your GDG UTDallas account."}
+            {hasValidEmail ? (
+              <>
+                We sent a six-digit code to <strong>{email}</strong>. It may take a few
+                minutes to arrive, and you may need to check your junk folder.
+              </>
+            ) : (
+              "Return to sign up and request a new confirmation code."
+            )}
           </p>
 
-          {isInvalid ? (
-            <Link className="email-confirm-link" href="/login">
-              Return to login <span aria-hidden="true">→</span>
-            </Link>
+          {hasValidEmail ? (
+            <ConfirmationForm email={email} nextPath={next} />
           ) : (
-            <form action={confirmEmail}>
-              <input type="hidden" name="tokenHash" value={tokenHash} />
-              <input type="hidden" name="type" value={type} />
-              <input type="hidden" name="next" value={next} />
-              <button className="auth-submit" type="submit">
-                Confirm and continue <span aria-hidden="true">→</span>
-              </button>
-            </form>
+            <Link className="email-confirm-link" href="/signup">
+              Return to sign up <span aria-hidden="true">→</span>
+            </Link>
           )}
         </div>
       </section>

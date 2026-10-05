@@ -117,10 +117,10 @@ export async function signup(
     redirect(next === "/" ? "/?auth=welcome" : next);
   }
 
-  const checkEmailUrl = new URL("/", siteUrl);
-  checkEmailUrl.searchParams.set("auth", "check-email");
-  if (next !== "/") checkEmailUrl.searchParams.set("next", next);
-  redirect(`${checkEmailUrl.pathname}${checkEmailUrl.search}`);
+  const confirmationUrl = new URL("/auth/confirm", siteUrl);
+  confirmationUrl.searchParams.set("email", email);
+  if (next !== "/") confirmationUrl.searchParams.set("next", next);
+  redirect(`${confirmationUrl.pathname}${confirmationUrl.search}`);
 }
 
 export async function logout() {

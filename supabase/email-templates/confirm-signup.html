@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="color-scheme" content="light dark" />
     <meta name="supported-color-schemes" content="light dark" />
-    <title>Confirm your GDG UTDallas account</title>
+    <title>Your GDG UTDallas confirmation code</title>
     <style>
       :root {
         color-scheme: light dark;
@@ -16,7 +16,7 @@
         .email-shell { width: 100% !important; }
         .email-content { padding: 34px 24px 30px !important; }
         .email-title { font-size: 30px !important; line-height: 36px !important; }
-        .email-button { display: block !important; text-align: center !important; }
+        .email-code { font-size: 31px !important; letter-spacing: 0.18em !important; }
       }
 
       @media (prefers-color-scheme: dark) {
@@ -37,11 +37,11 @@
         .email-brand,
         .email-copy,
         .email-muted,
-        .email-helper,
         .email-footer-copy { color: #5f6368 !important; -webkit-text-fill-color: #5f6368 !important; }
-        .email-label,
-        .email-link { color: #0b57d0 !important; -webkit-text-fill-color: #0b57d0 !important; }
+        .email-label { color: #0b57d0 !important; -webkit-text-fill-color: #0b57d0 !important; }
         .email-title { color: #202124 !important; -webkit-text-fill-color: #202124 !important; }
+        .email-code-wrap { background: #eef4ff !important; background-image: linear-gradient(#eef4ff, #eef4ff) !important; border-color: #c8d8f3 !important; }
+        .email-code { color: #0b57d0 !important; -webkit-text-fill-color: #0b57d0 !important; }
       }
 
       [data-ogsc] .email-background,
@@ -60,16 +60,16 @@
       [data-ogsc] .email-brand,
       [data-ogsc] .email-copy,
       [data-ogsc] .email-muted,
-      [data-ogsc] .email-helper,
       [data-ogsc] .email-footer-copy { color: #5f6368 !important; }
-      [data-ogsc] .email-label,
-      [data-ogsc] .email-link { color: #0b57d0 !important; }
+      [data-ogsc] .email-label { color: #0b57d0 !important; }
       [data-ogsc] .email-title { color: #202124 !important; }
+      [data-ogsc] .email-code-wrap { background: #eef4ff !important; border-color: #c8d8f3 !important; }
+      [data-ogsc] .email-code { color: #0b57d0 !important; }
     </style>
   </head>
   <body class="email-background" style="margin:0; padding:0; background:#ffffff; background-image:linear-gradient(#ffffff,#ffffff); color:#202124; font-family:Arial,Helvetica,sans-serif;">
     <div style="display:none; max-height:0; overflow:hidden; opacity:0; color:transparent;">
-      Confirm your email address to finish creating your GDG UTDallas account.
+      Your six-digit GDG UTDallas confirmation code is inside.
     </div>
 
     <table class="email-background" role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#ffffff" style="width:100%; background:#ffffff; background-image:linear-gradient(#ffffff,#ffffff);">
@@ -100,35 +100,26 @@
                 </p>
 
                 <h1 class="email-title" style="margin:0; color:#202124; font-size:36px; font-weight:700; line-height:43px; letter-spacing:-0.02em;">
-                  Confirm your email
+                  Your confirmation code
                 </h1>
 
                 <p class="email-copy" style="margin:22px 0 0; color:#5f6368; font-size:16px; line-height:26px;">
-                  Confirm your email address to finish creating your GDG UTDallas account.
+                  Enter this six-digit code on the signup page to finish creating your GDG UTDallas account.
                 </p>
 
-                <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:30px 0 0;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:30px 0 0;">
                   <tr>
-                    <td bgcolor="#0b57d0" style="background:#0b57d0;">
-                      <a class="email-button" href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=email&amp;next={{ .RedirectTo }}" style="display:inline-block; padding:14px 24px; color:#ffffff; font-size:15px; font-weight:700; line-height:20px; text-decoration:none;">
-                        Confirm email address
-                      </a>
+                    <td class="email-code-wrap" align="center" bgcolor="#eef4ff" style="padding:24px 16px; background:#eef4ff; background-image:linear-gradient(#eef4ff,#eef4ff); border:1px solid #c8d8f3;">
+                      <span class="email-code" style="color:#0b57d0; font-family:'Courier New',Courier,monospace; font-size:36px; font-weight:700; line-height:44px; letter-spacing:0.22em;">
+                        {{ .Token }}
+                      </span>
                     </td>
                   </tr>
                 </table>
 
                 <p class="email-muted" style="margin:30px 0 0; color:#7a8087; font-size:13px; line-height:21px;">
-                  If you did not create this account, you can ignore this email.
+                  This code is valid for a limited time. If you did not create this account, you can ignore this email.
                 </p>
-
-                <div style="margin:34px 0 0; padding-top:24px; border-top:1px solid #e3e6eb;">
-                  <p class="email-helper" style="margin:0; color:#7a8087; font-size:12px; line-height:19px;">
-                    Button not working? Copy and paste this link into your browser:
-                  </p>
-                  <p style="margin:8px 0 0; font-size:12px; line-height:19px; word-break:break-all;">
-                    <a class="email-link" href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=email&amp;next={{ .RedirectTo }}" style="color:#0b57d0; text-decoration:underline;">{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=email&amp;next={{ .RedirectTo }}</a>
-                  </p>
-                </div>
               </td>
             </tr>
 

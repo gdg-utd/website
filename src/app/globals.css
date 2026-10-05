@@ -418,8 +418,18 @@ img { display: block; }
 .email-confirm-mark { width: 52px; height: 52px; margin-bottom: 34px; display: grid; place-items: center; border-radius: 50%; background: #e8f0fe; color: var(--blue-dark); font-size: 22px; font-weight: 750; }
 .email-confirm-card > h1 { max-width: 540px; margin: 0; font-size: clamp(2.7rem, 7vw, 4.5rem); line-height: .98; letter-spacing: -.055em; }
 .email-confirm-card > p:not(.section-label) { max-width: 530px; margin: 24px 0 0; color: #626970; font-size: 16px; line-height: 1.7; }
+.email-confirm-card strong { color: #3c4043; font-weight: 650; }
 .email-confirm-card form { margin-top: 35px; }
 .email-confirm-link { min-height: 52px; margin-top: 35px; padding: 0 19px; display: flex; align-items: center; justify-content: space-between; background: var(--blue-dark); color: #fff; font-size: 14px; font-weight: 670; }
+.email-confirm-actions { margin-top: 35px; }
+.email-confirm-actions .email-confirm-form { margin-top: 0; }
+.auth-form .email-confirm-code { height: 68px; padding-left: calc(14px + .24em); text-align: center; font-size: 28px; font-weight: 680; letter-spacing: .24em; font-variant-numeric: tabular-nums; }
+.email-confirm-resend { margin-top: 22px !important; padding-top: 22px; display: flex; align-items: center; justify-content: space-between; gap: 18px; border-top: 1px solid var(--line); }
+.email-confirm-resend p { margin: 0; color: #747a81; font-size: 13px; }
+.email-confirm-resend button { padding: 0; border: 0; background: transparent; color: var(--blue-dark); font: inherit; font-size: 13px; font-weight: 680; cursor: pointer; }
+.email-confirm-resend button:hover:not(:disabled) { text-decoration: underline; text-underline-offset: 3px; }
+.email-confirm-resend button:disabled { opacity: .62; cursor: wait; }
+.email-confirm-actions > .auth-message { margin-top: 16px; }
 
 .account-content { width: min(760px, calc(100% - 48px)); min-height: calc(100svh - 78px); margin-inline: auto; padding-block: 90px; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; }
 .account-mark { width: 72px; height: 72px; margin-bottom: 40px; display: grid; place-items: center; border-radius: 50%; background: #e8f0fe; color: var(--blue-dark); font-size: 28px; font-weight: 680; }
