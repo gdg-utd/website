@@ -10,9 +10,10 @@ import {
 
 type AuthFormProps = {
   mode: "login" | "signup";
+  nextPath?: string;
 };
 
-export function AuthForm({ mode }: AuthFormProps) {
+export function AuthForm({ mode, nextPath = "/" }: AuthFormProps) {
   const [signupEmail, setSignupEmail] = useState("");
   const initialAuthState: AuthActionState = {
     status: "idle",
@@ -33,6 +34,7 @@ export function AuthForm({ mode }: AuthFormProps) {
 
   return (
     <form className="auth-form" action={formAction}>
+      <input type="hidden" name="next" value={nextPath} />
       {isSignup && (
         <div className="auth-name-fields">
           <label>
@@ -135,7 +137,7 @@ export function AuthForm({ mode }: AuthFormProps) {
 
       <p className="auth-switch">
         {isSignup ? "Already have an account?" : "New to GDG UTDallas?"}{" "}
-        <Link href={isSignup ? "/login" : "/signup"}>
+        <Link href={`${isSignup ? "/login" : "/signup"}${nextPath !== "/" ? `?next=${encodeURIComponent(nextPath)}` : ""}`}>
           {isSignup ? "Log in" : "Create an account"}
         </Link>
       </p>

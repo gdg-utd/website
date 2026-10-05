@@ -35,6 +35,31 @@ Email-and-password authentication uses Supabase SSR with cookie-based sessions. 
 
 Database changes live in `supabase/migrations`. The profile table has row-level security: members can only read and update their own profile, anonymous visitors have no table access, and a private trigger creates the profile after signup.
 
+## Applications
+
+SPRINT Officer and SPRINT Mentee applications are stored in Supabase. Applicants can save drafts, submit once, and track published decisions from `/dashboard`. Submitted responses are available only to application administrators through `/admin/applications`.
+
+To grant portal access after an administrator has created an account, add their user ID to `application_admins` from the Supabase SQL editor:
+
+```sql
+insert into public.application_admins (user_id)
+select id from auth.users where email = 'admin@utdallas.edu';
+```
+
+Application notifications are recorded in `application_email_queue` and delivered through the protected `send-application-email` Supabase Edge Function. The Brevo account contains three transactional templates: application received, accepted, and not selected.
+
+Production credentials belong in **Supabase Dashboard → Edge Functions → Secrets**, not in browser-visible Next.js variables. Add these values before testing delivery:
+
+```text
+BREVO_API_KEY=...
+BREVO_SENDER_EMAIL=...
+BREVO_SENDER_NAME=GDG UTDallas
+BREVO_REPLY_TO=...
+SITE_URL=https://gdgutd.com
+```
+
+For local Edge Function testing, copy the same values into an ignored environment file and pass it to `supabase functions serve --env-file ...`. Never prefix the Brevo API key with `NEXT_PUBLIC_` and never commit it.
+
 ## Available commands
 
 ```bash
@@ -58,9 +83,9 @@ eslint.config.mjs ESLint configuration
 
 ## Current scope
 
-The current release includes a responsive public homepage, a dedicated SPRINT program experience, locally bundled official GDG assets and unDraw illustrations, live chapter information, community links, SPRINT photography, upcoming events synchronized from the official GDG chapter page, and Supabase-backed member authentication.
+The current release includes a responsive public homepage, a dedicated SPRINT program experience, locally bundled official GDG assets and unDraw illustrations, live chapter information, community links, SPRINT photography, upcoming events synchronized from the official GDG chapter page, Supabase-backed member authentication, and a secure applications workflow.
 
-The team directory at `/team` remains a placeholder. Authentication is available at `/login` and `/signup`, with a protected member page at `/account`.
+Authentication is available at `/login` and `/signup`. The protected dashboard is at `/dashboard`, and officers are listed at `/officers`.
 
 Upcoming event data is refreshed hourly. A verified local fallback keeps the page useful when the chapter platform is unavailable. RSVP links always send visitors to the official event page.
 

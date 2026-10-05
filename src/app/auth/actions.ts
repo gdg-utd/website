@@ -13,6 +13,12 @@ function field(formData: FormData, name: string) {
   return typeof value === "string" ? value.trim() : "";
 }
 
+function safeNextPath(value: string) {
+  return value.startsWith("/") && !value.startsWith("//") && !value.includes("\\")
+    ? value
+    : "/";
+}
+
 function authErrorMessage(message: string) {
   if (
     message.toLowerCase().includes("utdallas.edu") ||
@@ -38,6 +44,7 @@ export async function login(
 ): Promise<AuthActionState> {
   const email = field(formData, "email");
   const password = field(formData, "password");
+  const next = safeNextPath(field(formData, "next"));
 
   if (!email || !password) {
     return { status: "error", message: "Enter your email and password." };
@@ -50,7 +57,7 @@ export async function login(
     return { status: "error", message: authErrorMessage(error.message) };
   }
 
-  redirect("/");
+  redirect(next);
 }
 
 export async function signup(
@@ -62,6 +69,7 @@ export async function signup(
   const email = field(formData, "email").toLowerCase();
   const password = field(formData, "password");
   const confirmPassword = field(formData, "confirmPassword");
+  const next = safeNextPath(field(formData, "next"));
 
   if (firstName.length < 1 || firstName.length > 50) {
     return { status: "error", message: "Enter your first name." };
@@ -85,7 +93,7 @@ export async function signup(
   const supabase = await createClient();
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
   const confirmationUrl = new URL("/auth/callback", siteUrl);
-  confirmationUrl.searchParams.set("next", "/?auth=confirmed");
+  confirmationUrl.searchParams.set("next", next === "/" ? "/?auth=confirmed" : next);
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -104,10 +112,13 @@ export async function signup(
   }
 
   if (data.session) {
-    redirect("/?auth=welcome");
+    redirect(next === "/" ? "/?auth=welcome" : next);
   }
 
-  redirect("/?auth=check-email");
+  const checkEmailUrl = new URL("/", siteUrl);
+  checkEmailUrl.searchParams.set("auth", "check-email");
+  if (next !== "/") checkEmailUrl.searchParams.set("next", next);
+  redirect(`${checkEmailUrl.pathname}${checkEmailUrl.search}`);
 }
 
 export async function logout() {

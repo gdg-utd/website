@@ -5,7 +5,15 @@ import { SiteHeader } from "@/components/site-header";
 
 export const metadata: Metadata = { title: "Sign up" };
 
-export default function SignupPage() {
+type SignupPageProps = { searchParams: Promise<{ next?: string }> };
+
+function safeNextPath(value?: string) {
+  return value?.startsWith("/") && !value.startsWith("//") && !value.includes("\\") ? value : "/";
+}
+
+export default async function SignupPage({ searchParams }: SignupPageProps) {
+  const { next } = await searchParams;
+  const nextPath = safeNextPath(next);
   return (
     <main className="auth-page">
       <SiteHeader />
@@ -29,7 +37,7 @@ export default function SignupPage() {
             <p>Create an account</p>
             <h2>Sign up</h2>
           </div>
-          <AuthForm mode="signup" />
+          <AuthForm mode="signup" nextPath={nextPath} />
         </div>
       </section>
     </main>

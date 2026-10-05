@@ -3,50 +3,32 @@ import Image from "next/image";
 import Link from "next/link";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { applicantStatus, isOpeningAccepting, parseApplicationOpening } from "@/lib/applications";
+import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "Apply",
   description: "View open SPRINT positions at GDG UTDallas.",
 };
 
-const openPositions = [
-  {
-    id: "sprint-officer",
-    eyebrow: "Program team",
-    title: "SPRINT officer",
-    description:
-      "Help plan the eight-week program, coordinate with mentors, and support project teams from kickoff through showcase day.",
-    details: [
-      ["Commitment", "Weekly during SPRINT"],
-      ["Good fit for", "Organizers and team leads"],
-    ],
-    responsibilities: [
-      "Keep weekly program logistics on track",
-      "Support mentors and mentee teams",
-      "Help run kickoff and showcase events",
-    ],
-    accent: "blue",
-  },
-  {
-    id: "sprint-mentee",
-    eyebrow: "Project participant",
-    title: "SPRINT mentee",
-    description:
-      "Join a small team, work with a mentor, and build a project to present at the end of the program.",
-    details: [
-      ["Program length", "Eight weeks"],
-      ["Experience", "No prior experience required"],
-    ],
-    responsibilities: [
-      "Meet with your team each week",
-      "Learn and contribute as the project develops",
-      "Present the finished project at the showcase",
-    ],
-    accent: "green",
-  },
-] as const;
+export const dynamic = "force-dynamic";
 
-export default function ApplyPage() {
+export default async function ApplyPage() {
+  const supabase = await createClient();
+  const [{ data: openingRows }, { data: authData }] = await Promise.all([
+    supabase.from("application_openings").select("*").eq("status", "open").order("id"),
+    supabase.auth.getClaims(),
+  ]);
+  const userId = authData?.claims?.sub;
+  const openings = (openingRows ?? []).map(parseApplicationOpening).filter(isOpeningAccepting);
+  const { data: applications } = userId
+    ? await supabase
+      .from("applications")
+      .select("opening_id, submission_state, published_decision")
+      .eq("applicant_id", userId)
+    : { data: null };
+  const applicationsByOpening = new Map(applications?.map((application) => [application.opening_id, application]));
+
   return (
     <div className="apply-page">
       <SiteHeader />
@@ -79,15 +61,24 @@ export default function ApplyPage() {
             </div>
 
             <div className="application-position-grid">
-              {openPositions.map((position, index) => (
+              {openings.map((position, index) => {
+                const application = applicationsByOpening.get(position.id);
+                const status = application
+                  ? applicantStatus(application.submission_state, application.published_decision)
+                  : null;
+                const href = application?.submission_state === "submitted"
+                  ? "/dashboard"
+                  : `/apply/${position.slug}`;
+
+                return (
                 <article
                   className={`application-position application-position-${position.accent}`}
-                  id={position.id}
-                  key={position.id}
+                  id={position.slug}
+                  key={position.slug}
                 >
                   <header className="application-position-header">
                     <span className="application-position-number">{String(index + 1).padStart(2, "0")}</span>
-                    <span className="application-position-status"><i aria-hidden="true" />Open</span>
+                    <span className="application-position-status"><i aria-hidden="true" />{status ?? "Open"}</span>
                   </header>
 
                   <div className="application-position-copy">
@@ -97,10 +88,10 @@ export default function ApplyPage() {
                   </div>
 
                   <dl className="application-position-details">
-                    {position.details.map(([label, value]) => (
-                      <div key={label}>
-                        <dt>{label}</dt>
-                        <dd>{value}</dd>
+                    {position.details.map((detail) => (
+                      <div key={detail.label}>
+                        <dt>{detail.label}</dt>
+                        <dd>{detail.value}</dd>
                       </div>
                     ))}
                   </dl>
@@ -109,12 +100,21 @@ export default function ApplyPage() {
                     <ul>
                       {position.responsibilities.map((responsibility) => <li key={responsibility}>{responsibility}</li>)}
                     </ul>
-                    {/* Connect this button to the position's form route when that page is built. */}
-                    <button type="button">Apply <span aria-hidden="true">→</span></button>
+                    <Link className="application-position-action" href={href}>
+                      {application?.submission_state === "submitted" ? "View status" : application ? "Resume" : "Apply"}
+                      <span aria-hidden="true">→</span>
+                    </Link>
                   </div>
                 </article>
-              ))}
+                );
+              })}
             </div>
+            {openings.length === 0 && (
+              <div className="application-empty-state">
+                <h3>No applications are open right now.</h3>
+                <p>Check back for the next SPRINT application window.</p>
+              </div>
+            )}
           </div>
         </section>
       </main>

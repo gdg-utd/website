@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import type { Database } from "@/lib/supabase/database.types";
 
 function responseWithCookies(
   response: NextResponse,
@@ -18,7 +19,7 @@ function responseWithCookies(
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
-  const supabase = createServerClient(
+  const supabase = createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
     {
@@ -41,7 +42,11 @@ export async function updateSession(request: NextRequest) {
   const isSignedIn = Boolean(data?.claims);
   const pathname = request.nextUrl.pathname;
 
-  const isProtectedRoute = pathname.startsWith("/account") || pathname.startsWith("/dashboard");
+  const isApplicationForm = pathname.startsWith("/apply/");
+  const isProtectedRoute = pathname.startsWith("/account")
+    || pathname.startsWith("/dashboard")
+    || pathname.startsWith("/admin")
+    || isApplicationForm;
 
   if (!isSignedIn && isProtectedRoute) {
     const loginUrl = request.nextUrl.clone();
@@ -55,8 +60,15 @@ export async function updateSession(request: NextRequest) {
 
   if (isSignedIn && (pathname === "/login" || pathname === "/signup")) {
     const homeUrl = request.nextUrl.clone();
-    homeUrl.pathname = "/";
-    homeUrl.search = "";
+    const requestedNext = request.nextUrl.searchParams.get("next");
+    const next = requestedNext?.startsWith("/")
+      && !requestedNext.startsWith("//")
+      && !requestedNext.includes("\\")
+      ? requestedNext
+      : "/";
+    const target = new URL(next, request.url);
+    homeUrl.pathname = target.pathname;
+    homeUrl.search = target.search;
     return responseWithCookies(
       supabaseResponse,
       NextResponse.redirect(homeUrl),

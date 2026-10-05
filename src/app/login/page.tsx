@@ -5,7 +5,15 @@ import { SiteHeader } from "@/components/site-header";
 
 export const metadata: Metadata = { title: "Log in" };
 
-export default function LoginPage() {
+type LoginPageProps = { searchParams: Promise<{ next?: string }> };
+
+function safeNextPath(value?: string) {
+  return value?.startsWith("/") && !value.startsWith("//") && !value.includes("\\") ? value : "/";
+}
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const { next } = await searchParams;
+  const nextPath = safeNextPath(next);
   return (
     <main className="auth-page">
       <SiteHeader />
@@ -29,7 +37,7 @@ export default function LoginPage() {
             <p>Account access</p>
             <h2>Log in</h2>
           </div>
-          <AuthForm mode="login" />
+          <AuthForm mode="login" nextPath={nextPath} />
         </div>
       </section>
     </main>
