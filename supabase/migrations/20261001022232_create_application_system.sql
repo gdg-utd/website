@@ -607,7 +607,7 @@ insert into public.application_openings (
         "description": "Tell us where you are in your studies.",
         "fields": [
           {"id":"classification","type":"single_choice","label":"Current classification","required":true,"options":[{"value":"freshman","label":"Freshman"},{"value":"sophomore","label":"Sophomore"},{"value":"junior","label":"Junior"},{"value":"senior","label":"Senior"},{"value":"graduate","label":"Graduate student"}]},
-          {"id":"major","type":"short_text","label":"Major","required":true,"max_length":120,"placeholder":"Computer Science"},
+          {"id":"major","type":"short_text","label":"Major","required":true,"max_length":120,"placeholder":"Ex: Computer Science"},
           {"id":"portfolio_url","type":"url","label":"Portfolio, GitHub, or LinkedIn","required":false,"help":"Optional — include one link you would like us to review.","placeholder":"https://"}
         ]
       },
@@ -647,7 +647,7 @@ insert into public.application_openings (
         "description": "No previous coding or project experience is required.",
         "fields": [
           {"id":"classification","type":"single_choice","label":"Current classification","required":true,"options":[{"value":"freshman","label":"Freshman"},{"value":"sophomore","label":"Sophomore"},{"value":"junior","label":"Junior"},{"value":"senior","label":"Senior"},{"value":"graduate","label":"Graduate student"}]},
-          {"id":"major","type":"short_text","label":"Major","required":true,"max_length":120,"placeholder":"Computer Science"},
+          {"id":"major","type":"short_text","label":"Major","required":true,"max_length":120,"placeholder":"Ex: Computer Science"},
           {"id":"experience_level","type":"single_choice","label":"Current technical experience","required":true,"options":[{"value":"none","label":"No experience yet"},{"value":"beginner","label":"Some classes or tutorials"},{"value":"projects","label":"I have built a few projects"},{"value":"experienced","label":"I have substantial project experience"}]},
           {"id":"portfolio_url","type":"url","label":"Portfolio, GitHub, or LinkedIn","required":false,"help":"Optional — it is completely fine to leave this blank.","placeholder":"https://"}
         ]

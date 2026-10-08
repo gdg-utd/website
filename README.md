@@ -37,13 +37,16 @@ Database changes live in `supabase/migrations`. The profile table has row-level 
 
 ## Applications
 
-SPRINT Officer and SPRINT Mentee applications are stored in Supabase. Applicants can save drafts, submit once, and track published decisions from `/dashboard`. Submitted responses are available only to application administrators through `/admin/applications`.
+SPRINT Officer and SPRINT Mentee applications are stored in Supabase. Applicants can save drafts, submit once, and track published decisions from `/dashboard`. Submitted responses are available only to application staff through `/admin/applications`. Reviewers can read applications and stage decisions; administrators can also publish decisions, reopen applications, and export CSV data.
 
-To grant portal access after an administrator has created an account, add their user ID to `application_admins` from the Supabase SQL editor:
+To grant portal access after a staff member has created an account, add their user ID and role to `application_admins` from the Supabase SQL editor:
 
 ```sql
-insert into public.application_admins (user_id)
-select id from auth.users where email = 'admin@utdallas.edu';
+insert into public.application_admins (user_id, role)
+select id, 'admin' from auth.users where email = 'admin@utdallas.edu';
+
+insert into public.application_admins (user_id, role)
+select id, 'reviewer' from auth.users where email = 'reviewer@utdallas.edu';
 ```
 
 Application notifications are recorded in `application_email_queue` and delivered through the protected `send-application-email` Supabase Edge Function. The Brevo account contains three transactional templates: application received, accepted, and not selected.

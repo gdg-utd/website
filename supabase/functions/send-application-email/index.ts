@@ -124,7 +124,7 @@ Deno.serve(async (request: Request) => {
       .maybeSingle(),
     serviceClient
       .from("application_admins")
-      .select("user_id")
+      .select("user_id, role")
       .eq("user_id", authData.user.id)
       .eq("active", true)
       .maybeSingle(),
@@ -132,7 +132,7 @@ Deno.serve(async (request: Request) => {
 
   if (!application) return response({ error: "Application not found" }, 404);
 
-  const isAdmin = Boolean(admin);
+  const isAdmin = admin?.role === "admin";
   const isApplicant = application.applicant_id === authData.user.id;
   const isAllowed = templateKey === "confirmation" ? isApplicant || isAdmin : isAdmin;
   if (!isAllowed) return response({ error: "Not authorized" }, 403);

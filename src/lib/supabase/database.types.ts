@@ -19,18 +19,21 @@ export type Database = {
           active: boolean
           created_at: string
           created_by: string | null
+          role: string
           user_id: string
         }
         Insert: {
           active?: boolean
           created_at?: string
           created_by?: string | null
+          role?: string
           user_id: string
         }
         Update: {
           active?: boolean
           created_at?: string
           created_by?: string | null
+          role?: string
           user_id?: string
         }
         Relationships: []
@@ -278,7 +281,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      publish_staged_application_decisions: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          application_id: number
+          decision: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
@@ -411,4 +420,3 @@ export const Constants = {
     Enums: {},
   },
 } as const
-

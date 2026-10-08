@@ -90,7 +90,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                   ) : (
                     <p className="dashboard-application-note">
                       {status === "Submitted"
-                        ? "Your application is under review. Updates will appear here."
+                        ? "Your application is under review. Updates will appear here and are sent to your email!"
                         : status === "Accepted"
                           ? "You have been selected. The team will share next steps with you."
                           : "Thank you for applying and for your interest in SPRINT."}

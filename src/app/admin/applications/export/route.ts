@@ -16,10 +16,11 @@ export async function GET() {
 
   const { data: administrator } = await supabase
     .from("application_admins")
-    .select("user_id")
+    .select("user_id, role")
     .eq("user_id", userId)
+    .eq("active", true)
     .maybeSingle();
-  if (!administrator) return new NextResponse("Forbidden", { status: 403 });
+  if (administrator?.role !== "admin") return new NextResponse("Forbidden", { status: 403 });
 
   const { data: applications, error } = await supabase
     .from("applications")
