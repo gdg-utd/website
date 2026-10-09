@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="supported-color-schemes" content="light dark" />
+    <title>Thank you for applying</title>
+    <style>
+      :root { color-scheme:light dark; supported-color-schemes:light dark; }
+      html, body { margin:0 !important; padding:0 !important; width:100% !important; }
+      table, td { border-collapse:collapse !important; mso-table-lspace:0pt !important; mso-table-rspace:0pt !important; }
+      a { color:inherit; }
+      @media only screen and (max-width:620px) {
+        .email-shell { width:100% !important; }
+        .email-content, .email-footer { padding-left:24px !important; padding-right:24px !important; }
+        .email-title { font-size:30px !important; line-height:37px !important; }
+        .email-button a { display:block !important; padding-left:18px !important; padding-right:18px !important; }
+      }
+      @media (prefers-color-scheme:dark) {
+        .email-bg, .email-shell, .email-content, .email-footer { background-color:#202124 !important; }
+        .email-title, .email-brand, .email-panel-title { color:#f1f3f4 !important; }
+        .email-copy { color:#d2d5da !important; }
+        .email-muted, .email-footer-copy, .email-panel-copy, .email-panel-label, .email-label { color:#aeb4bd !important; }
+        .email-link { color:#8ab4f8 !important; }
+        .email-panel { background-color:#292a2d !important; border-color:#4b5158 !important; border-left-color:#9aa0a6 !important; }
+        .email-footer { border-top-color:#3c4043 !important; }
+      }
+      [data-ogsc] .email-bg, [data-ogsc] .email-shell, [data-ogsc] .email-content, [data-ogsc] .email-footer { background-color:#202124 !important; }
+      [data-ogsc] .email-title, [data-ogsc] .email-brand, [data-ogsc] .email-panel-title { color:#f1f3f4 !important; }
+      [data-ogsc] .email-copy { color:#d2d5da !important; }
+      [data-ogsc] .email-muted, [data-ogsc] .email-footer-copy, [data-ogsc] .email-panel-copy, [data-ogsc] .email-panel-label, [data-ogsc] .email-label { color:#aeb4bd !important; }
+      [data-ogsc] .email-link { color:#8ab4f8 !important; }
+      [data-ogsc] .email-panel { background-color:#292a2d !important; border-color:#4b5158 !important; border-left-color:#9aa0a6 !important; }
+      [data-ogsc] .email-footer { border-top-color:#3c4043 !important; }
+    </style>
+  </head>
+  <body class="email-bg" bgcolor="#ffffff" style="margin:0; padding:0; width:100%; background-color:#ffffff; color:#202124; font-family:Arial,Helvetica,sans-serif; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%;">
+    <div style="display:none; max-height:0; overflow:hidden; opacity:0; color:transparent; mso-hide:all;">{{ params.preview_text }}</div>
+    <table class="email-bg" role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#ffffff" style="width:100%; background-color:#ffffff;">
+      <tr>
+        <td class="email-bg" align="center" bgcolor="#ffffff" style="background-color:#ffffff; padding:0 16px;">
+          <!--[if mso]><table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0"><tr><td><![endif]-->
+          <table class="email-shell" role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" bgcolor="#ffffff" style="width:100%; max-width:600px; background-color:#ffffff;">
+            <tr><td style="padding:0; font-size:0; line-height:0;"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"><tr>
+              <td width="25%" height="6" bgcolor="#4285f4" style="height:6px; background-color:#4285f4; font-size:0; line-height:0;">&nbsp;</td>
+              <td width="25%" height="6" bgcolor="#ea4335" style="height:6px; background-color:#ea4335; font-size:0; line-height:0;">&nbsp;</td>
+              <td width="25%" height="6" bgcolor="#fbbc04" style="height:6px; background-color:#fbbc04; font-size:0; line-height:0;">&nbsp;</td>
+              <td width="25%" height="6" bgcolor="#34a853" style="height:6px; background-color:#34a853; font-size:0; line-height:0;">&nbsp;</td>
+            </tr></table></td></tr>
+            <tr>
+              <td class="email-content" bgcolor="#ffffff" style="padding:42px 40px 38px; background-color:#ffffff;">
+                <p class="email-brand" style="margin:0 0 34px; color:#202124; font-size:16px; font-weight:700; line-height:22px;">GDG UTDallas</p>
+                <p class="email-label" style="margin:0 0 10px; color:#5f6368; font-size:12px; font-weight:700; line-height:18px; letter-spacing:0.08em; text-transform:uppercase;">Application update</p>
+                <h1 class="email-title" style="margin:0; color:#202124; font-size:36px; font-weight:700; line-height:43px; letter-spacing:-0.02em;">Thank you for applying.</h1>
+                <p class="email-copy" style="margin:22px 0 0; color:#4d5156; font-size:16px; line-height:26px;">Hi {{ params.first_name }},</p>
+                <p class="email-copy" style="margin:16px 0 0; color:#4d5156; font-size:16px; line-height:26px;">We’re unable to offer you a place for <strong>{{ params.opening_title }}</strong> this cycle. We appreciate your interest in GDG UTDallas and the time you spent applying.</p>
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-top:26px;">
+                  <tr><td class="email-panel" bgcolor="#f7f9fc" style="padding:20px 22px; background-color:#f7f9fc; border:1px solid #dfe3eb; border-left:4px solid #80868b;">
+                    <p class="email-panel-label" style="margin:0; color:#6f7479; font-size:11px; font-weight:700; line-height:17px; letter-spacing:0.08em; text-transform:uppercase;">Application</p>
+                    <p class="email-panel-title" style="margin:4px 0 0; color:#202124; font-size:18px; font-weight:700; line-height:25px;">{{ params.opening_title }}</p>
+                    <p class="email-panel-copy" style="margin:8px 0 0; color:#5f6368; font-size:14px; line-height:22px;">{{ params.next_steps }}</p>
+                  </td></tr>
+                </table>
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-top:28px;"><tr>
+                  <td class="email-button" align="center" bgcolor="#5f6368" style="background-color:#5f6368;"><a href="{{ params.dashboard_url }}" style="display:inline-block; padding:13px 22px; color:#ffffff; font-size:15px; font-weight:700; line-height:20px; text-decoration:none;">View application dashboard</a></td>
+                </tr></table>
+                <p class="email-muted" style="margin:24px 0 0; color:#6f7479; font-size:13px; line-height:21px;">If you have questions, reply to this email and our team will help.</p>
+              </td>
+            </tr>
+            <tr><td class="email-footer" bgcolor="#ffffff" style="padding:22px 40px 32px; background-color:#ffffff; border-top:1px solid #e3e6eb;">
+              <p class="email-footer-copy" style="margin:0; color:#767b82; font-size:12px; line-height:19px;">Google Developer Groups on Campus at The University of Texas at Dallas</p>
+              <p class="email-footer-copy" style="margin:5px 0 0; color:#767b82; font-size:12px; line-height:19px;">This message was sent because you submitted an application at <a class="email-link" href="https://gdgutd.com" style="color:#0b57d0; text-decoration:underline;">gdgutd.com</a>.</p>
+            </td></tr>
+          </table>
+          <!--[if mso]></td></tr></table><![endif]-->
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

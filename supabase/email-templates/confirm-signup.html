@@ -3,117 +3,160 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="color-scheme" content="light" />
-    <meta name="supported-color-schemes" content="light" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="supported-color-schemes" content="light dark" />
     <title>Your GDG UTDallas confirmation code</title>
     <style>
       :root {
-        color-scheme: light only;
-        supported-color-schemes: light;
+        color-scheme: light dark;
+        supported-color-schemes: light dark;
       }
 
-      .email-shell,
-      .email-content,
-      .email-footer,
-      .email-code-wrap {
-        color-scheme: light only !important;
-        forced-color-adjust: none !important;
+      html,
+      body {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+      }
+
+      table,
+      td {
+        border-collapse: collapse !important;
+        mso-table-lspace: 0pt !important;
+        mso-table-rspace: 0pt !important;
+      }
+
+      a {
+        color: inherit;
       }
 
       @media only screen and (max-width: 620px) {
-        .email-shell { width: 100% !important; }
-        .email-content { padding: 34px 24px 30px !important; }
-        .email-title { font-size: 30px !important; line-height: 36px !important; }
-        .email-code { font-size: 31px !important; letter-spacing: 0.18em !important; }
+        .email-shell {
+          width: 100% !important;
+        }
+
+        .email-content,
+        .email-footer {
+          padding-left: 24px !important;
+          padding-right: 24px !important;
+        }
+
+        .email-title {
+          font-size: 30px !important;
+          line-height: 37px !important;
+        }
+
+        .email-code {
+          font-size: 32px !important;
+          letter-spacing: 0.16em !important;
+        }
       }
 
       @media (prefers-color-scheme: dark) {
-        body,
-        .email-background,
-        .email-gutter {
-          background: #303134 !important;
-          background-image: linear-gradient(#303134, #303134) !important;
-        }
+        .email-bg,
         .email-shell,
         .email-content,
         .email-footer {
-          background: #ffffff !important;
-          background-image: linear-gradient(#ffffff, #ffffff) !important;
+          background-color: #202124 !important;
         }
-        .email-shell { border-color: #dfe3eb !important; }
-        .email-footer { border-top-color: #e3e6eb !important; }
-        .email-brand,
-        .email-copy,
+
+        .email-title,
+        .email-brand {
+          color: #f1f3f4 !important;
+        }
+
+        .email-copy {
+          color: #d2d5da !important;
+        }
+
         .email-muted,
-        .email-footer-copy { color: #5f6368 !important; -webkit-text-fill-color: #5f6368 !important; }
-        .email-label { color: #0b57d0 !important; -webkit-text-fill-color: #0b57d0 !important; }
-        .email-title { color: #202124 !important; -webkit-text-fill-color: #202124 !important; }
-        .email-code-wrap { background: #eef4ff !important; background-image: linear-gradient(#eef4ff, #eef4ff) !important; border-color: #c8d8f3 !important; }
-        .email-code { color: #0b57d0 !important; -webkit-text-fill-color: #0b57d0 !important; }
+        .email-footer-copy {
+          color: #aeb4bd !important;
+        }
+
+        .email-label,
+        .email-link,
+        .email-code {
+          color: #8ab4f8 !important;
+        }
+
+        .email-code-wrap {
+          background-color: #263550 !important;
+          border-color: #49627f !important;
+        }
+
+        .email-footer {
+          border-top-color: #3c4043 !important;
+        }
       }
 
-      [data-ogsc] .email-background,
-      [data-ogsc] .email-gutter {
-        background: #303134 !important;
-        background-image: linear-gradient(#303134, #303134) !important;
-      }
+      [data-ogsc] .email-bg,
       [data-ogsc] .email-shell,
       [data-ogsc] .email-content,
       [data-ogsc] .email-footer {
-        background: #ffffff !important;
-        background-image: linear-gradient(#ffffff, #ffffff) !important;
+        background-color: #202124 !important;
       }
-      [data-ogsc] .email-shell { border-color: #dfe3eb !important; }
-      [data-ogsc] .email-footer { border-top-color: #e3e6eb !important; }
-      [data-ogsc] .email-brand,
-      [data-ogsc] .email-copy,
+
+      [data-ogsc] .email-title,
+      [data-ogsc] .email-brand {
+        color: #f1f3f4 !important;
+      }
+
+      [data-ogsc] .email-copy {
+        color: #d2d5da !important;
+      }
+
       [data-ogsc] .email-muted,
-      [data-ogsc] .email-footer-copy { color: #5f6368 !important; }
-      [data-ogsc] .email-label { color: #0b57d0 !important; }
-      [data-ogsc] .email-title { color: #202124 !important; }
-      [data-ogsc] .email-code-wrap { background: #eef4ff !important; border-color: #c8d8f3 !important; }
-      [data-ogsc] .email-code { color: #0b57d0 !important; }
-      [data-ogsb] .email-shell,
-      [data-ogsb] .email-content,
-      [data-ogsb] .email-footer {
-        background: #ffffff !important;
-        background-image: linear-gradient(#ffffff, #ffffff) !important;
+      [data-ogsc] .email-footer-copy {
+        color: #aeb4bd !important;
       }
-      [data-ogsb] .email-code-wrap {
-        background: #eef4ff !important;
-        background-image: linear-gradient(#eef4ff, #eef4ff) !important;
+
+      [data-ogsc] .email-label,
+      [data-ogsc] .email-link,
+      [data-ogsc] .email-code {
+        color: #8ab4f8 !important;
+      }
+
+      [data-ogsc] .email-code-wrap {
+        background-color: #263550 !important;
+        border-color: #49627f !important;
+      }
+
+      [data-ogsc] .email-footer {
+        border-top-color: #3c4043 !important;
       }
     </style>
   </head>
-  <body class="email-background" style="margin:0; padding:0; background:#303134; background-image:linear-gradient(#303134,#303134); color:#202124; font-family:Arial,Helvetica,sans-serif;">
-    <div style="display:none; max-height:0; overflow:hidden; opacity:0; color:transparent;">
+  <body class="email-bg" bgcolor="#ffffff" style="margin:0; padding:0; width:100%; background-color:#ffffff; color:#202124; font-family:Arial,Helvetica,sans-serif; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%;">
+    <div style="display:none; max-height:0; overflow:hidden; opacity:0; color:transparent; mso-hide:all;">
       Your six-digit GDG UTDallas confirmation code is inside.
     </div>
 
-    <table class="email-background" role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#303134" style="width:100%; background:#303134; background-image:linear-gradient(#303134,#303134);">
+    <table class="email-bg" role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#ffffff" style="width:100%; background-color:#ffffff;">
       <tr>
-        <td class="email-gutter" align="center" bgcolor="#303134" style="padding:40px 16px; background:#303134; background-image:linear-gradient(#303134,#303134);">
-          <table class="email-shell" role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" bgcolor="#ffffff" style="width:600px; max-width:600px; background:#ffffff !important; background-color:#ffffff !important; background-image:linear-gradient(#ffffff,#ffffff) !important; border:1px solid #dfe3eb; border-collapse:separate; color-scheme:light only; forced-color-adjust:none;">
+        <td class="email-bg" align="center" bgcolor="#ffffff" style="background-color:#ffffff; padding:0 16px;">
+          <!--[if mso]><table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0"><tr><td><![endif]-->
+          <table class="email-shell" role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" bgcolor="#ffffff" style="width:100%; max-width:600px; background-color:#ffffff;">
             <tr>
-              <td style="font-size:0; line-height:0;">
+              <td style="padding:0; font-size:0; line-height:0;">
                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                   <tr>
-                    <td width="25%" height="6" style="background:#4285f4; font-size:0; line-height:0;">&nbsp;</td>
-                    <td width="25%" height="6" style="background:#ea4335; font-size:0; line-height:0;">&nbsp;</td>
-                    <td width="25%" height="6" style="background:#fbbc04; font-size:0; line-height:0;">&nbsp;</td>
-                    <td width="25%" height="6" style="background:#0f9d58; font-size:0; line-height:0;">&nbsp;</td>
+                    <td width="25%" height="6" bgcolor="#4285f4" style="height:6px; background-color:#4285f4; font-size:0; line-height:0;">&nbsp;</td>
+                    <td width="25%" height="6" bgcolor="#ea4335" style="height:6px; background-color:#ea4335; font-size:0; line-height:0;">&nbsp;</td>
+                    <td width="25%" height="6" bgcolor="#fbbc04" style="height:6px; background-color:#fbbc04; font-size:0; line-height:0;">&nbsp;</td>
+                    <td width="25%" height="6" bgcolor="#34a853" style="height:6px; background-color:#34a853; font-size:0; line-height:0;">&nbsp;</td>
                   </tr>
                 </table>
               </td>
             </tr>
 
             <tr>
-              <td class="email-content" bgcolor="#ffffff" style="padding:46px 48px 40px; background:#ffffff !important; background-color:#ffffff !important; background-image:linear-gradient(#ffffff,#ffffff) !important; color-scheme:light only; forced-color-adjust:none;">
-                <p class="email-brand" style="margin:0 0 32px; color:#5f6368; font-size:14px; font-weight:700; letter-spacing:0.04em;">
+              <td class="email-content" bgcolor="#ffffff" style="padding:42px 40px 38px; background-color:#ffffff;">
+                <p class="email-brand" style="margin:0 0 34px; color:#202124; font-size:16px; font-weight:700; line-height:22px;">
                   GDG UTDallas
                 </p>
 
-                <p class="email-label" style="margin:0 0 12px; color:#0b57d0; font-size:12px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;">
+                <p class="email-label" style="margin:0 0 10px; color:#0b57d0; font-size:12px; font-weight:700; line-height:18px; letter-spacing:0.08em; text-transform:uppercase;">
                   Account verification
                 </p>
 
@@ -121,37 +164,38 @@
                   Your confirmation code
                 </h1>
 
-                <p class="email-copy" style="margin:22px 0 0; color:#5f6368; font-size:16px; line-height:26px;">
+                <p class="email-copy" style="margin:20px 0 0; color:#4d5156; font-size:16px; line-height:26px;">
                   Enter this six-digit code on the signup page to finish creating your GDG UTDallas account.
                 </p>
 
-                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:30px 0 0;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-top:28px;">
                   <tr>
-                    <td class="email-code-wrap" align="center" bgcolor="#eef4ff" style="padding:24px 16px; background:#eef4ff !important; background-color:#eef4ff !important; background-image:linear-gradient(#eef4ff,#eef4ff) !important; border:1px solid #c8d8f3; color-scheme:light only; forced-color-adjust:none;">
-                      <span class="email-code" style="color:#0b57d0; font-family:'Courier New',Courier,monospace; font-size:36px; font-weight:700; line-height:44px; letter-spacing:0.22em;">
+                    <td class="email-code-wrap" align="center" bgcolor="#eef4ff" style="padding:23px 12px; background-color:#eef4ff; border:1px solid #c6dafc;">
+                      <span class="email-code" style="display:inline-block; color:#0b57d0; font-family:'Courier New',Courier,monospace; font-size:36px; font-weight:700; line-height:44px; letter-spacing:0.2em; white-space:nowrap; mso-line-height-rule:exactly;">
                         {{ .Token }}
                       </span>
                     </td>
                   </tr>
                 </table>
 
-                <p class="email-muted" style="margin:30px 0 0; color:#7a8087; font-size:13px; line-height:21px;">
-                  This code is valid for a limited time. If you did not create this account, you can ignore this email.
+                <p class="email-muted" style="margin:27px 0 0; color:#6f7479; font-size:13px; line-height:21px;">
+                  This code is valid for a limited time. If you did not create this account, you can safely ignore this email.
                 </p>
               </td>
             </tr>
 
             <tr>
-              <td class="email-footer" bgcolor="#ffffff" style="padding:22px 48px; background:#ffffff !important; background-color:#ffffff !important; background-image:linear-gradient(#ffffff,#ffffff) !important; border-top:1px solid #e3e6eb; color-scheme:light only; forced-color-adjust:none;">
-                <p class="email-footer-copy" style="margin:0; color:#80868b; font-size:12px; line-height:19px;">
+              <td class="email-footer" bgcolor="#ffffff" style="padding:22px 40px 32px; background-color:#ffffff; border-top:1px solid #e3e6eb;">
+                <p class="email-footer-copy" style="margin:0; color:#767b82; font-size:12px; line-height:19px;">
                   GDG UTDallas &middot; An independent student developer community
                 </p>
                 <p style="margin:5px 0 0; font-size:12px; line-height:19px;">
-                  <a class="email-footer-copy" href="https://www.gdgutd.com" style="color:#5f6368; text-decoration:underline;">gdgutd.com</a>
+                  <a class="email-link" href="https://gdgutd.com" style="color:#0b57d0; text-decoration:underline;">gdgutd.com</a>
                 </p>
               </td>
             </tr>
           </table>
+          <!--[if mso]></td></tr></table><![endif]-->
         </td>
       </tr>
     </table>
