@@ -44,10 +44,10 @@ export default async function ApplyPage() {
           <div className="apply-hero-art">
             <span aria-hidden="true" />
             <Image
-              src="/illustrations/apply-workflow.svg"
-              alt="An illustration of a person arranging a project workflow"
-              width={784}
-              height={725}
+              src="/illustrations/productive-task.svg"
+              alt="A hand-drawn illustration of a person organizing project tasks"
+              width={608}
+              height={520}
               loading="eager"
             />
           </div>

@@ -25,10 +25,10 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             <p>Log in to access your GDG UTDallas account.</p>
           </div>
           <Image
-            src="/illustrations/education.svg"
-            alt="An illustration of students learning together"
-            width={780}
-            height={560}
+            src="/illustrations/productive-work.svg"
+            alt="A hand-drawn illustration of a person checking work on a phone"
+            width={608}
+            height={520}
             loading="eager"
           />
         </div>

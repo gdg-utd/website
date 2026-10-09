@@ -86,7 +86,7 @@ eslint.config.mjs ESLint configuration
 
 ## Current scope
 
-The current release includes a responsive public homepage, a dedicated SPRINT program experience, locally bundled official GDG assets and unDraw illustrations, live chapter information, community links, SPRINT photography, upcoming events synchronized from the official GDG chapter page, Supabase-backed member authentication, and a secure applications workflow.
+The current release includes a responsive public homepage, a dedicated SPRINT program experience, locally bundled official GDG assets and SketchValley illustrations, live chapter information, community links, SPRINT photography, upcoming events synchronized from the official GDG chapter page, Supabase-backed member authentication, and a secure applications workflow.
 
 Authentication is available at `/login` and `/signup`. The protected dashboard is at `/dashboard`, and officers are listed at `/officers`.
 

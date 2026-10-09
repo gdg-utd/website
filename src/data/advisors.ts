@@ -1,9 +1,20 @@
 export type Advisor = {
-  name?: string;
-  role?: string;
-  /** Add a path from /public here when a profile photo is ready. */
-  photo?: string;
+  name: string;
+  role: string;
+  photo: string;
+  photoPosition?: string;
 };
 
-// Replace these placeholders as advisor details and photos become available.
-export const advisors: Advisor[] = [{}, {}];
+export const advisors: Advisor[] = [
+  {
+    name: "Dr. Klyne Smith",
+    role: "Faculty Advisor",
+    photo: "/pictures/advisors/klyne-smith.jpeg",
+    photoPosition: "center 34%",
+  },
+  {
+    name: "Dr. Bhadrachalam Chitturi",
+    role: "Faculty Advisor",
+    photo: "/pictures/advisors/bhadrachalam-chitturi.png",
+  },
+];

@@ -25,10 +25,10 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
             <p>Create an account for GDG UTDallas programs and resources.</p>
           </div>
           <Image
-            src="/illustrations/teamwork.svg"
-            alt="An illustration of a team collaborating"
-            width={780}
-            height={560}
+            src="/illustrations/productive-success.svg"
+            alt="A hand-drawn illustration celebrating a job well done"
+            width={608}
+            height={520}
             loading="eager"
           />
         </div>

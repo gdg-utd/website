@@ -12,13 +12,10 @@ The browser icon uses a square official GDG mark from the chapter platform, stor
 
 Downloaded from the official [Google Developer Groups chapter platform](https://gdg.community.dev/gdg-on-campus-the-university-of-texas-at-dallas-richardson-united-states/). Google Developer Groups and its marks are trademarks of Google LLC. They are used here to identify the community.
 
-## unDraw
+## Illustrations
 
-- `public/illustrations/engineering-team.svg`
-- `public/illustrations/education.svg`
-- `public/illustrations/teamwork.svg`
-- `public/illustrations/sprint-sharing-knowledge.svg`
-- `public/illustrations/sprint-group-project.svg`
-- `public/illustrations/sprint-team-assignment.svg`
+All illustration artwork is sourced from SketchValley. See [`public/illustrations/SOURCES.md`](public/illustrations/SOURCES.md) for the individual files, source pages, and license.
 
-Artwork by Katerina Limpitsouni from [unDraw](https://undraw.co/illustrations), downloaded as SVG files and served locally. unDraw permits use in personal and commercial projects without attribution under its [illustration license](https://undraw.co/license). The files are used as supporting artwork and are not redistributed as an illustration pack.
+## Chapter photography
+
+Chapter and advisor photography is stored under `public/pictures`. See [`public/pictures/SOURCES.md`](public/pictures/SOURCES.md) for details.

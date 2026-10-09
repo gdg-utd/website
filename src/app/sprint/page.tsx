@@ -64,10 +64,10 @@ export default function SprintPage() {
           <div className="sprint-hero-art">
             <span className="sprint-art-grid" aria-hidden="true" />
             <Image
-              src="/illustrations/sprint-sharing-knowledge.svg"
-              alt="An illustration of a mentor sharing knowledge with a student"
-              width={800}
-              height={727}
+              src="/illustrations/productive-collaboration.svg"
+              alt="A hand-drawn illustration of two people collaborating online"
+              width={608}
+              height={520}
               loading="eager"
             />
           </div>
@@ -130,10 +130,10 @@ export default function SprintPage() {
           <div className="shell sprint-mentorship-layout">
             <div className="sprint-mentorship-art">
               <Image
-                src="/illustrations/sprint-group-project.svg"
-                alt="An illustration of students collaborating on a group project"
-                width={965}
-                height={624}
+                src="/illustrations/productive-planning.svg"
+                alt="A hand-drawn illustration of a team planning work on a project board"
+                width={608}
+                height={520}
               />
             </div>
             <div className="sprint-mentorship-copy">
@@ -233,10 +233,10 @@ export default function SprintPage() {
         <section className="sprint-join shell">
           <div className="sprint-join-art">
             <Image
-              src="/illustrations/sprint-team-assignment.svg"
-              alt="An illustration of a team planning and completing an assignment"
-              width={960}
-              height={654}
+              src="/illustrations/productive-progress.svg"
+              alt="A hand-drawn illustration of a person completing a set of tasks"
+              width={608}
+              height={520}
             />
           </div>
           <div className="sprint-join-copy">

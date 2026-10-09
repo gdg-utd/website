@@ -9,3 +9,10 @@
   - License: 3-clause BSD License
 
 The image is stored locally so the banner does not rely on third-party image hosting.
+
+## Faculty advisors
+
+- `advisors/klyne-smith.jpeg` — Dr. Klyne Smith
+- `advisors/bhadrachalam-chitturi.png` — Dr. Bhadrachalam Chitturi
+
+Portraits provided by GDG UTDallas for use on the chapter website.

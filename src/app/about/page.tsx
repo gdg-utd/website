@@ -48,10 +48,10 @@ export default function AboutPage() {
           <div className="about-page-art">
             <span aria-hidden="true" />
             <Image
-              src="/illustrations/about-community.svg"
-              alt="An illustration of a student studying at a desk"
-              width={849}
-              height={842}
+              src="/illustrations/apply-workflow.svg"
+              alt="A hand-drawn illustration of a person arranging a project workflow"
+              width={784}
+              height={725}
               loading="eager"
             />
           </div>
@@ -98,24 +98,26 @@ export default function AboutPage() {
           <div className="shell">
             <div className="advisor-heading">
               <div>
-                <p className="section-label">Chapter advisors</p>
-                <h2 id="advisor-title">Our advisors</h2>
+                <p className="section-label">Chapter leadership</p>
+                <h2 id="advisor-title">Faculty advisors.</h2>
               </div>
-              <p>Advisor names, roles, and photographs can be added here when they are ready.</p>
+              <p>Meet the faculty advisors who support GDG UTDallas and its student leadership.</p>
             </div>
             <div className="advisor-grid">
-              {advisors.map((advisor, index) => (
-                <article className="advisor-card" key={`${advisor.name || "advisor"}-${index}`}>
+              {advisors.map((advisor) => (
+                <article className="advisor-card" key={advisor.name}>
                   <div className="advisor-photo">
-                    {advisor.photo ? (
-                      <Image src={advisor.photo} alt={advisor.name || "GDG UTDallas advisor"} fill sizes="(max-width: 720px) 100vw, 50vw" />
-                    ) : (
-                      <span>Advisor photo</span>
-                    )}
+                    <Image
+                      src={advisor.photo}
+                      alt={`Portrait of ${advisor.name}`}
+                      fill
+                      sizes="(max-width: 720px) 210px, 180px"
+                      style={{ objectPosition: advisor.photoPosition }}
+                    />
                   </div>
                   <div>
-                    <h3>{advisor.name || "Advisor profile"}</h3>
-                    <p>{advisor.role || "Name and role coming soon"}</p>
+                    <h3>{advisor.name}</h3>
+                    <p>{advisor.role}</p>
                   </div>
                 </article>
               ))}
@@ -123,10 +125,6 @@ export default function AboutPage() {
           </div>
         </section>
 
-        <section className="about-note shell">
-          <p className="section-label">About this website</p>
-          <p>This is an independent, community-run website for GDG UTDallas. It is not an official website of The University of Texas at Dallas.</p>
-        </section>
       </main>
 
       <SiteFooter />

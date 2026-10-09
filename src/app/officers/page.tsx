@@ -52,10 +52,10 @@ export default function OfficersPage() {
           <div className="team-hero-art">
             <span className="team-art-grid" aria-hidden="true" />
             <Image
-              src="/illustrations/officers-collaboration.svg"
-              alt="A colorful illustration of students discussing a project presentation"
-              width={500}
-              height={500}
+              src="/illustrations/productive-team.svg"
+              alt="A hand-drawn illustration of teammates celebrating together"
+              width={608}
+              height={520}
               loading="eager"
             />
           </div>

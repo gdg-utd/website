@@ -130,10 +130,10 @@ export default async function Home({ searchParams }: PageProps<"/">) {
           </div>
           <div className="hero-illustration">
             <Image
-              src="/illustrations/hero-student-community.svg"
-              alt="A colorful illustration of three students celebrating together"
-              width={500}
-              height={500}
+              src="/illustrations/home-team-collaboration.svg"
+              alt="A colorful illustration of a team collaborating"
+              width={618}
+              height={544}
               loading="eager"
             />
           </div>
@@ -152,27 +152,35 @@ export default async function Home({ searchParams }: PageProps<"/">) {
         )}
 
         <section className="hackathon-feature shell" aria-labelledby="hackathon-title">
-          <Image
-            className="hackathon-feature-art"
-            src="/pictures/hackathon-dino-game.png"
-            alt=""
-            fill
-            sizes="(max-width: 720px) calc(100vw - 32px), 1180px"
-            unoptimized
-          />
-          <div className="hackathon-feature-shade" aria-hidden="true" />
+          <div className="hackathon-feature-visual" aria-hidden="true">
+            <Image
+              className="hackathon-feature-art"
+              src="/pictures/hackathon-dino-game.png"
+              alt=""
+              fill
+              sizes="(max-width: 720px) calc(100vw - 32px), 650px"
+              unoptimized
+            />
+            <div className="hackathon-feature-index">
+              <span>Incoming event</span>
+              <strong>01</strong>
+            </div>
+          </div>
           <div className="hackathon-feature-copy">
-            <p className="hackathon-feature-label">New chapter event</p>
-            <h2 id="hackathon-title"><span>GDG UTDallas</span>Hackathon.</h2>
-            <p>A student hackathon is on the way. Applications and full event details will be announced soon.</p>
-            <div className="hackathon-feature-actions">
-              <button type="button" disabled>Coming soon!</button>
+            <div className="hackathon-feature-kicker">
+              <p className="hackathon-feature-label">New chapter event</p>
               <div className="hackathon-pixels" aria-hidden="true">
                 <span />
                 <span />
                 <span />
                 <span />
               </div>
+            </div>
+            <h2 id="hackathon-title"><span>GDG UTDallas</span>Hackathon.</h2>
+            <p>A student hackathon is on the way. Applications and full event details will be announced soon.</p>
+            <div className="hackathon-feature-status" role="status">
+              <span>Status</span>
+              <strong>Coming soon</strong>
             </div>
           </div>
         </section>
@@ -181,10 +189,10 @@ export default async function Home({ searchParams }: PageProps<"/">) {
           <div className="shell about-layout">
             <div className="about-illustration">
               <Image
-                src="/illustrations/about-hand-drawn.svg"
-                alt="A hand-drawn illustration of a person pointing toward the chapter information"
-                width={328}
-                height={370}
+                src="/illustrations/productive-collaboration.svg"
+                alt="A hand-drawn illustration of two people collaborating online"
+                width={608}
+                height={520}
               />
             </div>
             <div className="about-copy">
@@ -331,7 +339,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
 
         <section className="team-teaser shell" aria-labelledby="team-title">
           <div className="team-teaser-art">
-            <Image src="/illustrations/home-team-collaboration.svg" alt="An illustration of two people collaborating at a desk" width={618} height={544} />
+            <Image src="/illustrations/productive-planning.svg" alt="A hand-drawn illustration of a team planning work on a project board" width={608} height={520} />
           </div>
           <div className="team-teaser-copy">
             <p className="section-label">Organizers</p>
