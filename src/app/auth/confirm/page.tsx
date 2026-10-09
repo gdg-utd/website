@@ -31,9 +31,6 @@ export default async function ConfirmEmailPage({
       <SiteHeader />
       <section className="email-confirm-layout" aria-labelledby="email-confirm-title">
         <div className="email-confirm-card">
-          <span className="email-confirm-mark" aria-hidden="true">
-            {hasValidEmail ? "6" : "!"}
-          </span>
           <p className="section-label">Account verification</p>
           <h1 id="email-confirm-title">
             {hasValidEmail ? "Enter your confirmation code." : "Confirmation details unavailable."}

@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getPasswordStrength } from "@/lib/password";
 
 export type AuthActionState = {
   status: "idle" | "error" | "success";
@@ -11,6 +12,11 @@ export type AuthActionState = {
 function field(formData: FormData, name: string) {
   const value = formData.get(name);
   return typeof value === "string" ? value.trim() : "";
+}
+
+function passwordField(formData: FormData, name: string) {
+  const value = formData.get(name);
+  return typeof value === "string" ? value : "";
 }
 
 function safeNextPath(value: string) {
@@ -43,7 +49,7 @@ export async function login(
   formData: FormData,
 ): Promise<AuthActionState> {
   const email = field(formData, "email");
-  const password = field(formData, "password");
+  const password = passwordField(formData, "password");
   const next = safeNextPath(field(formData, "next"));
 
   if (!email || !password) {
@@ -67,8 +73,8 @@ export async function signup(
   const firstName = field(formData, "firstName");
   const lastName = field(formData, "lastName");
   const email = field(formData, "email").toLowerCase();
-  const password = field(formData, "password");
-  const confirmPassword = field(formData, "confirmPassword");
+  const password = passwordField(formData, "password");
+  const confirmPassword = passwordField(formData, "confirmPassword");
   const next = safeNextPath(field(formData, "next"));
 
   if (firstName.length < 1 || firstName.length > 50) {
@@ -83,8 +89,11 @@ export async function signup(
       message: "Use your UT Dallas email address, such as dal123456@utdallas.edu.",
     };
   }
-  if (password.length < 8) {
-    return { status: "error", message: "Use at least 8 characters for your password." };
+  if (!getPasswordStrength(password).isValid) {
+    return {
+      status: "error",
+      message: "Use 8 or more characters with uppercase, lowercase, a number, and a symbol.",
+    };
   }
   if (password !== confirmPassword) {
     return { status: "error", message: "The passwords do not match." };
@@ -111,6 +120,20 @@ export async function signup(
 
   if (error) {
     return { status: "error", message: authErrorMessage(error.message) };
+  }
+
+  if (data.user?.identities?.length === 0) {
+    return {
+      status: "error",
+      message: "An account already exists for this email. Log in instead.",
+    };
+  }
+
+  if (!data.user) {
+    return {
+      status: "error",
+      message: "We could not create your account. Please try again.",
+    };
   }
 
   if (data.session) {

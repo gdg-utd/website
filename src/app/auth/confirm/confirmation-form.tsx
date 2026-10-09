@@ -83,24 +83,35 @@ export function ConfirmationForm({ email, nextPath }: ConfirmationFormProps) {
         <input type="hidden" name="next" value={nextPath} />
         <label>
           <span>Six-digit code</span>
-          <input
-            className="email-confirm-code"
-            name="token"
-            type="text"
-            inputMode="numeric"
-            autoComplete="one-time-code"
-            pattern="[0-9]{6}"
-            minLength={6}
-            maxLength={6}
-            placeholder="000000"
-            aria-label="Six-digit email confirmation code"
-            value={code}
-            onChange={(event) => {
-              setCode(event.target.value.replace(/\D/g, "").slice(0, 6));
-            }}
-            required
-            autoFocus
-          />
+          <div className="email-confirm-code-field">
+            <input
+              className="email-confirm-code-input"
+              name="token"
+              type="text"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              pattern="[0-9]{6}"
+              minLength={6}
+              maxLength={6}
+              aria-label="Six-digit email confirmation code"
+              value={code}
+              onChange={(event) => {
+                setCode(event.target.value.replace(/\D/g, "").slice(0, 6));
+              }}
+              required
+              autoFocus
+            />
+            <div className="email-confirm-code-digits" aria-hidden="true">
+              {Array.from({ length: 6 }, (_, index) => (
+                <span
+                  className={`${code[index] ? "is-filled" : ""}${index === code.length ? " is-active" : ""}`.trim()}
+                  key={index}
+                >
+                  {code[index] || "0"}
+                </span>
+              ))}
+            </div>
+          </div>
         </label>
 
         {verifyState.message && (

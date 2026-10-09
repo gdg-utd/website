@@ -418,6 +418,28 @@ img { display: block; }
 .auth-message { margin: 0; padding: 12px 14px; border-left: 3px solid; font-size: 13px; line-height: 1.55; }
 .auth-message-error { border-color: var(--red); background: #fce8e6; color: #8c1d18; }
 .auth-message-success { border-color: var(--green); background: #e6f4ea; color: #0d652d; }
+.auth-password-strength { margin-top: 2px; padding: 15px 16px 16px; border: 1px solid #dce1e7; background: #f8f9fa; }
+.auth-password-strength-heading { display: flex; align-items: center; justify-content: space-between; gap: 20px; color: #676e75; font-size: 11px; }
+.auth-password-strength-heading > span { font-weight: 650; }
+.auth-password-strength-heading strong { color: #7b8188; font-weight: 700; }
+.auth-password-meter { margin-top: 10px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
+.auth-password-meter span { height: 4px; background: #d9dde2; transition: background .18s ease; }
+.auth-password-strength-1 .auth-password-meter .is-active { background: var(--red); }
+.auth-password-strength-2 .auth-password-meter .is-active { background: #f29900; }
+.auth-password-strength-3 .auth-password-meter .is-active { background: var(--blue); }
+.auth-password-strength-4 .auth-password-meter .is-active { background: var(--green); }
+.auth-password-strength-1 .auth-password-strength-heading strong { color: #b3261e; }
+.auth-password-strength-2 .auth-password-strength-heading strong { color: #8d5d00; }
+.auth-password-strength-3 .auth-password-strength-heading strong { color: var(--blue-dark); }
+.auth-password-strength-4 .auth-password-strength-heading strong { color: #137333; }
+.auth-password-strength ul { margin: 13px 0 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 7px 13px; list-style: none; }
+.auth-password-strength li { display: flex; align-items: center; gap: 7px; color: #858b91; font-size: 11px; line-height: 1.35; }
+.auth-password-strength li > span { width: 14px; color: #a2a7ad; font-weight: 750; text-align: center; }
+.auth-password-strength li.is-met { color: #315d3d; }
+.auth-password-strength li.is-met > span { color: var(--green); }
+.auth-password-match { min-height: 18px; color: #7a8087; font-size: 11px; line-height: 1.5; }
+.auth-password-match.is-match { color: #137333; }
+.auth-password-match.is-mismatch { color: #b3261e; }
 .auth-submit { width: 100%; min-height: 52px; margin-top: 4px; padding: 0 19px; display: flex; align-items: center; justify-content: space-between; border: 0; background: var(--blue-dark); color: #fff; font: inherit; font-size: 14px; font-weight: 670; cursor: pointer; box-shadow: 0 7px 18px rgba(11,87,208,.16); transition: background .2s ease, transform .2s ease; }
 .auth-submit:hover:not(:disabled) { background: #0842a0; transform: translateY(-1px); }
 .auth-submit:disabled { opacity: .68; cursor: wait; }
@@ -425,7 +447,6 @@ img { display: block; }
 .auth-switch a { color: var(--blue-dark); font-weight: 650; }
 .email-confirm-layout { width: min(680px, calc(100% - 48px)); min-height: calc(100svh - 78px); margin-inline: auto; padding-block: 72px; display: grid; place-items: center; }
 .email-confirm-card { width: 100%; padding: clamp(36px, 7vw, 68px); border: 1px solid #d9dfe8; background: #fff; box-shadow: 0 24px 70px rgba(60,64,67,.1); }
-.email-confirm-mark { width: 52px; height: 52px; margin-bottom: 34px; display: grid; place-items: center; border-radius: 50%; background: #e8f0fe; color: var(--blue-dark); font-size: 22px; font-weight: 750; }
 .email-confirm-card > h1 { max-width: 540px; margin: 0; font-size: clamp(2.7rem, 7vw, 4.5rem); line-height: .98; letter-spacing: -.055em; }
 .email-confirm-card > p:not(.section-label) { max-width: 530px; margin: 24px 0 0; color: #626970; font-size: 16px; line-height: 1.7; }
 .email-confirm-card strong { color: #3c4043; font-weight: 650; }
@@ -433,7 +454,12 @@ img { display: block; }
 .email-confirm-link { min-height: 52px; margin-top: 35px; padding: 0 19px; display: flex; align-items: center; justify-content: space-between; background: var(--blue-dark); color: #fff; font-size: 14px; font-weight: 670; }
 .email-confirm-actions { margin-top: 35px; }
 .email-confirm-actions .email-confirm-form { margin-top: 0; }
-.auth-form .email-confirm-code { height: 68px; padding-left: calc(14px + .24em); text-align: center; font-size: 28px; font-weight: 680; letter-spacing: .24em; font-variant-numeric: tabular-nums; }
+.email-confirm-code-field { position: relative; width: 100%; }
+.auth-form .email-confirm-code-input { position: absolute; z-index: 2; inset: 0; width: 100%; height: 68px; padding: 0; border: 0; opacity: 0; cursor: text; }
+.email-confirm-code-digits { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 9px; }
+.email-confirm-code-digits > span { height: 68px; display: grid; place-items: center; border: 1px solid #b9bec5; background: #fff; color: #b6bbc0; font: 680 26px/1 var(--font-geist-mono), monospace; font-variant-numeric: tabular-nums; transition: border-color .18s ease, box-shadow .18s ease, color .18s ease, background .18s ease; }
+.email-confirm-code-digits > span.is-filled { color: #202124; }
+.email-confirm-code-field:focus-within .email-confirm-code-digits > span.is-active { border-color: var(--blue-dark); background: #f8fbff; color: #8a929a; box-shadow: 0 0 0 3px rgba(26,115,232,.13); }
 .email-confirm-resend { margin-top: 22px !important; padding-top: 22px; display: flex; align-items: center; justify-content: space-between; gap: 18px; border-top: 1px solid var(--line); }
 .email-confirm-resend p { margin: 0; color: #747a81; font-size: 13px; }
 .email-confirm-resend button { padding: 0; border: 0; background: transparent; color: var(--blue-dark); font: inherit; font-size: 13px; font-weight: 680; cursor: pointer; }
