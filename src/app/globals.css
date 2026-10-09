@@ -442,7 +442,8 @@ img { display: block; }
 .auth-password-match.is-mismatch { color: #b3261e; }
 .auth-submit { width: 100%; min-height: 52px; margin-top: 4px; padding: 0 19px; display: flex; align-items: center; justify-content: space-between; border: 0; background: var(--blue-dark); color: #fff; font: inherit; font-size: 14px; font-weight: 670; cursor: pointer; box-shadow: 0 7px 18px rgba(11,87,208,.16); transition: background .2s ease, transform .2s ease; }
 .auth-submit:hover:not(:disabled) { background: #0842a0; transform: translateY(-1px); }
-.auth-submit:disabled { opacity: .68; cursor: wait; }
+.auth-submit:disabled { opacity: .68; cursor: not-allowed; }
+.auth-submit.auth-submit-pending:disabled { cursor: wait; }
 .auth-switch { margin: 5px 0 0; color: #747a81; font-size: 13px; line-height: 1.6; }
 .auth-switch a { color: var(--blue-dark); font-weight: 650; }
 .email-confirm-layout { width: min(680px, calc(100% - 48px)); min-height: calc(100svh - 78px); margin-inline: auto; padding-block: 72px; display: grid; place-items: center; }

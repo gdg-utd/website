@@ -178,7 +178,7 @@ export function AuthForm({ mode, nextPath = "/" }: AuthFormProps) {
       )}
 
       <button
-        className="auth-submit"
+        className={`auth-submit${pending ? " auth-submit-pending" : ""}`}
         type="submit"
         disabled={pending || (isSignup && (!passwordStrength.isValid || !confirmationMatches))}
       >
