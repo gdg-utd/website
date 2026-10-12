@@ -112,18 +112,22 @@ export default async function ApplicationPage({ params, searchParams }: Applicat
               <form className="application-form" action={saveApplication}>
                 <input type="hidden" name="openingSlug" value={opening.slug} />
                 {opening.form_schema.sections.map((section, sectionIndex) => (
-                  <fieldset className="application-form-group" key={section.id}>
-                    <legend>
+                  <section
+                    className="application-form-group"
+                    aria-labelledby={`application-section-${section.id}`}
+                    key={section.id}
+                  >
+                    <header className="application-form-group-heading">
                       <span>{String(sectionIndex + 1).padStart(2, "0")}</span>
-                      <strong>{section.title}</strong>
-                      {section.description && <small>{section.description}</small>}
-                    </legend>
+                      <h2 id={`application-section-${section.id}`}>{section.title}</h2>
+                      {section.description && <p>{section.description}</p>}
+                    </header>
                     <div className="application-form-fields">
                       {section.fields.map((field) => (
                         <ApplicationInput field={field} value={responses[field.id]} key={field.id} />
                       ))}
                     </div>
-                  </fieldset>
+                  </section>
                 ))}
 
                 <div className="application-form-submit-row">
