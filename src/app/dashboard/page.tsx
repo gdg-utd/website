@@ -1,113 +1,62 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { logout } from "@/app/auth/actions";
-import { applicantStatus, formatCentralDate } from "@/lib/applications";
+import { DISCORD_URL, INSTAGRAM_URL, LINKTREE_URL } from "@/lib/gdg";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Dashboard" };
-export const dynamic = "force-dynamic";
 
 type DashboardPageProps = {
-  searchParams: Promise<{ submitted?: string; admin?: string }>;
+  searchParams: Promise<{ admin?: string }>;
 };
 
 export default async function DashboardPage({ searchParams }: DashboardPageProps) {
   const query = await searchParams;
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
+  const userId = data?.claims?.sub;
 
-  if (!data?.claims?.sub) redirect("/login");
+  if (!userId) redirect("/login?next=/dashboard");
 
-  const userId = data.claims.sub;
-  const [{ data: applications }, { data: admin }] = await Promise.all([
-    supabase
-      .from("applications")
-      .select("id, opening_id, submission_state, submitted_at, published_decision, decision_published_at, updated_at, application_openings(slug, title, eyebrow, accent)")
-      .eq("applicant_id", userId)
-      .order("updated_at", { ascending: false }),
-    supabase
-      .from("application_admins")
-      .select("user_id")
-      .eq("user_id", userId)
-      .maybeSingle(),
-  ]);
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("first_name")
+    .eq("id", userId)
+    .maybeSingle();
+
+  const firstName = profile?.first_name || "there";
+  const configuredSupportEmail = process.env.BREVO_REPLY_TO || process.env.BREVO_SENDER_EMAIL || "";
+  const supportEmail = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(configuredSupportEmail) ? configuredSupportEmail : null;
 
   return (
-    <main className="dashboard-page">
-      <header className="auth-header">
-        <Link href="/" aria-label="Return to the GDG UTD homepage">
-          <Image src="/brand/gdg-lockup.svg" alt="Google Developer Groups" width={188} height={38} loading="eager" />
-        </Link>
-        <Link href="/">Back home</Link>
-      </header>
-      <section className="dashboard-shell">
-        <div className="dashboard-heading">
-          <div>
-            <p className="section-label">Member area</p>
-            <h1>Dashboard</h1>
-            <p>Track your GDG UTDallas applications here.</p>
-          </div>
-          <div className="dashboard-heading-actions">
-            {admin && <Link className="dashboard-admin-link" href="/admin/applications">Application portal</Link>}
-            <form action={logout}>
-              <button className="account-logout" type="submit">Log out</button>
-            </form>
-          </div>
+    <>
+      {query.admin === "denied" && (
+        <p className="dashboard-notice dashboard-notice-error" role="status">You do not have access to the application portal.</p>
+      )}
+
+      <section className="dashboard-welcome-card">
+        <p className="section-label">Applicant dashboard</p>
+        <h1>Welcome, {firstName}.</h1>
+        <p>Manage your GDG UTDallas profile and keep up with your applications in one place.</p>
+        <div className="dashboard-welcome-actions">
+          <Link className="dashboard-action-pill" href="/dashboard/applications">View your applications <span aria-hidden="true">→</span></Link>
+          <Link className="dashboard-action-pill dashboard-action-pill-secondary" href="/apply/sprint-mentee">Join cohort <span aria-hidden="true">→</span></Link>
         </div>
-
-        {query.submitted && (
-          <p className="dashboard-notice" role="status"><span aria-hidden="true">✓</span>Your application was submitted.</p>
-        )}
-        {query.admin === "denied" && (
-          <p className="dashboard-notice dashboard-notice-error" role="status">You do not have access to the application portal.</p>
-        )}
-
-        <div className="dashboard-section-heading">
-          <h2>Your applications</h2>
-          <Link href="/apply">View open positions <span aria-hidden="true">→</span></Link>
-        </div>
-
-        {applications && applications.length > 0 ? (
-          <div className="dashboard-applications">
-            {applications.map((application) => {
-              const opening = application.application_openings;
-              const status = applicantStatus(application.submission_state, application.published_decision);
-              return (
-                <article className={`dashboard-application dashboard-application-${opening?.accent ?? "blue"}`} key={application.id}>
-                  <div>
-                    <p>{opening?.eyebrow ?? "Application"}</p>
-                    <h3>{opening?.title ?? "SPRINT application"}</h3>
-                  </div>
-                  <div className="dashboard-application-meta">
-                    <span className={`application-status application-status-${status.toLowerCase().replace(" ", "-")}`}>{status}</span>
-                    <p>{application.submission_state === "draft" ? "Last saved" : application.decision_published_at ? "Decision posted" : "Submitted"}</p>
-                    <time>{formatCentralDate(application.decision_published_at ?? application.submitted_at ?? application.updated_at)} CT</time>
-                  </div>
-                  {application.submission_state === "draft" ? (
-                    <Link href={`/apply/${opening?.slug ?? ""}`}>Continue application <span aria-hidden="true">→</span></Link>
-                  ) : (
-                    <p className="dashboard-application-note">
-                      {status === "Submitted"
-                        ? "Your application is under review. Updates will appear here and are sent to your email!"
-                        : status === "Accepted"
-                          ? "You have been selected. The team will share next steps with you."
-                          : "Thank you for applying and for your interest in SPRINT."}
-                    </p>
-                  )}
-                </article>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="dashboard-empty-state">
-            <h3>No applications yet.</h3>
-            <p>Open applications will appear here after you save or submit one.</p>
-            <Link className="primary-link" href="/apply">View applications <span aria-hidden="true">→</span></Link>
-          </div>
-        )}
       </section>
-    </main>
+
+      <section className="dashboard-help-card">
+        <div>
+          <p className="section-label">Need help?</p>
+          <h2>Connect with GDG UTDallas.</h2>
+          <p>Ask a question, meet the community, or find the latest chapter updates.</p>
+        </div>
+        <nav aria-label="GDG UTDallas help links">
+          {supportEmail && <a href={`mailto:${supportEmail}`}>Email us <span aria-hidden="true">→</span></a>}
+          <a href={DISCORD_URL} target="_blank" rel="noreferrer">Discord <span aria-hidden="true">↗</span></a>
+          <a href={INSTAGRAM_URL} target="_blank" rel="noreferrer">Instagram <span aria-hidden="true">↗</span></a>
+          <a href={LINKTREE_URL} target="_blank" rel="noreferrer">All chapter links <span aria-hidden="true">↗</span></a>
+        </nav>
+      </section>
+    </>
   );
 }

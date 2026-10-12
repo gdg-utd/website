@@ -255,23 +255,32 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string
+          degree: string | null
           first_name: string
           id: string
           last_name: string
+          major: string | null
+          net_id: string | null
           updated_at: string
         }
         Insert: {
           created_at?: string
+          degree?: string | null
           first_name: string
           id: string
           last_name: string
+          major?: string | null
+          net_id?: string | null
           updated_at?: string
         }
         Update: {
           created_at?: string
+          degree?: string | null
           first_name?: string
           id?: string
           last_name?: string
+          major?: string | null
+          net_id?: string | null
           updated_at?: string
         }
         Relationships: []

@@ -100,12 +100,13 @@ export async function saveApplication(formData: FormData) {
   revalidatePath("/apply");
   revalidatePath(`/apply/${slug}`);
   revalidatePath("/dashboard");
+  revalidatePath("/dashboard/applications");
 
   if (intent === "submit") {
     if (savedApplicationId) {
       await deliverApplicationEmail(supabase, savedApplicationId, "confirmation");
     }
-    redirect(`/dashboard?submitted=${encodeURIComponent(slug)}`);
+    redirect(`/dashboard/applications?submitted=${encodeURIComponent(slug)}`);
   }
   redirect(applicationPath(slug, "saved"));
 }
