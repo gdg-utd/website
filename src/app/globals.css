@@ -550,7 +550,7 @@ img { display: block; }
 .application-save { background: #fff; color: var(--blue-dark); }
 .application-submit { display: inline-flex; align-items: center; gap: 22px; background: var(--blue-dark); color: #fff; }
 .application-form-actions button:disabled { opacity: .62; cursor: wait; }
-.confirmation-dialog { width: min(560px, calc(100% - 32px)); max-width: none; max-height: calc(100svh - 32px); padding: 0; overflow: auto; border: 0; background: transparent; color: var(--ink); }
+.confirmation-dialog { position: fixed; inset: 0; width: min(560px, calc(100% - 32px)); max-width: none; max-height: calc(100svh - 32px); margin: auto; padding: 0; overflow: auto; border: 0; background: transparent; color: var(--ink); }
 .confirmation-dialog::backdrop { background: rgba(24, 28, 33, .52); backdrop-filter: blur(3px); }
 .confirmation-dialog-panel { padding: 34px; border: 1px solid #cbd2da; background: #fff; box-shadow: 0 24px 80px rgba(24, 28, 33, .24); }
 .confirmation-dialog-panel h2 { margin: 0; font-size: 30px; line-height: 1.08; letter-spacing: -.04em; }

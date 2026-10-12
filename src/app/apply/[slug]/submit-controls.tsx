@@ -33,9 +33,7 @@ export function ApplicationSubmitControls() {
         onClose={() => setConfirmationOpen(false)}
         title="Submit your application?"
         description={(
-          <p>
-            Your responses will be sent to the GDG UTDallas team. You will not be able to edit them unless an administrator reopens the application.
-          </p>
+          <p>After you submit, you won&apos;t be able to edit your responses.</p>
         )}
         actions={(
           <>
