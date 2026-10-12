@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { UtdProgramFields } from "@/components/utd-program-fields";
 import { createClient } from "@/lib/supabase/server";
 import { updateProfile } from "./actions";
 
@@ -13,7 +14,7 @@ const messages: Record<string, { text: string; error?: boolean }> = {
   saved: { text: "Your profile was updated." },
   "invalid-name": { text: "Enter a valid first and last name.", error: true },
   "invalid-netid": { text: "Enter a valid NetID using letters and numbers only.", error: true },
-  "too-long": { text: "Degree and major must each be 120 characters or fewer.", error: true },
+  "invalid-program": { text: "Select a valid UT Dallas degree and major.", error: true },
   failed: { text: "We could not update your profile. Please try again.", error: true },
 };
 
@@ -77,14 +78,14 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
             <span>NetID</span>
             <input name="netId" defaultValue={profile?.net_id ?? ""} maxLength={30} autoCapitalize="none" autoCorrect="off" placeholder="abc123456" />
           </label>
-          <label>
-            <span>Degree</span>
-            <input name="degree" defaultValue={profile?.degree ?? ""} maxLength={120} placeholder="Bachelor of Science" />
-          </label>
-          <label className="dashboard-profile-full-field">
-            <span>Major</span>
-            <input name="major" defaultValue={profile?.major ?? ""} maxLength={120} placeholder="Computer Science" />
-          </label>
+          <UtdProgramFields
+            degreeName="degree"
+            majorName="major"
+            idPrefix="profile-program"
+            defaultDegree={profile?.degree}
+            defaultMajor={profile?.major}
+            majorClassName="dashboard-profile-full-field"
+          />
         </div>
         <div className="dashboard-profile-actions">
           <p>You can return and update these details at any time.</p>

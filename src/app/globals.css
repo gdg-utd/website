@@ -547,8 +547,9 @@ img { display: block; }
 .dashboard-profile-grid { padding: 34px 30px 39px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 26px 20px; }
 .dashboard-profile-grid label { min-width: 0; display: grid; gap: 9px; }
 .dashboard-profile-grid label > span { color: #30353a; font-size: 13px; font-weight: 670; }
-.dashboard-profile-grid input { width: 100%; height: 50px; padding: 0 14px; border: 1px solid #b8bec5; border-radius: 0; outline: none; background: #fff; color: var(--ink); font: inherit; font-size: 13px; }
-.dashboard-profile-grid input:focus { border-color: var(--blue-dark); box-shadow: 0 0 0 3px rgba(26,115,232,.12); }
+.dashboard-profile-grid input, .dashboard-profile-grid select { width: 100%; height: 50px; padding: 0 14px; border: 1px solid #b8bec5; border-radius: 0; outline: none; background: #fff; color: var(--ink); font: inherit; font-size: 13px; }
+.dashboard-profile-grid input:focus, .dashboard-profile-grid select:focus { border-color: var(--blue-dark); box-shadow: 0 0 0 3px rgba(26,115,232,.12); }
+.dashboard-profile-grid select:disabled { background: #f5f6f8; color: #858c93; cursor: not-allowed; }
 .dashboard-profile-grid input[readonly] { border-color: #d8dce1; background: #f5f6f8; color: #777e85; }
 .dashboard-profile-grid label > small { color: #858c93; font-size: 10px; }
 .dashboard-profile-full-field { grid-column: 1 / -1; }
@@ -581,9 +582,10 @@ img { display: block; }
 .application-text-field > span, .application-choice-field > legend { color: #30353a; font-size: 14px; font-weight: 670; }
 .application-text-field i, .application-choice-field i { color: #b3261e; font-style: normal; }
 .application-text-field small, .application-choice-field > p { margin: 0; color: #747b82; font-size: 12px; line-height: 1.5; }
-.application-text-field input, .application-text-field textarea { width: 100%; padding: 14px 15px; border: 1px solid #b8bec5; border-radius: 0; outline: none; background: #fff; color: var(--ink); font: inherit; font-size: 14px; line-height: 1.6; resize: vertical; }
-.application-text-field input { height: 51px; }
-.application-text-field input:focus, .application-text-field textarea:focus { border-color: var(--blue-dark); box-shadow: 0 0 0 3px rgba(26,115,232,.12); }
+.application-text-field input, .application-text-field textarea, .application-text-field select { width: 100%; padding: 14px 15px; border: 1px solid #b8bec5; border-radius: 0; outline: none; background: #fff; color: var(--ink); font: inherit; font-size: 14px; line-height: 1.6; resize: vertical; }
+.application-text-field input, .application-text-field select { height: 51px; }
+.application-text-field input:focus, .application-text-field textarea:focus, .application-text-field select:focus { border-color: var(--blue-dark); box-shadow: 0 0 0 3px rgba(26,115,232,.12); }
+.application-text-field select:disabled { background: #f5f6f8; color: #858c93; cursor: not-allowed; }
 .application-choice-field { min-width: 0; margin: 0; padding: 0; border: 0; }
 .application-options { margin-top: 13px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
 .application-options label { min-height: 48px; padding: 10px 13px; display: flex; align-items: center; gap: 10px; border: 1px solid #d0d5db; cursor: pointer; }

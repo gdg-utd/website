@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { UtdProgramFields } from "@/components/utd-program-fields";
 import {
   formatCentralDate,
   isOpeningAccepting,
@@ -123,9 +124,30 @@ export default async function ApplicationPage({ params, searchParams }: Applicat
                       {section.description && <p>{section.description}</p>}
                     </header>
                     <div className="application-form-fields">
-                      {section.fields.map((field) => (
-                        <ApplicationInput field={field} value={responses[field.id]} key={field.id} />
-                      ))}
+                      {section.fields.map((field) => {
+                        const degreeField = section.fields.find((item) => item.id === "degree");
+                        const majorField = section.fields.find((item) => item.id === "major");
+
+                        if (degreeField && majorField && field.id === "major") return null;
+                        if (degreeField && majorField && field.id === "degree") {
+                          return (
+                            <UtdProgramFields
+                              degreeName="field:degree"
+                              majorName="field:major"
+                              idPrefix={`application-${section.id}-program`}
+                              defaultDegree={typeof responses.degree === "string" ? responses.degree : ""}
+                              defaultMajor={typeof responses.major === "string" ? responses.major : ""}
+                              degreeRequired={degreeField.required}
+                              majorRequired={majorField.required}
+                              degreeClassName="application-text-field"
+                              majorClassName="application-text-field"
+                              key="utd-program"
+                            />
+                          );
+                        }
+
+                        return <ApplicationInput field={field} value={responses[field.id]} key={field.id} />;
+                      })}
                     </div>
                   </section>
                 ))}

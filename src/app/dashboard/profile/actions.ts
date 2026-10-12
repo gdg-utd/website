@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { isValidUtdProgram } from "@/lib/utd-academic-programs";
 
 function textField(formData: FormData, name: string) {
   const value = formData.get(name);
@@ -34,8 +35,8 @@ export async function updateProfile(formData: FormData) {
     redirect(profilePath("invalid-netid"));
   }
 
-  if (degree.length > 120 || major.length > 120) {
-    redirect(profilePath("too-long"));
+  if ((degree || major) && !isValidUtdProgram(degree, major)) {
+    redirect(profilePath("invalid-program"));
   }
 
   const { error } = await supabase

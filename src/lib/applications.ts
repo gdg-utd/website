@@ -1,4 +1,5 @@
 import type { Json, Tables } from "@/lib/supabase/database.types";
+import { isValidUtdProgram } from "@/lib/utd-academic-programs";
 
 export type ApplicationFieldType =
   | "short_text"
@@ -144,6 +145,22 @@ export function validateResponses(
       ) {
         errors.push(field.label);
       }
+    }
+  }
+
+  const programFields = schema.sections
+    .flatMap((section) => section.fields)
+    .filter((field) => field.id === "degree" || field.id === "major");
+
+  if (programFields.length === 2) {
+    const degree = responses.degree;
+    const major = responses.major;
+    if (
+      typeof degree !== "string"
+      || typeof major !== "string"
+      || !isValidUtdProgram(degree, major)
+    ) {
+      errors.push("Degree and major");
     }
   }
 
