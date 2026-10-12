@@ -282,7 +282,7 @@ export type Database = {
     }
     Functions: {
       publish_staged_application_decisions: {
-        Args: Record<PropertyKey, never>
+        Args: { target_opening_id: number }
         Returns: {
           application_id: number
           decision: string

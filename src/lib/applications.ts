@@ -175,6 +175,10 @@ export function applicantStatus(
   return "Submitted";
 }
 
+export function publishConfirmationPhrase(openingTitle: string) {
+  return `PUBLISH ${openingTitle.toLocaleUpperCase("en-US")}`;
+}
+
 export function formatCentralDate(value: string | null) {
   if (!value) return "—";
   return new Intl.DateTimeFormat("en-US", {

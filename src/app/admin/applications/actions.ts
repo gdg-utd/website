@@ -7,6 +7,7 @@ import {
   requireApplicationStaff,
 } from "@/lib/application-admin";
 import { deliverApplicationEmail } from "@/lib/application-email";
+import { publishConfirmationPhrase } from "@/lib/applications";
 
 function value(formData: FormData, name: string) {
   const field = formData.get(name);
@@ -18,12 +19,19 @@ function applicationId(formData: FormData) {
   return Number.isSafeInteger(id) && id > 0 ? id : null;
 }
 
-function portalPath(options: { message?: string; applicationId?: number; count?: number; emailPending?: number } = {}) {
+function portalPath(options: {
+  message?: string;
+  applicationId?: number;
+  count?: number;
+  emailPending?: number;
+  position?: string;
+} = {}) {
   const params = new URLSearchParams();
   if (options.message) params.set("message", options.message);
   if (options.applicationId) params.set("application", String(options.applicationId));
   if (options.count !== undefined) params.set("count", String(options.count));
   if (options.emailPending) params.set("emailPending", String(options.emailPending));
+  if (options.position) params.set("position", options.position);
   const query = params.toString();
   return `/admin/applications${query ? `?${query}` : ""}`;
 }
@@ -31,9 +39,10 @@ function portalPath(options: { message?: string; applicationId?: number; count?:
 export async function stageApplicationDecision(formData: FormData) {
   const id = applicationId(formData);
   const decision = value(formData, "decision");
+  const position = value(formData, "returnPosition") || undefined;
   if (!id || !["accepted", "rejected"].includes(decision)) redirect("/admin/applications");
 
-  const { supabase, userId } = await requireApplicationStaff(portalPath({ applicationId: id }));
+  const { supabase, userId } = await requireApplicationStaff(portalPath({ applicationId: id, position }));
   const { error } = await supabase.from("application_events").insert({
     application_id: id,
     actor_id: userId,
@@ -43,18 +52,19 @@ export async function stageApplicationDecision(formData: FormData) {
 
   if (error) {
     console.error("Unable to stage decision", error.code, error.message);
-    redirect(portalPath({ message: "stage-failed", applicationId: id }));
+    redirect(portalPath({ message: "stage-failed", applicationId: id, position }));
   }
 
   revalidatePath("/admin/applications");
-  redirect(portalPath({ message: "staged" }));
+  redirect(portalPath({ message: "staged", position }));
 }
 
 export async function publishApplicationDecision(formData: FormData) {
   const id = applicationId(formData);
+  const position = value(formData, "returnPosition") || undefined;
   if (!id) redirect("/admin/applications");
 
-  const { supabase } = await requireApplicationAdmin(portalPath({ applicationId: id }));
+  const { supabase } = await requireApplicationAdmin(portalPath({ applicationId: id, position }));
   const { data: application } = await supabase
     .from("applications")
     .select("submitted_at")
@@ -80,7 +90,7 @@ export async function publishApplicationDecision(formData: FormData) {
     : null;
 
   if (decision !== "accepted" && decision !== "rejected") {
-    redirect(portalPath({ message: "stage-required", applicationId: id }));
+    redirect(portalPath({ message: "stage-required", applicationId: id, position }));
   }
 
   const { data: publishedApplication, error } = await supabase
@@ -94,7 +104,7 @@ export async function publishApplicationDecision(formData: FormData) {
 
   if (error) {
     console.error("Unable to publish decision", error.code, error.message);
-    redirect(portalPath({ message: "publish-failed", applicationId: id }));
+    redirect(portalPath({ message: "publish-failed", applicationId: id, position }));
   }
 
   if (publishedApplication) {
@@ -107,18 +117,41 @@ export async function publishApplicationDecision(formData: FormData) {
 
   revalidatePath("/admin/applications");
   revalidatePath("/dashboard");
-  redirect(portalPath({ message: "published", count: publishedApplication ? 1 : 0 }));
+  redirect(portalPath({ message: "published", count: publishedApplication ? 1 : 0, position }));
 }
 
-export async function publishStagedDecisions() {
-  const { supabase } = await requireApplicationAdmin();
-  const { data: published, error } = await supabase.rpc("publish_staged_application_decisions");
-  if (error) {
-    console.error("Unable to publish staged decisions", error.code, error.message);
-    redirect(portalPath({ message: "publish-all-failed" }));
+export async function publishStagedDecisions(formData: FormData) {
+  const openingSlug = value(formData, "openingSlug");
+  const confirmation = value(formData, "confirmation");
+  const returnPath = portalPath({ position: openingSlug || undefined });
+  const { supabase } = await requireApplicationAdmin(returnPath);
+  const { data: opening } = await supabase
+    .from("application_openings")
+    .select("id, slug, title")
+    .eq("slug", openingSlug)
+    .neq("status", "draft")
+    .maybeSingle();
+
+  if (!opening) {
+    redirect(portalPath({ message: "opening-required" }));
   }
 
-  if (!published || published.length === 0) redirect(portalPath({ message: "no-staged" }));
+  if (confirmation !== publishConfirmationPhrase(opening.title)) {
+    redirect(portalPath({ message: "confirmation-required", position: opening.slug }));
+  }
+
+  const { data: published, error } = await supabase.rpc(
+    "publish_staged_application_decisions",
+    { target_opening_id: opening.id },
+  );
+  if (error) {
+    console.error("Unable to publish staged decisions", error.code, error.message);
+    redirect(portalPath({ message: "publish-all-failed", position: opening.slug }));
+  }
+
+  if (!published || published.length === 0) {
+    redirect(portalPath({ message: "no-staged", position: opening.slug }));
+  }
 
   const deliveryResults = await Promise.all(
     published.map((application) => deliverApplicationEmail(
@@ -135,14 +168,16 @@ export async function publishStagedDecisions() {
     message: "published-all",
     count: published.length,
     emailPending,
+    position: opening.slug,
   }));
 }
 
 export async function reopenApplication(formData: FormData) {
   const id = applicationId(formData);
+  const position = value(formData, "returnPosition") || undefined;
   if (!id) redirect("/admin/applications");
 
-  const { supabase } = await requireApplicationAdmin(portalPath({ applicationId: id }));
+  const { supabase } = await requireApplicationAdmin(portalPath({ applicationId: id, position }));
   const { error } = await supabase
     .from("applications")
     .update({ submission_state: "draft" })
@@ -151,10 +186,10 @@ export async function reopenApplication(formData: FormData) {
 
   if (error) {
     console.error("Unable to reopen application", error.code, error.message);
-    redirect(portalPath({ message: "reopen-failed", applicationId: id }));
+    redirect(portalPath({ message: "reopen-failed", applicationId: id, position }));
   }
 
   revalidatePath("/admin/applications");
   revalidatePath("/dashboard");
-  redirect("/admin/applications?message=reopened");
+  redirect(portalPath({ message: "reopened", position }));
 }

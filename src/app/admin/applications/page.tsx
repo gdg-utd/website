@@ -2,17 +2,20 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import {
-  publishApplicationDecision,
-  publishStagedDecisions,
   reopenApplication,
   stageApplicationDecision,
 } from "./actions";
 import { ApplicationTable, type StaffApplicationRow } from "./application-table";
+import {
+  PublishApplicationDecisionButton,
+  PublishOpeningDecisionsButton,
+} from "./publish-confirmations";
 import { requireApplicationStaff } from "@/lib/application-admin";
 import {
   answerLabel,
   formatCentralDate,
   parseApplicationOpening,
+  publishConfirmationPhrase,
   type ApplicationResponses,
 } from "@/lib/applications";
 
@@ -53,8 +56,10 @@ function noticeText(message: string | undefined, countValue: string | undefined,
     return `${published} staged decision${published === 1 ? " was" : "s were"} published.${pendingCopy}`;
   }
   if (message === "reopened") return "The application was reopened and returned to the applicant.";
-  if (message === "no-staged") return "There are no unpublished staged decisions.";
+  if (message === "no-staged") return "There are no unpublished staged decisions for this opening.";
   if (message === "admin-required") return "Reviewer access allows staging only. An administrator must publish or reopen applications.";
+  if (message === "opening-required") return "Select one application opening before publishing staged decisions.";
+  if (message === "confirmation-required") return "The confirmation text did not match. No decisions were published.";
   if (message === "stage-required") return "Stage a decision before publishing it.";
   if (message === "stage-failed") return "The decision could not be staged.";
   if (message === "publish-failed" || message === "publish-all-failed") return "The decision could not be published.";
@@ -67,6 +72,8 @@ function isErrorNotice(message: string | undefined) {
     || message === "publish-failed"
     || message === "publish-all-failed"
     || message === "reopen-failed"
+    || message === "opening-required"
+    || message === "confirmation-required"
     || message === "admin-required";
 }
 
@@ -123,9 +130,14 @@ export default async function AdminApplicationsPage({ searchParams }: AdminAppli
   const accepted = applications?.filter((application) => application.published_decision === "accepted").length ?? 0;
   const notSelected = applications?.filter((application) => application.published_decision === "rejected").length ?? 0;
   const awaiting = total - accepted - notSelected;
-  const stagedCount = (applications ?? []).filter((application) => (
-    application.published_decision === "undecided" && stagedByApplication.has(application.id)
-  )).length;
+  const selectedOpeningFilter = openings?.find((opening) => opening.slug === filters.position);
+  const stagedCountForOpening = selectedOpeningFilter
+    ? (applications ?? []).filter((application) => (
+      application.opening_id === selectedOpeningFilter.id
+      && application.published_decision === "undecided"
+      && stagedByApplication.has(application.id)
+    )).length
+    : 0;
 
   const queryString = listHref(filters).split("?")[1] ?? "";
   const rows: StaffApplicationRow[] = filtered.map((application) => {
@@ -201,13 +213,6 @@ export default async function AdminApplicationsPage({ searchParams }: AdminAppli
           </div>
           <div className="admin-title-actions">
             {role === "admin" && (
-              <form action={publishStagedDecisions}>
-                <button className="admin-publish-all" disabled={stagedCount === 0}>
-                  Publish staged decisions <span>{stagedCount}</span>
-                </button>
-              </form>
-            )}
-            {role === "admin" && (
               <Link className="admin-export" href="/admin/applications/export" prefetch={false}>
                 Export CSV <span aria-hidden="true">↓</span>
               </Link>
@@ -257,7 +262,17 @@ export default async function AdminApplicationsPage({ searchParams }: AdminAppli
         <section className="admin-table-card">
           <div className="admin-table-heading">
             <h2>Submitted applications</h2>
-            <span>{filtered.length} shown</span>
+            <div className="admin-table-heading-actions">
+              <span>{filtered.length} shown</span>
+              {role === "admin" && selectedOpeningFilter && (
+                <PublishOpeningDecisionsButton
+                  openingSlug={selectedOpeningFilter.slug}
+                  openingTitle={selectedOpeningFilter.title}
+                  confirmationPhrase={publishConfirmationPhrase(selectedOpeningFilter.title)}
+                  stagedCount={stagedCountForOpening}
+                />
+              )}
+            </div>
           </div>
           {rows.length > 0
             ? <ApplicationTable applications={rows} queryString={queryString} />
@@ -304,11 +319,13 @@ export default async function AdminApplicationsPage({ searchParams }: AdminAppli
                   <form action={stageApplicationDecision}>
                     <input type="hidden" name="applicationId" value={selectedApplication.id} />
                     <input type="hidden" name="decision" value="accepted" />
+                    <input type="hidden" name="returnPosition" value={filters.position ?? ""} />
                     <button className={selectedStagedDecision === "accepted" ? "is-active" : ""}>Stage acceptance</button>
                   </form>
                   <form action={stageApplicationDecision}>
                     <input type="hidden" name="applicationId" value={selectedApplication.id} />
                     <input type="hidden" name="decision" value="rejected" />
+                    <input type="hidden" name="returnPosition" value={filters.position ?? ""} />
                     <button className={selectedStagedDecision === "rejected" ? "is-active" : ""}>Stage not selected</button>
                   </form>
                 </div>
@@ -317,16 +334,20 @@ export default async function AdminApplicationsPage({ searchParams }: AdminAppli
               {role === "admin" && (
                 <div className="admin-secondary-actions">
                   {selectedApplication.published_decision === "undecided" && (
-                    <form action={publishApplicationDecision}>
-                      <input type="hidden" name="applicationId" value={selectedApplication.id} />
-                      <button disabled={!selectedStagedDecision}>Publish this decision</button>
-                    </form>
+                    <PublishApplicationDecisionButton
+                      applicationId={selectedApplication.id}
+                      applicantName={`${selectedApplication.applicant_first_name} ${selectedApplication.applicant_last_name}`}
+                      decision={selectedStagedDecision}
+                      disabled={!selectedStagedDecision}
+                      returnPosition={filters.position}
+                    />
                   )}
                   <details className="admin-reopen">
                     <summary>Application corrections</summary>
                     <p>Reopening returns this application to draft and clears any published decision.</p>
                     <form action={reopenApplication}>
                       <input type="hidden" name="applicationId" value={selectedApplication.id} />
+                      <input type="hidden" name="returnPosition" value={filters.position ?? ""} />
                       <button>Reopen application</button>
                     </form>
                   </details>
