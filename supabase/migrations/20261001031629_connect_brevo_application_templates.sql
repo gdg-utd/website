@@ -17,4 +17,3 @@ set email_templates = jsonb_set(
 ),
 updated_at = now()
 where slug in ('sprint-officer', 'sprint-mentee');
-

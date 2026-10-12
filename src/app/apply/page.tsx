@@ -8,7 +8,7 @@ import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "Apply",
-  description: "View open SPRINT positions at GDG UTDallas.",
+  description: "View open positions and programs at GDG UTDallas.",
 };
 
 export const dynamic = "force-dynamic";
@@ -37,9 +37,9 @@ export default async function ApplyPage() {
         <section className="apply-hero shell">
           <div className="apply-hero-copy">
             <p className="section-label">Applications</p>
-            <h1>Find your place in SPRINT.</h1>
+            <h1>Find your place at GDG UTDallas.</h1>
             <p>Review the roles currently accepting applications and choose the one that fits how you want to participate.</p>
-            <Link className="secondary-link" href="/sprints">About the SPRINT program <span aria-hidden="true">→</span></Link>
+            <Link className="secondary-link" href="/about">About GDG UTDallas <span aria-hidden="true">→</span></Link>
           </div>
           <div className="apply-hero-art">
             <span aria-hidden="true" />
@@ -112,7 +112,7 @@ export default async function ApplyPage() {
             {openings.length === 0 && (
               <div className="application-empty-state">
                 <h3>No applications are open right now.</h3>
-                <p>Check back for the next SPRINT application window.</p>
+                <p>Check back for the next application window.</p>
               </div>
             )}
           </div>

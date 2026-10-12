@@ -149,7 +149,7 @@ function ApplicationInput({ field, value }: { field: ApplicationField; value: Ap
     return (
       <label className="application-checkbox" htmlFor={id}>
         <input id={id} name={`field:${field.id}`} type="checkbox" value="true" defaultChecked={value === true} required={field.required} />
-        <span>{field.label}{field.required && <i aria-hidden="true"> *</i>}</span>
+        <span><ApplicationFieldLabel label={field.label} />{field.required && <i aria-hidden="true"> *</i>}</span>
       </label>
     );
   }
@@ -206,5 +206,17 @@ function ApplicationInput({ field, value }: { field: ApplicationField; value: Ap
         />
       )}
     </label>
+  );
+}
+
+function ApplicationFieldLabel({ label }: { label: string }) {
+  const agreementPrefix = "Agreement:";
+  if (!label.startsWith(agreementPrefix)) return label;
+
+  return (
+    <>
+      <strong>{agreementPrefix}</strong>
+      {label.slice(agreementPrefix.length)}
+    </>
   );
 }
