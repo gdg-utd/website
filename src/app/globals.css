@@ -543,7 +543,9 @@ img { display: block; }
 .dashboard-empty-state { margin-top: 30px; padding: 65px 40px; border: 1px solid #d8dde4; background: #fff; text-align: center; }
 .dashboard-empty-state h2 { margin: 0; font-size: 27px; }
 .dashboard-empty-state p { margin: 12px 0 25px; color: #697077; }
-.dashboard-profile-form { margin-top: 30px; border: 1px solid #d5dae1; background: #fff; }
+.dashboard-profile-form { margin-top: 30px; }
+.dashboard-profile-card { border: 1px solid #d5dae1; background: #fff; }
+.dashboard-profile-card + .dashboard-profile-card { margin-top: 28px; }
 .dashboard-profile-section-heading { min-height: 112px; padding: 26px 30px; display: flex; align-items: center; justify-content: space-between; gap: 35px; border-bottom: 1px solid #dfe3e8; }
 .dashboard-profile-section-heading h2 { margin: 0; font-size: 23px; letter-spacing: -.035em; }
 .dashboard-profile-section-heading p { margin: 8px 0 0; color: #727980; font-size: 12px; }

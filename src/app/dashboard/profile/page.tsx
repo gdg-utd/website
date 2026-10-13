@@ -15,6 +15,8 @@ const messages: Record<string, { text: string; error?: boolean }> = {
   "invalid-name": { text: "Enter a valid first and last name.", error: true },
   "invalid-netid": { text: "Enter a valid NetID using letters and numbers only.", error: true },
   "invalid-program": { text: "Select a valid UT Dallas degree and major.", error: true },
+  "invalid-email": { text: "Enter a valid personal email address.", error: true },
+  "invalid-url": { text: "Enter complete links beginning with http:// or https://.", error: true },
   failed: { text: "We could not update your profile. Please try again.", error: true },
 };
 
@@ -29,7 +31,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("first_name, last_name, net_id, degree, major")
+    .select("first_name, last_name, net_id, degree, major, personal_email, linkedin_url, github_url, portfolio_url")
     .eq("id", userId)
     .maybeSingle();
 
@@ -53,44 +55,106 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
       )}
 
       <form className="dashboard-profile-form" action={updateProfile}>
-        <div className="dashboard-profile-section-heading">
-          <div>
-            <h2>Personal information</h2>
-            <p>Your email is connected to your account and cannot be edited here.</p>
+        <section className="dashboard-profile-card" aria-labelledby="personal-information-heading">
+          <div className="dashboard-profile-section-heading">
+            <div>
+              <h2 id="personal-information-heading">Personal information</h2>
+              <p>Your UT Dallas email is connected to your account and cannot be edited here.</p>
+            </div>
           </div>
-          <span><i aria-hidden="true">*</i> Required</span>
-        </div>
-        <div className="dashboard-profile-grid">
-          <label>
-            <span>First name <i aria-hidden="true">*</i></span>
-            <input name="firstName" defaultValue={profile?.first_name ?? ""} maxLength={50} autoComplete="given-name" required />
-          </label>
-          <label>
-            <span>Last name <i aria-hidden="true">*</i></span>
-            <input name="lastName" defaultValue={profile?.last_name ?? ""} maxLength={50} autoComplete="family-name" required />
-          </label>
-          <label className="dashboard-profile-full-field">
-            <span>Email</span>
-            <input value={email} type="email" autoComplete="email" readOnly aria-readonly="true" />
-            <small>Managed through your sign-in account.</small>
-          </label>
-          <label>
-            <span>NetID</span>
-            <input name="netId" defaultValue={profile?.net_id ?? ""} maxLength={30} autoCapitalize="none" autoCorrect="off" placeholder="abc123456" />
-          </label>
-          <UtdProgramFields
-            degreeName="degree"
-            majorName="major"
-            idPrefix="profile-program"
-            defaultDegree={profile?.degree}
-            defaultMajor={profile?.major}
-            majorClassName="dashboard-profile-full-field"
-          />
-        </div>
-        <div className="dashboard-profile-actions">
-          <p>You can return and update these details at any time.</p>
-          <button type="submit">Save changes <span aria-hidden="true">→</span></button>
-        </div>
+          <div className="dashboard-profile-grid">
+            <label>
+              <span>First name <i aria-hidden="true">*</i></span>
+              <input name="firstName" defaultValue={profile?.first_name ?? ""} maxLength={50} autoComplete="given-name" required />
+            </label>
+            <label>
+              <span>Last name <i aria-hidden="true">*</i></span>
+              <input name="lastName" defaultValue={profile?.last_name ?? ""} maxLength={50} autoComplete="family-name" required />
+            </label>
+            <label className="dashboard-profile-full-field">
+              <span>UT Dallas email</span>
+              <input value={email} type="email" autoComplete="email" readOnly aria-readonly="true" />
+              <small>Managed through your sign-in account.</small>
+            </label>
+            <label className="dashboard-profile-full-field">
+              <span>Personal email</span>
+              <input
+                name="personalEmail"
+                defaultValue={profile?.personal_email ?? ""}
+                type="email"
+                maxLength={320}
+                autoComplete="email"
+                placeholder="you@example.com"
+              />
+            </label>
+            <label>
+              <span>NetID</span>
+              <input name="netId" defaultValue={profile?.net_id ?? ""} maxLength={30} autoCapitalize="none" autoCorrect="off" placeholder="abc123456" />
+            </label>
+            <UtdProgramFields
+              degreeName="degree"
+              majorName="major"
+              idPrefix="profile-program"
+              defaultDegree={profile?.degree}
+              defaultMajor={profile?.major}
+              majorClassName="dashboard-profile-full-field"
+            />
+          </div>
+        </section>
+
+        <section className="dashboard-profile-card" aria-labelledby="profile-links-heading">
+          <div className="dashboard-profile-section-heading">
+            <div>
+              <h2 id="profile-links-heading">Links</h2>
+              <p>Add links that help us learn more about your work and experience.</p>
+            </div>
+          </div>
+          <div className="dashboard-profile-grid">
+            <label>
+              <span>LinkedIn</span>
+              <input
+                name="linkedinUrl"
+                defaultValue={profile?.linkedin_url ?? ""}
+                type="url"
+                maxLength={2048}
+                inputMode="url"
+                autoCapitalize="none"
+                autoCorrect="off"
+                placeholder="https://www.linkedin.com/in/your-name"
+              />
+            </label>
+            <label>
+              <span>GitHub</span>
+              <input
+                name="githubUrl"
+                defaultValue={profile?.github_url ?? ""}
+                type="url"
+                maxLength={2048}
+                inputMode="url"
+                autoCapitalize="none"
+                autoCorrect="off"
+                placeholder="https://github.com/your-username"
+              />
+            </label>
+            <label className="dashboard-profile-full-field">
+              <span>Portfolio</span>
+              <input
+                name="portfolioUrl"
+                defaultValue={profile?.portfolio_url ?? ""}
+                type="url"
+                maxLength={2048}
+                inputMode="url"
+                autoCapitalize="none"
+                autoCorrect="off"
+                placeholder="https://your-portfolio.com"
+              />
+            </label>
+          </div>
+          <div className="dashboard-profile-actions">
+            <p>You can return and update these details at any time.</p>
+            <button type="submit">Save changes <span aria-hidden="true">→</span></button>
+          </div>
+        </section>
       </form>
     </>
   );

@@ -14,6 +14,21 @@ function profilePath(message: string) {
   return `/dashboard/profile?message=${encodeURIComponent(message)}`;
 }
 
+function isValidEmail(value: string) {
+  return value.length <= 320 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+function isValidHttpUrl(value: string) {
+  if (value.length > 2048) return false;
+
+  try {
+    const url = new URL(value);
+    return (url.protocol === "http:" || url.protocol === "https:") && Boolean(url.hostname);
+  } catch {
+    return false;
+  }
+}
+
 export async function updateProfile(formData: FormData) {
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
@@ -26,6 +41,10 @@ export async function updateProfile(formData: FormData) {
   const netId = textField(formData, "netId");
   const degree = textField(formData, "degree");
   const major = textField(formData, "major");
+  const personalEmail = textField(formData, "personalEmail");
+  const linkedinUrl = textField(formData, "linkedinUrl");
+  const githubUrl = textField(formData, "githubUrl");
+  const portfolioUrl = textField(formData, "portfolioUrl");
 
   if (!firstName || !lastName || firstName.length > 50 || lastName.length > 50) {
     redirect(profilePath("invalid-name"));
@@ -39,6 +58,14 @@ export async function updateProfile(formData: FormData) {
     redirect(profilePath("invalid-program"));
   }
 
+  if (personalEmail && !isValidEmail(personalEmail)) {
+    redirect(profilePath("invalid-email"));
+  }
+
+  if ([linkedinUrl, githubUrl, portfolioUrl].some((value) => value && !isValidHttpUrl(value))) {
+    redirect(profilePath("invalid-url"));
+  }
+
   const { error } = await supabase
     .from("profiles")
     .update({
@@ -47,6 +74,10 @@ export async function updateProfile(formData: FormData) {
       net_id: netId || null,
       degree: degree || null,
       major: major || null,
+      personal_email: personalEmail ? personalEmail.toLowerCase() : null,
+      linkedin_url: linkedinUrl || null,
+      github_url: githubUrl || null,
+      portfolio_url: portfolioUrl || null,
       updated_at: new Date().toISOString(),
     })
     .eq("id", userId)
