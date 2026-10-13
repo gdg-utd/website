@@ -388,6 +388,11 @@ img { display: block; }
 .team-footer-inner nav a:hover { color: var(--blue-dark); }
 .team-footer-legal { min-height: 67px; padding-block: 16px; display: flex; align-items: center; justify-content: space-between; gap: 30px; border-top: 1px solid #eceeef; }
 .team-footer-legal p { margin: 0; color: #8a9096; font-size: 10px; line-height: 1.5; }
+.not-found-shell { min-height: 100svh; }
+.not-found-page { min-height: calc(100svh - 78px); padding: 48px 24px; display: flex; align-items: center; justify-content: center; flex-direction: column; text-align: center; }
+.not-found-page img { width: min(520px, 100%); height: auto; }
+.not-found-page h1 { margin: 28px 0 24px; font-size: clamp(2rem, 4vw, 3rem); line-height: 1.1; letter-spacing: -.045em; }
+.not-found-home { width: fit-content; }
 .auth-placeholder { max-width: 720px; margin-left: max(24px, calc((100vw - 1180px) / 2)); }
 .auth-placeholder > a { margin-top: 30px; color: var(--blue-dark); font-size: 14px; font-weight: 650; }
 
@@ -1117,6 +1122,8 @@ img { display: block; }
   .team-footer-inner { padding-block: 45px; align-items: flex-start; flex-direction: column; gap: 30px; }
   .team-footer-inner nav { align-items: flex-start; flex-direction: column; gap: 12px; }
   .team-footer-legal { padding-block: 20px; align-items: flex-start; flex-direction: column; gap: 8px; }
+  .not-found-home { width: fit-content; }
+  .not-found-page { min-height: calc(100svh - 70px); }
 }
 
 @media (prefers-reduced-motion: reduce) {

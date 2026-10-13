@@ -8,6 +8,8 @@ All website illustrations come from SketchValley. The SVG files are stored local
   - Source: https://sketchvalley.com/illustration/bright-idea-illustration-creative-learning/
 - `apply-workflow.svg` — Workflow Design Illustration
   - Source: https://www.sketchvalley.com/illustration/workflow-design-illustration/
+- `not-found-lost-gps.svg` — Lost GPS 404 Error – Missing Page Navigation
+  - Source: https://sketchvalley.com/illustration/lost-gps-404-error-missing-page-navigation/
 
 The remaining illustrations come from SketchValley's **Free Drawing Productive Illustrations** collection:
 
