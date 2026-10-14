@@ -9,6 +9,8 @@ export type AuthActionState = {
   message: string;
 };
 
+export type ForgotPasswordActionState = AuthActionState;
+
 function field(formData: FormData, name: string) {
   const value = formData.get(name);
   return typeof value === "string" ? value.trim() : "";
@@ -144,6 +146,38 @@ export async function signup(
   confirmationUrl.searchParams.set("email", email);
   if (next !== "/") confirmationUrl.searchParams.set("next", next);
   redirect(`${confirmationUrl.pathname}${confirmationUrl.search}`);
+}
+
+export async function requestPasswordReset(
+  _previousState: ForgotPasswordActionState,
+  formData: FormData,
+): Promise<ForgotPasswordActionState> {
+  const email = field(formData, "email").toLowerCase();
+
+  if (!/^[^@\s]+@utdallas\.edu$/i.test(email)) {
+    return {
+      status: "error",
+      message: "Enter the UT Dallas email connected to your account.",
+    };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.functions.invoke("request-password-reset", {
+    body: { email },
+  });
+
+  if (error) {
+    console.error("Unable to request a password reset", error.message);
+    return {
+      status: "error",
+      message: "We could not start the password reset. Please try again shortly.",
+    };
+  }
+
+  return {
+    status: "success",
+    message: "If an account exists for that email, a reset link is on its way. Check your junk folder too.",
+  };
 }
 
 export async function logout() {

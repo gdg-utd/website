@@ -71,7 +71,7 @@ export function AuthForm({ mode, nextPath = "/" }: AuthFormProps) {
         <input
           name="email"
           type="email"
-          autoComplete="email"
+          autoComplete={isSignup ? "email" : "username"}
           inputMode="email"
           pattern={isSignup ? "[^@\\s]+@[uU][tT][dD][aA][lL][lL][aA][sS]\\.[eE][dD][uU]" : undefined}
           title={isSignup ? "Use an email ending in @utdallas.edu" : undefined}
@@ -142,6 +142,15 @@ export function AuthForm({ mode, nextPath = "/" }: AuthFormProps) {
           </div>
         )}
       </label>
+
+      {!isSignup && (
+        <Link
+          className="auth-forgot-link"
+          href={`/login?forgot=1${nextPath !== "/" ? `&next=${encodeURIComponent(nextPath)}` : ""}`}
+        >
+          Forgot password?
+        </Link>
+      )}
 
       {isSignup && (
         <label>

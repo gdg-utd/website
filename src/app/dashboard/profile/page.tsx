@@ -3,11 +3,12 @@ import { redirect } from "next/navigation";
 import { UtdProgramFields } from "@/components/utd-program-fields";
 import { createClient } from "@/lib/supabase/server";
 import { updateProfile } from "./actions";
+import { PasswordResetSection } from "./password-reset-section";
 
 export const metadata: Metadata = { title: "Your profile" };
 
 type ProfilePageProps = {
-  searchParams: Promise<{ message?: string }>;
+  searchParams: Promise<{ message?: string; recovery?: string }>;
 };
 
 const messages: Record<string, { text: string; error?: boolean }> = {
@@ -156,6 +157,8 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
           </div>
         </section>
       </form>
+
+      <PasswordResetSection initiallyOpen={query.recovery === "1"} />
     </>
   );
 }
