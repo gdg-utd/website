@@ -64,7 +64,7 @@ export const officerGroups: OfficerGroup[] = [
       {
         name: "Jiya",
         role: "Marketing & Events Director",
-        photo: "/pictures/officers/jiya-yadav-v2.webp",
+        photo: "/pictures/officers/jiya-yadav.webp",
       },
       {
         name: "Zoya",
@@ -74,7 +74,7 @@ export const officerGroups: OfficerGroup[] = [
       {
         name: "Roman",
         role: "Marketing Officer",
-        photo: "/pictures/officers/roman-v2.webp",
+        photo: "/pictures/officers/roman.webp",
       },
       { name: "Ann", role: "Marketing Officer" },
     ],
@@ -86,12 +86,12 @@ export const officerGroups: OfficerGroup[] = [
       {
         name: "Jiya",
         role: "Marketing & Events Director",
-        photo: "/pictures/officers/jiya-yadav-v2.webp",
+        photo: "/pictures/officers/jiya-yadav.webp",
       },
       {
         name: "Sahithi",
         role: "Events Officer",
-        photo: "/pictures/officers/sahithi-puttamraju-v2.webp",
+        photo: "/pictures/officers/sahithi-puttamraju.webp",
       },
       {
         name: "Nathan",
@@ -122,7 +122,7 @@ export const officerGroups: OfficerGroup[] = [
       {
         name: "Siri A.",
         role: "Industry Director",
-        photo: "/pictures/officers/lakshmi-siri-appalaneni-v2.webp",
+        photo: "/pictures/officers/lakshmi-siri-appalaneni.webp",
       },
       {
         name: "Siri",
@@ -148,7 +148,7 @@ export const officerGroups: OfficerGroup[] = [
       {
         name: "Akhil",
         role: "Finance Director",
-        photo: "/pictures/officers/akhil-n-v2.webp",
+        photo: "/pictures/officers/akhil-n.webp",
       },
       {
         name: "Anh",
@@ -174,7 +174,7 @@ export const officerGroups: OfficerGroup[] = [
       {
         name: "Pranav",
         role: "GDG Sprints Director",
-        photo: "/pictures/officers/pranav-palutla-v2.webp",
+        photo: "/pictures/officers/pranav-palutla.webp",
       },
       {
         name: "Monish",
