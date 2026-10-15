@@ -8,6 +8,7 @@ import { advisors } from "@/data/advisors";
 export const metadata: Metadata = {
   title: "About",
   description: "Learn about GDG UTDallas, its programs, and the people who support the chapter.",
+  alternates: { canonical: "/about" },
 };
 
 const programs = [

@@ -38,7 +38,10 @@ export async function generateMetadata({ params }: ApplicationPageProps): Promis
     .eq("slug", slug)
     .maybeSingle();
 
-  return { title: data ? `Apply — ${data.title}` : "Application" };
+  return {
+    title: data ? `Apply — ${data.title}` : "Application",
+    robots: { index: false, follow: false, nocache: true },
+  };
 }
 
 export const dynamic = "force-dynamic";

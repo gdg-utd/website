@@ -8,6 +8,7 @@ export const metadata: Metadata = {
   title: "SPRINT Program",
   description:
     "Learn about the eight-week, mentor-led SPRINT project program from GDG UTDallas.",
+  alternates: { canonical: "/sprint" },
 };
 
 const phases = [

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { HeroBackdrop } from "@/components/hero-backdrop";
@@ -11,6 +12,10 @@ import {
   type ChapterEvent,
 } from "@/lib/gdg";
 import { createClient } from "@/lib/supabase/server";
+
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 function eventDate(date: string) {
   const value = new Date(date);

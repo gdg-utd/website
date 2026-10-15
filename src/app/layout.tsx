@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { VercelAnalytics } from "@/components/vercel-analytics";
+import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -13,21 +15,26 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: "GDG UTDallas",
-    template: "%s | GDG UTDallas",
+    default: SITE_NAME,
+    template: `%s | ${SITE_NAME}`,
   },
+  description: SITE_DESCRIPTION,
   icons: {
     icon: [{ url: "/brand/gdg-favicon.png", type: "image/png" }],
     shortcut: "/brand/gdg-favicon.png",
   },
-  description:
-    "Workshops, project programs, meetups, and upcoming developer events from GDG on Campus UTD.",
   openGraph: {
-    title: "GDG UTDallas",
-    description:
-      "Workshops, project programs, meetups, and upcoming developer events from GDG on Campus UTD.",
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+    siteName: SITE_NAME,
     type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
   },
 };
 
@@ -38,7 +45,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       data-scroll-behavior="smooth"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full">{children}</body>
+      <body className="min-h-full">
+        {children}
+        <VercelAnalytics />
+      </body>
     </html>
   );
 }

@@ -4,7 +4,10 @@ import { AuthForm } from "@/app/auth/auth-form";
 import { ForgotPasswordForm } from "@/app/auth/forgot-password-form";
 import { SiteHeader } from "@/components/site-header";
 
-export const metadata: Metadata = { title: "Log in" };
+export const metadata: Metadata = {
+  title: "Log in",
+  robots: { index: false, follow: false },
+};
 
 type LoginPageProps = {
   searchParams: Promise<{

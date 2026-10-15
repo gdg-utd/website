@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -7,6 +8,14 @@ import { createClient } from "@/lib/supabase/server";
 import { DashboardNavigation } from "./dashboard-navigation";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: false,
+    nocache: true,
+  },
+};
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
   const supabase = await createClient();

@@ -9,6 +9,7 @@ import { createClient } from "@/lib/supabase/server";
 export const metadata: Metadata = {
   title: "Apply",
   description: "View open positions and programs at GDG UTDallas.",
+  alternates: { canonical: "/apply" },
 };
 
 export const dynamic = "force-dynamic";

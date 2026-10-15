@@ -7,6 +7,7 @@ import { leadership, officerGroups, type Officer } from "@/data/officers";
 export const metadata: Metadata = {
   title: "Officers",
   description: "Meet the student officers who organize GDG UTDallas.",
+  alternates: { canonical: "/officers" },
 };
 
 function OfficerCard({ officer, featured = false }: { officer: Officer; featured?: boolean }) {

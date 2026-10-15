@@ -3,7 +3,10 @@ import Image from "next/image";
 import { AuthForm } from "@/app/auth/auth-form";
 import { SiteHeader } from "@/components/site-header";
 
-export const metadata: Metadata = { title: "Sign up" };
+export const metadata: Metadata = {
+  title: "Sign up",
+  robots: { index: false, follow: false },
+};
 
 type SignupPageProps = { searchParams: Promise<{ next?: string }> };
 
