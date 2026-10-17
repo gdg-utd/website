@@ -1,7 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-
 export type StaffApplicationRow = {
   id: number;
   applicantName: string;
@@ -14,18 +12,10 @@ export type StaffApplicationRow = {
 
 type ApplicationTableProps = {
   applications: StaffApplicationRow[];
-  queryString: string;
+  onOpenApplication: (id: number) => void;
 };
 
-export function ApplicationTable({ applications, queryString }: ApplicationTableProps) {
-  const router = useRouter();
-
-  function openApplication(id: number) {
-    const params = new URLSearchParams(queryString);
-    params.set("application", String(id));
-    router.push(`/admin/applications?${params.toString()}`, { scroll: false });
-  }
-
+export function ApplicationTable({ applications, onOpenApplication }: ApplicationTableProps) {
   return (
     <div className="admin-table-wrap">
       <table className="admin-table">
@@ -43,12 +33,12 @@ export function ApplicationTable({ applications, queryString }: ApplicationTable
             <tr
               className="admin-application-row"
               key={application.id}
-              onClick={() => openApplication(application.id)}
+              onClick={() => onOpenApplication(application.id)}
               onKeyDown={(event) => {
                 if (event.target !== event.currentTarget) return;
                 if (event.key === "Enter" || event.key === " ") {
                   event.preventDefault();
-                  openApplication(application.id);
+                  onOpenApplication(application.id);
                 }
               }}
               tabIndex={0}
@@ -69,7 +59,7 @@ export function ApplicationTable({ applications, queryString }: ApplicationTable
                   type="button"
                   onClick={(event) => {
                     event.stopPropagation();
-                    openApplication(application.id);
+                    onOpenApplication(application.id);
                   }}
                 >
                   Review <span aria-hidden="true">→</span>

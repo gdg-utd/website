@@ -1,22 +1,12 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  reopenApplication,
-  stageApplicationDecision,
-} from "./actions";
-import { ApplicationTable, type StaffApplicationRow } from "./application-table";
-import {
-  PublishApplicationDecisionButton,
-  PublishOpeningDecisionsButton,
-} from "./publish-confirmations";
+import { ApplicationReviewPortal } from "./application-review-portal";
+import type { StaffApplicationRow } from "./application-table";
 import { requireApplicationStaff } from "@/lib/application-admin";
 import {
-  answerLabel,
   formatCentralDate,
-  parseApplicationOpening,
   publishConfirmationPhrase,
-  type ApplicationResponses,
 } from "@/lib/applications";
 
 export const metadata: Metadata = { title: "Application portal" };
@@ -34,19 +24,9 @@ type AdminApplicationsPageProps = {
   }>;
 };
 
-function listHref(filters: { position?: string; decision?: string; q?: string }) {
-  const params = new URLSearchParams();
-  if (filters.position) params.set("position", filters.position);
-  if (filters.decision) params.set("decision", filters.decision);
-  if (filters.q) params.set("q", filters.q);
-  const query = params.toString();
-  return `/admin/applications${query ? `?${query}` : ""}`;
-}
-
 function noticeText(message: string | undefined, countValue: string | undefined, emailPendingValue: string | undefined) {
   const count = Number(countValue);
   const emailPending = Number(emailPendingValue);
-  if (message === "staged") return "Decision staged. It remains private until an administrator publishes staged decisions.";
   if (message === "published") return "Decision published. Email delivery was requested.";
   if (message === "published-all") {
     const published = Number.isSafeInteger(count) ? count : 0;
@@ -103,10 +83,12 @@ export default async function AdminApplicationsPage({ searchParams }: AdminAppli
     (applications ?? []).map((application) => [application.id, application.submitted_at]),
   );
   const stagedByApplication = new Map<number, "accepted" | "rejected">();
+  const resolvedStageApplications = new Set<number>();
   for (const event of stagedEvents ?? []) {
-    if (stagedByApplication.has(event.application_id)) continue;
+    if (resolvedStageApplications.has(event.application_id)) continue;
     const submittedAt = submittedAtByApplication.get(event.application_id);
     if (!submittedAt || event.created_at < submittedAt) continue;
+    resolvedStageApplications.add(event.application_id);
     const decision = event.details && typeof event.details === "object" && !Array.isArray(event.details)
       ? event.details.decision
       : null;
@@ -139,7 +121,6 @@ export default async function AdminApplicationsPage({ searchParams }: AdminAppli
     )).length
     : 0;
 
-  const queryString = listHref(filters).split("?")[1] ?? "";
   const rows: StaffApplicationRow[] = filtered.map((application) => {
     const staged = stagedByApplication.get(application.id);
     const decision = application.published_decision !== "undecided"
@@ -165,32 +146,7 @@ export default async function AdminApplicationsPage({ searchParams }: AdminAppli
     && (applications ?? []).some((application) => application.id === selectedId)
     ? selectedId
     : null;
-  const [{ data: selectedApplication }, { data: selectedEvents }] = validSelectedId
-    ? await Promise.all([
-      supabase
-        .from("applications")
-        .select("*, application_openings(*)")
-        .eq("id", validSelectedId)
-        .eq("submission_state", "submitted")
-        .maybeSingle(),
-      supabase
-        .from("application_events")
-        .select("id, event_type, details, created_at")
-        .eq("application_id", validSelectedId)
-        .order("created_at", { ascending: false })
-        .order("id", { ascending: false }),
-    ])
-    : [{ data: null }, { data: null }];
-
-  const selectedOpening = selectedApplication?.application_openings
-    ? parseApplicationOpening(selectedApplication.application_openings)
-    : null;
-  const selectedResponses = selectedApplication?.responses as ApplicationResponses | undefined;
-  const selectedStagedDecision = selectedApplication
-    ? stagedByApplication.get(selectedApplication.id)
-    : undefined;
   const notice = noticeText(filters.message, filters.count, filters.emailPending);
-  const closeHref = listHref(filters);
 
   return (
     <main className="admin-page">
@@ -260,148 +216,20 @@ export default async function AdminApplicationsPage({ searchParams }: AdminAppli
         </form>
 
         <section className="admin-table-card">
-          <div className="admin-table-heading">
-            <h2>Submitted applications</h2>
-            <div className="admin-table-heading-actions">
-              <span>{filtered.length} shown</span>
-              {role === "admin" && selectedOpeningFilter && (
-                <PublishOpeningDecisionsButton
-                  openingSlug={selectedOpeningFilter.slug}
-                  openingTitle={selectedOpeningFilter.title}
-                  confirmationPhrase={publishConfirmationPhrase(selectedOpeningFilter.title)}
-                  stagedCount={stagedCountForOpening}
-                />
-              )}
-            </div>
-          </div>
-          {rows.length > 0
-            ? <ApplicationTable applications={rows} queryString={queryString} />
-            : <div className="admin-table-empty">No applications match these filters.</div>}
+          <ApplicationReviewPortal
+            applications={rows}
+            initialApplicationId={validSelectedId}
+            publishOpening={role === "admin" && selectedOpeningFilter ? {
+              slug: selectedOpeningFilter.slug,
+              title: selectedOpeningFilter.title,
+              confirmationPhrase: publishConfirmationPhrase(selectedOpeningFilter.title),
+              stagedCount: stagedCountForOpening,
+            } : undefined}
+            returnPosition={filters.position}
+            role={role}
+          />
         </section>
       </div>
-
-      {selectedApplication && selectedOpening && selectedResponses && (
-        <div className="admin-drawer-layer">
-          <Link className="admin-drawer-backdrop" href={closeHref} scroll={false} aria-label="Close application review" />
-          <aside className="admin-drawer" role="dialog" aria-modal="true" aria-labelledby="application-review-title">
-            <header className="admin-drawer-header">
-              <div>
-                <p className="section-label">{selectedOpening.title}</p>
-                <h2 id="application-review-title">{selectedApplication.applicant_first_name} {selectedApplication.applicant_last_name}</h2>
-                <a href={`mailto:${selectedApplication.applicant_email}`}>{selectedApplication.applicant_email}</a>
-              </div>
-              <Link href={closeHref} scroll={false} aria-label="Close application review">×</Link>
-            </header>
-
-            <dl className="admin-drawer-meta">
-              <div><dt>Submitted</dt><dd>{formatCentralDate(selectedApplication.submitted_at)} CT</dd></div>
-              <div><dt>Form version</dt><dd>{selectedApplication.form_version}</dd></div>
-              <div><dt>Application ID</dt><dd>#{selectedApplication.id}</dd></div>
-            </dl>
-
-            <section className="admin-drawer-decision">
-              <div>
-                <p className="section-label">Decision</p>
-                <h3>{selectedApplication.published_decision === "undecided"
-                  ? "Not published"
-                  : selectedApplication.published_decision === "accepted" ? "Accepted" : "Not selected"}</h3>
-                {selectedApplication.published_decision === "undecided" ? (
-                  <p>{selectedStagedDecision === "accepted"
-                    ? "Acceptance is staged."
-                    : selectedStagedDecision === "rejected"
-                      ? "Not selected is staged."
-                      : "No decision has been staged."}</p>
-                ) : <p>Published {formatCentralDate(selectedApplication.decision_published_at)} CT.</p>}
-              </div>
-
-              {selectedApplication.published_decision === "undecided" && (
-                <div className="admin-stage-actions">
-                  <form action={stageApplicationDecision}>
-                    <input type="hidden" name="applicationId" value={selectedApplication.id} />
-                    <input type="hidden" name="decision" value="accepted" />
-                    <input type="hidden" name="returnPosition" value={filters.position ?? ""} />
-                    <button className={selectedStagedDecision === "accepted" ? "is-active" : ""}>Stage acceptance</button>
-                  </form>
-                  <form action={stageApplicationDecision}>
-                    <input type="hidden" name="applicationId" value={selectedApplication.id} />
-                    <input type="hidden" name="decision" value="rejected" />
-                    <input type="hidden" name="returnPosition" value={filters.position ?? ""} />
-                    <button className={selectedStagedDecision === "rejected" ? "is-active" : ""}>Stage not selected</button>
-                  </form>
-                </div>
-              )}
-
-              {role === "admin" && (
-                <div className="admin-secondary-actions">
-                  {selectedApplication.published_decision === "undecided" && (
-                    <PublishApplicationDecisionButton
-                      applicationId={selectedApplication.id}
-                      applicantName={`${selectedApplication.applicant_first_name} ${selectedApplication.applicant_last_name}`}
-                      decision={selectedStagedDecision}
-                      disabled={!selectedStagedDecision}
-                      returnPosition={filters.position}
-                    />
-                  )}
-                  <details className="admin-reopen">
-                    <summary>Application corrections</summary>
-                    <p>Reopening returns this application to draft and clears any published decision.</p>
-                    <form action={reopenApplication}>
-                      <input type="hidden" name="applicationId" value={selectedApplication.id} />
-                      <input type="hidden" name="returnPosition" value={filters.position ?? ""} />
-                      <button>Reopen application</button>
-                    </form>
-                  </details>
-                </div>
-              )}
-              {role === "reviewer" && selectedApplication.published_decision === "undecided" && (
-                <p className="admin-role-note">An administrator will publish staged decisions and send applicant emails.</p>
-              )}
-            </section>
-
-            <section className="admin-drawer-responses">
-              <div className="admin-drawer-section-heading">
-                <p className="section-label">Review</p>
-                <h3>Application responses</h3>
-              </div>
-              {selectedOpening.form_schema.sections.map((section) => (
-                <div className="admin-response-section" key={section.id}>
-                  <h4>{section.title}</h4>
-                  {section.fields.map((field) => {
-                    const answer = answerLabel(field, selectedResponses[field.id]);
-                    return (
-                      <div className="admin-response" key={field.id}>
-                        <h5>{field.label}</h5>
-                        {field.type === "url" && answer ? (
-                          <a href={answer} target="_blank" rel="noreferrer">{answer} ↗</a>
-                        ) : <p>{answer || "No response"}</p>}
-                      </div>
-                    );
-                  })}
-                </div>
-              ))}
-            </section>
-
-            <section className="admin-drawer-history">
-              <div className="admin-drawer-section-heading">
-                <p className="section-label">Audit history</p>
-                <h3>Application activity</h3>
-              </div>
-              <ol>
-                {selectedEvents?.map((event) => {
-                  const eventDecision = event.details && typeof event.details === "object" && !Array.isArray(event.details)
-                    ? event.details.decision
-                    : null;
-                  const label = event.event_type === "submitted" ? "Application submitted"
-                    : event.event_type === "reopened" ? "Application reopened"
-                      : event.event_type === "decision_staged" ? `${eventDecision === "accepted" ? "Acceptance" : "Not selected"} staged`
-                        : `${eventDecision === "accepted" ? "Acceptance" : "Not selected"} published`;
-                  return <li key={event.id}><span>{label}</span><time>{formatCentralDate(event.created_at)} CT</time></li>;
-                })}
-              </ol>
-            </section>
-          </aside>
-        </div>
-      )}
     </main>
   );
 }

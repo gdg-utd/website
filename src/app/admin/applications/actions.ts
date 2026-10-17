@@ -7,7 +7,11 @@ import {
   requireApplicationStaff,
 } from "@/lib/application-admin";
 import { deliverApplicationEmail } from "@/lib/application-email";
-import { publishConfirmationPhrase } from "@/lib/applications";
+import { formatCentralDate, publishConfirmationPhrase } from "@/lib/applications";
+import type {
+  ApplicationStageDecision,
+  ApplicationStageResult,
+} from "./application-review-types";
 
 function value(formData: FormData, name: string) {
   const field = formData.get(name);
@@ -36,27 +40,81 @@ function portalPath(options: {
   return `/admin/applications${query ? `?${query}` : ""}`;
 }
 
-export async function stageApplicationDecision(formData: FormData) {
-  const id = applicationId(formData);
-  const decision = value(formData, "decision");
-  const position = value(formData, "returnPosition") || undefined;
-  if (!id || !["accepted", "rejected"].includes(decision)) redirect("/admin/applications");
+export async function stageApplicationDecision(
+  id: number,
+  decision: ApplicationStageDecision,
+): Promise<ApplicationStageResult> {
+  if (!Number.isSafeInteger(id) || id <= 0) {
+    return { status: "error", message: "Invalid application." };
+  }
 
-  const { supabase, userId } = await requireApplicationStaff(portalPath({ applicationId: id, position }));
-  const { error } = await supabase.from("application_events").insert({
+  const requestedDecision = decision ?? "cleared";
+  if (!["accepted", "rejected", "cleared"].includes(requestedDecision)) {
+    return { status: "error", message: "Invalid staged decision." };
+  }
+
+  const { supabase, userId } = await requireApplicationStaff(portalPath({ applicationId: id }));
+  const { data: application, error: applicationError } = await supabase
+    .from("applications")
+    .select("submitted_at")
+    .eq("id", id)
+    .eq("submission_state", "submitted")
+    .eq("published_decision", "undecided")
+    .maybeSingle();
+
+  if (applicationError || !application?.submitted_at) {
+    return { status: "error", message: "This application is no longer available for staging." };
+  }
+
+  const { data: latestStage, error: latestStageError } = await supabase
+    .from("application_events")
+    .select("details")
+    .eq("application_id", id)
+    .eq("event_type", "decision_staged")
+    .gte("created_at", application.submitted_at)
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (latestStageError) {
+    return { status: "error", message: "The staged decision could not be checked." };
+  }
+
+  const currentDecision = latestStage?.details
+    && typeof latestStage.details === "object"
+    && !Array.isArray(latestStage.details)
+    ? latestStage.details.decision
+    : null;
+  const normalizedCurrentDecision = currentDecision === "accepted" || currentDecision === "rejected"
+    ? currentDecision
+    : null;
+  if (normalizedCurrentDecision === decision) {
+    return { status: "unchanged", stagedDecision: normalizedCurrentDecision };
+  }
+
+  const { data: stagedEvent, error } = await supabase.from("application_events").insert({
     application_id: id,
     actor_id: userId,
     event_type: "decision_staged",
-    details: { decision },
-  });
+    details: { decision: requestedDecision },
+  }).select("id, created_at").single();
 
-  if (error) {
-    console.error("Unable to stage decision", error.code, error.message);
-    redirect(portalPath({ message: "stage-failed", applicationId: id, position }));
+  if (error || !stagedEvent) {
+    if (error) console.error("Unable to stage decision", error.code, error.message);
+    return { status: "error", message: "The staged decision could not be saved." };
   }
 
-  revalidatePath("/admin/applications");
-  redirect(portalPath({ message: "staged", position }));
+  return {
+    status: "updated",
+    stagedDecision: decision,
+    event: {
+      id: stagedEvent.id,
+      label: decision === "accepted"
+        ? "Acceptance staged"
+        : decision === "rejected" ? "Not selected staged" : "Staged decision cleared",
+      createdLabel: formatCentralDate(stagedEvent.created_at),
+    },
+  };
 }
 
 export async function publishApplicationDecision(formData: FormData) {
