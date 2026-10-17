@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 
+function onboardingPath(next: string) {
+  return `/onboarding?next=${encodeURIComponent(next)}`;
+}
+
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
@@ -21,7 +25,23 @@ export async function GET(request: Request) {
       : await supabase.auth.verifyOtp({ token_hash: tokenHash!, type: "recovery" });
 
     if (!error) {
-      return NextResponse.redirect(new URL(next, url.origin));
+      if (type === "recovery" || next.includes("recovery=1")) {
+        return NextResponse.redirect(new URL(next, url.origin));
+      }
+
+      const { data } = await supabase.auth.getClaims();
+      const userId = typeof data?.claims?.sub === "string" ? data.claims.sub : null;
+      const { data: profile } = userId
+        ? await supabase
+          .from("profiles")
+          .select("onboarding_completed_at")
+          .eq("id", userId)
+          .maybeSingle()
+        : { data: null };
+      const destination = profile && !profile.onboarding_completed_at
+        ? onboardingPath(next)
+        : next;
+      return NextResponse.redirect(new URL(destination, url.origin));
     }
   }
 

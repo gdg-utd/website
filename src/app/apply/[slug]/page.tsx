@@ -54,11 +54,22 @@ export default async function ApplicationPage({ params, searchParams }: Applicat
 
   if (!userId) redirect(`/login?next=${encodeURIComponent(`/apply/${slug}`)}`);
 
-  const { data: openingData } = await supabase
-    .from("application_openings")
-    .select("*")
-    .eq("slug", slug)
-    .maybeSingle();
+  const [{ data: openingData }, { data: profile }] = await Promise.all([
+    supabase
+      .from("application_openings")
+      .select("*")
+      .eq("slug", slug)
+      .maybeSingle(),
+    supabase
+      .from("profiles")
+      .select("onboarding_completed_at")
+      .eq("id", userId)
+      .maybeSingle(),
+  ]);
+
+  if (profile && !profile.onboarding_completed_at) {
+    redirect(`/onboarding?next=${encodeURIComponent(`/apply/${slug}`)}`);
+  }
 
   if (!openingData) notFound();
   const opening = parseApplicationOpening(openingData);

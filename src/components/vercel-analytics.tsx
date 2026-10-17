@@ -9,6 +9,7 @@ const PRIVATE_ROUTE_PREFIXES = [
   "/auth",
   "/dashboard",
   "/login",
+  "/onboarding",
   "/signup",
 ];
 

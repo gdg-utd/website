@@ -26,9 +26,13 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   if (!userId) redirect("/login?next=/dashboard");
 
   const [{ data: profile }, { data: staff }] = await Promise.all([
-    supabase.from("profiles").select("first_name, last_name").eq("id", userId).maybeSingle(),
+    supabase.from("profiles").select("first_name, last_name, onboarding_completed_at").eq("id", userId).maybeSingle(),
     supabase.from("application_admins").select("user_id").eq("user_id", userId).eq("active", true).maybeSingle(),
   ]);
+
+  if (profile && !profile.onboarding_completed_at) {
+    redirect("/onboarding?next=/dashboard");
+  }
 
   const email = typeof claims?.email === "string" ? claims.email : "";
   const fullName = [profile?.first_name, profile?.last_name].filter(Boolean).join(" ") || "GDG member";

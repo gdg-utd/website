@@ -27,6 +27,11 @@ function safeNextPath(value: string) {
     : "/";
 }
 
+function onboardingPath(next: string) {
+  const destination = next === "/" ? "/dashboard" : next;
+  return `/onboarding?next=${encodeURIComponent(destination)}`;
+}
+
 function authErrorMessage(message: string) {
   if (
     message.toLowerCase().includes("utdallas.edu") ||
@@ -59,10 +64,20 @@ export async function login(
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data: signInData, error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
     return { status: "error", message: authErrorMessage(error.message) };
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("onboarding_completed_at")
+    .eq("id", signInData.user.id)
+    .maybeSingle();
+
+  if (profile && !profile.onboarding_completed_at) {
+    redirect(onboardingPath(next));
   }
 
   redirect(next);
@@ -103,10 +118,7 @@ export async function signup(
 
   const supabase = await createClient();
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-  const confirmationDestination = new URL(
-    next === "/" ? "/?auth=confirmed" : next,
-    siteUrl,
-  );
+  const confirmationDestination = new URL(onboardingPath(next), siteUrl);
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -139,12 +151,12 @@ export async function signup(
   }
 
   if (data.session) {
-    redirect(next === "/" ? "/?auth=welcome" : next);
+    redirect(onboardingPath(next));
   }
 
   const confirmationUrl = new URL("/auth/confirm", siteUrl);
   confirmationUrl.searchParams.set("email", email);
-  if (next !== "/") confirmationUrl.searchParams.set("next", next);
+  confirmationUrl.searchParams.set("next", next === "/" ? "/dashboard" : next);
   redirect(`${confirmationUrl.pathname}${confirmationUrl.search}`);
 }
 

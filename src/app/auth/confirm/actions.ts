@@ -21,12 +21,16 @@ function safeNextPath(value: string) {
   try {
     const destination = new URL(value, siteUrl);
 
-    if (destination.origin !== siteUrl.origin) return "/?auth=confirmed";
+    if (destination.origin !== siteUrl.origin) return "/dashboard";
 
     return `${destination.pathname}${destination.search}`;
   } catch {
-    return "/?auth=confirmed";
+    return "/dashboard";
   }
+}
+
+function onboardingPath(next: string) {
+  return `/onboarding?next=${encodeURIComponent(next)}`;
 }
 
 function isUtdEmail(email: string) {
@@ -66,7 +70,7 @@ export async function confirmEmailCode(
     };
   }
 
-  redirect(next);
+  redirect(onboardingPath(next));
 }
 
 export async function resendConfirmationCode(
@@ -84,7 +88,7 @@ export async function resendConfirmationCode(
   }
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-  const confirmationDestination = new URL(next, siteUrl);
+  const confirmationDestination = new URL(onboardingPath(next), siteUrl);
   const supabase = await createClient();
   const { error } = await supabase.auth.resend({
     type: "signup",

@@ -15,7 +15,7 @@ type ConfirmEmailPageProps = {
 function safeNextPath(value?: string) {
   return value?.startsWith("/") && !value.startsWith("//") && !value.includes("\\")
     ? value
-    : "/?auth=confirmed";
+    : "/dashboard";
 }
 
 export default async function ConfirmEmailPage({

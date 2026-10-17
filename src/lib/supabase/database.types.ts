@@ -263,6 +263,7 @@ export type Database = {
           linkedin_url: string | null
           major: string | null
           net_id: string | null
+          onboarding_completed_at: string | null
           personal_email: string | null
           portfolio_url: string | null
           updated_at: string
@@ -277,6 +278,7 @@ export type Database = {
           linkedin_url?: string | null
           major?: string | null
           net_id?: string | null
+          onboarding_completed_at?: string | null
           personal_email?: string | null
           portfolio_url?: string | null
           updated_at?: string
@@ -291,6 +293,7 @@ export type Database = {
           linkedin_url?: string | null
           major?: string | null
           net_id?: string | null
+          onboarding_completed_at?: string | null
           personal_email?: string | null
           portfolio_url?: string | null
           updated_at?: string
