@@ -3,10 +3,7 @@
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { ConfirmationDialog } from "@/components/confirmation-dialog";
-import {
-  initialRsvpResponseState,
-  respondToMenteeOffer,
-} from "./actions";
+import { respondToMenteeOffer } from "./actions";
 
 type RsvpStatus = "awaiting_response" | "confirmed" | "released" | "expired";
 
@@ -14,6 +11,14 @@ type Agreement = {
   id: string;
   label: string;
 };
+
+type RsvpResponseState = {
+  status: "idle" | "success" | "error";
+  rsvpStatus?: "confirmed" | "released";
+  message?: string;
+};
+
+const initialRsvpResponseState: RsvpResponseState = { status: "idle" };
 
 export function RsvpOffer({
   applicationId,
@@ -46,7 +51,7 @@ export function RsvpOffer({
   function submitResponse(formData: FormData) {
     setState(initialRsvpResponseState);
     startTransition(async () => {
-      const result = await respondToMenteeOffer(initialRsvpResponseState, formData);
+      const result = await respondToMenteeOffer(formData);
       setState(result);
       if (result.status !== "success" || !result.rsvpStatus) return;
       setStatus(result.rsvpStatus);

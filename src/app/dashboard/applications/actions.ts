@@ -3,13 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
-export type RsvpResponseState = {
+type RsvpResponseState = {
   status: "idle" | "success" | "error";
   rsvpStatus?: "confirmed" | "released";
   message?: string;
 };
-
-export const initialRsvpResponseState: RsvpResponseState = { status: "idle" };
 
 function value(formData: FormData, name: string) {
   const field = formData.get(name);
@@ -17,7 +15,6 @@ function value(formData: FormData, name: string) {
 }
 
 export async function respondToMenteeOffer(
-  _previousState: RsvpResponseState,
   formData: FormData,
 ): Promise<RsvpResponseState> {
   const applicationId = Number(value(formData, "applicationId"));
