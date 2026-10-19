@@ -15,7 +15,7 @@
         .email-shell { width:100% !important; }
         .email-content, .email-footer { padding-left:24px !important; padding-right:24px !important; }
         .email-title { font-size:30px !important; line-height:37px !important; }
-        .email-button a, .email-discord-button a { display:block !important; padding-left:18px !important; padding-right:18px !important; }
+        .email-button a { display:block !important; padding-left:18px !important; padding-right:18px !important; }
       }
     </style>
   </head>
@@ -35,24 +35,21 @@
             <tr>
               <td class="email-content" bgcolor="#f5f5f5" style="padding:42px 40px 38px; background-color:#f5f5f5;">
                 <p class="email-brand" style="margin:0 0 34px; color:#202124; font-size:16px; font-weight:700; line-height:22px;">GDG UTDallas</p>
-                <p class="email-label" style="margin:0 0 10px; color:#137333; font-size:12px; font-weight:700; line-height:18px; letter-spacing:0.08em; text-transform:uppercase;">Application accepted</p>
-                <h1 class="email-title" style="margin:0; color:#202124; font-size:36px; font-weight:700; line-height:43px; letter-spacing:-0.02em;">Welcome to SPRINT.</h1>
+                <p class="email-label" style="margin:0 0 10px; color:#137333; font-size:12px; font-weight:700; line-height:18px; letter-spacing:0.08em; text-transform:uppercase;">SPRINT offer</p>
+                <h1 class="email-title" style="margin:0; color:#202124; font-size:36px; font-weight:700; line-height:43px; letter-spacing:-0.02em;">You’re invited to join SPRINT.</h1>
                 <p class="email-copy" style="margin:22px 0 0; color:#4d5156; font-size:16px; line-height:26px;">Hi {{ params.first_name }},</p>
-                <p class="email-copy" style="margin:16px 0 0; color:#4d5156; font-size:16px; line-height:26px;">We’re happy to offer you a place as <strong>{{ params.opening_title }}</strong>. Thank you for the thought and effort you put into your application.</p>
+                <p class="email-copy" style="margin:16px 0 0; color:#4d5156; font-size:16px; line-height:26px;">We’d like to offer you a place in <strong>{{ params.opening_title }}</strong>. To keep your spot, please respond through your application dashboard within 72 hours.</p>
                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-top:26px;">
                   <tr><td class="email-panel" bgcolor="#f5f5f5" style="padding:20px 22px; background-color:#f5f5f5; border:1px solid #d3d8e0; border-left:4px solid #34a853;">
-                    <p class="email-panel-label" style="margin:0; color:#6f7479; font-size:11px; font-weight:700; line-height:17px; letter-spacing:0.08em; text-transform:uppercase;">Next steps</p>
-                    <p class="email-panel-title" style="margin:4px 0 0; color:#202124; font-size:18px; font-weight:700; line-height:25px;">{{ params.opening_title }}</p>
-                    <p class="email-panel-copy" style="margin:8px 0 0; color:#6f7479; font-size:14px; line-height:22px;">{{ params.next_steps }}</p>
-                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-top:16px;"><tr>
-                      <td class="email-discord-button" align="center" bgcolor="#5865f2" style="background-color:#5865f2;"><a href="https://discord.gg/bYNaQbaTQh" style="display:inline-block; padding:11px 18px; color:#f5f5f5; font-size:14px; font-weight:700; line-height:20px; text-decoration:none;">Join the GDG UTDallas Discord</a></td>
-                    </tr></table>
+                    <p class="email-panel-label" style="margin:0; color:#6f7479; font-size:11px; font-weight:700; line-height:17px; letter-spacing:0.08em; text-transform:uppercase;">Respond by</p>
+                    <p class="email-panel-title" style="margin:4px 0 0; color:#202124; font-size:18px; font-weight:700; line-height:25px;">{{ params.rsvp_deadline }}</p>
+                    <p class="email-panel-copy" style="margin:8px 0 0; color:#6f7479; font-size:14px; line-height:22px;">If we do not receive your response by this deadline, your offer will expire and the spot may be offered to another applicant.</p>
                   </td></tr>
                 </table>
                 <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-top:28px;"><tr>
-                  <td class="email-button" align="center" bgcolor="#137333" style="background-color:#137333;"><a href="{{ params.dashboard_url }}" style="display:inline-block; padding:13px 22px; color:#f5f5f5; font-size:15px; font-weight:700; line-height:20px; text-decoration:none;">View application dashboard</a></td>
+                  <td class="email-button" align="center" bgcolor="#137333" style="background-color:#137333;"><a href="{{ params.rsvp_url }}" style="display:inline-block; padding:13px 22px; color:#f5f5f5; font-size:15px; font-weight:700; line-height:20px; text-decoration:none;">Respond to your offer</a></td>
                 </tr></table>
-                <p class="email-muted" style="margin:24px 0 0; color:#6f7479; font-size:13px; line-height:21px;">If you have questions, reply to this email and our team will help.</p>
+                <p class="email-muted" style="margin:24px 0 0; color:#6f7479; font-size:13px; line-height:21px;">You can confirm your spot or release it for another applicant. If you have questions, reply to this email.</p>
               </td>
             </tr>
             <tr><td class="email-footer" bgcolor="#f5f5f5" style="padding:22px 40px 32px; background-color:#f5f5f5; border-top:1px solid #d5d9df;">

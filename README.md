@@ -49,7 +49,7 @@ insert into public.application_admins (user_id, role)
 select id, 'reviewer' from auth.users where email = 'reviewer@utdallas.edu';
 ```
 
-Application notifications are recorded in `application_email_queue` and delivered through the protected `send-application-email` Supabase Edge Function. The Brevo account contains three transactional templates: application received, accepted, and not selected.
+Application notifications are recorded in `application_email_queue` and delivered through the protected `send-application-email` Supabase Edge Function. Officer selections receive an interview-stage update. Accepted SPRINT mentees receive a fixed 72-hour offer link in the application dashboard; staff can see response counts, release expired offers, and send the dedicated expiry notice before filling those spots in another selection round.
 
 Production credentials belong in **Supabase Dashboard → Edge Functions → Secrets**, not in browser-visible Next.js variables. Add these values before testing delivery:
 

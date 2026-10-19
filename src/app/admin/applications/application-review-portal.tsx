@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState, useTransition } from "react";
 import { reopenApplication, stageApplicationDecision } from "./actions";
 import { ApplicationTable, type StaffApplicationRow } from "./application-table";
 import {
+  MarkOfficerNotSelectedButton,
   PublishApplicationDecisionButton,
   PublishOpeningDecisionsButton,
 } from "./publish-confirmations";
@@ -261,7 +262,9 @@ function ApplicationReviewContent({
           <p className="section-label">Decision</p>
           <h3>{review.publishedDecision === "undecided"
             ? "Not published"
-            : review.publishedDecision === "accepted" ? "Accepted" : "Not selected"}</h3>
+            : review.publishedDecision === "accepted" && review.openingSlug !== "sprint-mentee"
+              ? "Selected"
+              : review.publishedDecision === "accepted" ? "Accepted" : "Not selected"}</h3>
           {review.publishedDecision === "undecided" ? (
             <p>{review.stagedDecision === "accepted"
               ? "Acceptance is staged."
@@ -275,6 +278,22 @@ function ApplicationReviewContent({
           <ApplicationStageControls review={review} onStageChanged={onStageChanged} />
         )}
 
+        {review.rsvp && (
+          <dl className="admin-rsvp-details">
+            <div>
+              <dt>RSVP status</dt>
+              <dd>{review.rsvp.status === "awaiting_response" ? "Awaiting response" : review.rsvp.status === "confirmed" ? "Spot confirmed" : review.rsvp.status === "released" ? "Spot released" : "Expired"}</dd>
+            </div>
+            <div>
+              <dt>72-hour deadline</dt>
+              <dd>{review.rsvp.deadlineLabel} CT</dd>
+            </div>
+            {review.rsvp.respondedLabel && (
+              <div><dt>Responded</dt><dd>{review.rsvp.respondedLabel} CT</dd></div>
+            )}
+          </dl>
+        )}
+
         {role === "admin" && (
           <div className="admin-secondary-actions">
             {review.publishedDecision === "undecided" && (
@@ -283,6 +302,13 @@ function ApplicationReviewContent({
                 applicantName={review.applicantName}
                 decision={review.stagedDecision}
                 disabled={!review.stagedDecision}
+                returnPosition={returnPosition}
+              />
+            )}
+            {review.publishedDecision === "accepted" && review.openingSlug !== "sprint-mentee" && (
+              <MarkOfficerNotSelectedButton
+                applicationId={review.id}
+                applicantName={review.applicantName}
                 returnPosition={returnPosition}
               />
             )}

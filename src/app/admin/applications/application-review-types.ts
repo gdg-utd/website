@@ -35,12 +35,18 @@ export type ApplicationReview = {
   id: number;
   applicantName: string;
   applicantEmail: string;
+  openingSlug: string;
   openingTitle: string;
   submittedLabel: string;
   formVersion: number;
   publishedDecision: string;
   publishedLabel: string;
   stagedDecision?: Exclude<ApplicationStageDecision, null>;
+  rsvp?: {
+    status: "awaiting_response" | "confirmed" | "released" | "expired";
+    deadlineLabel: string;
+    respondedLabel?: string;
+  };
   sections: ApplicationReviewSection[];
   events: ApplicationReviewEvent[];
 };

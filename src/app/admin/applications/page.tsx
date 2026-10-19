@@ -3,11 +3,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { ApplicationReviewPortal } from "./application-review-portal";
 import type { StaffApplicationRow } from "./application-table";
+import { ReleaseExpiredOffersButton } from "./publish-confirmations";
 import { requireApplicationStaff } from "@/lib/application-admin";
 import {
   formatCentralDate,
   publishConfirmationPhrase,
 } from "@/lib/applications";
+import type { Tables } from "@/lib/supabase/database.types";
 
 export const metadata: Metadata = { title: "Application portal" };
 export const dynamic = "force-dynamic";
@@ -36,6 +38,15 @@ function noticeText(message: string | undefined, countValue: string | undefined,
     return `${published} staged decision${published === 1 ? " was" : "s were"} published.${pendingCopy}`;
   }
   if (message === "reopened") return "The application was reopened and returned to the applicant.";
+  if (message === "expired-released") {
+    const released = Number.isSafeInteger(count) ? count : 0;
+    const pendingCopy = Number.isSafeInteger(emailPending) && emailPending > 0
+      ? ` ${emailPending} expiry email${emailPending === 1 ? " remains" : "s remain"} queued for another delivery attempt.`
+      : " RSVP-expiry emails were requested.";
+    return `${released} expired offer${released === 1 ? " was" : "s were"} released.${pendingCopy}`;
+  }
+  if (message === "no-expired") return "There are no expired offers ready to release.";
+  if (message === "interview-not-selected") return "The officer applicant is now marked as not selected. No automated email was sent.";
   if (message === "no-staged") return "There are no unpublished staged decisions for this opening.";
   if (message === "admin-required") return "Reviewer access allows staging only. An administrator must publish or reopen applications.";
   if (message === "opening-required") return "Select one application opening before publishing staged decisions.";
@@ -44,6 +55,8 @@ function noticeText(message: string | undefined, countValue: string | undefined,
   if (message === "stage-failed") return "The decision could not be staged.";
   if (message === "publish-failed" || message === "publish-all-failed") return "The decision could not be published.";
   if (message === "reopen-failed") return "The application could not be reopened.";
+  if (message === "expire-failed") return "The expired offers could not be released.";
+  if (message === "interview-outcome-failed") return "The officer interview outcome could not be updated.";
   return null;
 }
 
@@ -52,9 +65,17 @@ function isErrorNotice(message: string | undefined) {
     || message === "publish-failed"
     || message === "publish-all-failed"
     || message === "reopen-failed"
+    || message === "expire-failed"
+    || message === "interview-outcome-failed"
     || message === "opening-required"
     || message === "confirmation-required"
     || message === "admin-required";
+}
+
+function applicationRsvp(
+  value: Pick<Tables<"application_rsvps">, "status" | "deadline_at"> | Pick<Tables<"application_rsvps">, "status" | "deadline_at">[] | null,
+) {
+  return Array.isArray(value) ? value[0] ?? null : value;
 }
 
 export default async function AdminApplicationsPage({ searchParams }: AdminApplicationsPageProps) {
@@ -63,7 +84,7 @@ export default async function AdminApplicationsPage({ searchParams }: AdminAppli
   const [{ data: applications }, { data: openings }, { data: stagedEvents }] = await Promise.all([
     supabase
       .from("applications")
-      .select("id, applicant_first_name, applicant_last_name, applicant_email, opening_id, submitted_at, published_decision, application_openings(slug, title, accent)")
+      .select("id, applicant_first_name, applicant_last_name, applicant_email, opening_id, submitted_at, published_decision, application_openings(slug, title, accent), application_rsvps(status, deadline_at)")
       .eq("submission_state", "submitted")
       .order("submitted_at", { ascending: false }),
     supabase
@@ -120,9 +141,30 @@ export default async function AdminApplicationsPage({ searchParams }: AdminAppli
       && stagedByApplication.has(application.id)
     )).length
     : 0;
+  // This dynamic staff view compares stored deadlines with the current request time.
+  // eslint-disable-next-line react-hooks/purity
+  const currentTime = Date.now();
+
+  const menteeApplications = selectedOpeningFilter?.slug === "sprint-mentee"
+    ? (applications ?? []).filter((application) => application.opening_id === selectedOpeningFilter.id)
+    : [];
+  const rsvpSummary = menteeApplications.reduce((summary, application) => {
+    const rsvp = applicationRsvp(application.application_rsvps);
+    if (!rsvp) return summary;
+    if (rsvp.status === "confirmed") summary.confirmed += 1;
+    if (rsvp.status === "released") summary.released += 1;
+    if (rsvp.status === "expired") summary.expired += 1;
+    if (rsvp.status === "awaiting_response") {
+      if (Date.parse(rsvp.deadline_at) <= currentTime) summary.readyToRelease += 1;
+      else summary.awaiting += 1;
+    }
+    return summary;
+  }, { confirmed: 0, awaiting: 0, readyToRelease: 0, released: 0, expired: 0 });
 
   const rows: StaffApplicationRow[] = filtered.map((application) => {
     const staged = stagedByApplication.get(application.id);
+    const openingSlug = application.application_openings?.slug;
+    const rsvp = applicationRsvp(application.application_rsvps);
     const decision = application.published_decision !== "undecided"
       ? application.published_decision
       : staged ? `${staged} staged` : "undecided";
@@ -132,9 +174,19 @@ export default async function AdminApplicationsPage({ searchParams }: AdminAppli
       applicantEmail: application.applicant_email,
       openingTitle: application.application_openings?.title ?? "—",
       submittedLabel: formatCentralDate(application.submitted_at),
-      decisionKey: decision.split(" ")[0].toLowerCase(),
-      decisionLabel: decision === "rejected"
-        ? "Not selected"
+      decisionKey: rsvp?.status === "confirmed" ? "confirmed"
+        : rsvp?.status === "released" ? "released"
+          : rsvp?.status === "expired" ? "expired"
+            : rsvp?.status === "awaiting_response" ? "awaiting-rsvp"
+              : decision === "accepted" && openingSlug !== "sprint-mentee" ? "selected"
+                : decision.split(" ")[0].toLowerCase(),
+      decisionLabel: rsvp?.status === "confirmed" ? "Spot confirmed"
+        : rsvp?.status === "released" ? "Spot released"
+          : rsvp?.status === "expired" ? "RSVP expired"
+            : rsvp?.status === "awaiting_response" ? "Awaiting RSVP"
+              : decision === "accepted" && openingSlug !== "sprint-mentee" ? "Selected"
+                : decision === "rejected"
+          ? "Not selected"
         : decision === "rejected staged"
           ? "Not selected staged"
           : decision === "undecided" ? "Undecided" : decision,
@@ -188,6 +240,30 @@ export default async function AdminApplicationsPage({ searchParams }: AdminAppli
           <div><strong>{accepted}</strong><span>Accepted</span></div>
           <div><strong>{notSelected}</strong><span>Not selected</span></div>
         </section>
+
+        {selectedOpeningFilter?.slug === "sprint-mentee" && (
+          <section className="admin-rsvp-summary" aria-label="Mentee RSVP summary">
+            <div className="admin-rsvp-summary-heading">
+              <div>
+                <p className="section-label">Mentee offers</p>
+                <h2>RSVP status</h2>
+                <p>{rsvpSummary.released + rsvpSummary.expired} spot{rsvpSummary.released + rsvpSummary.expired === 1 ? "" : "s"} can be offered in the next round.</p>
+              </div>
+              {role === "admin" && (
+                <ReleaseExpiredOffersButton
+                  openingId={selectedOpeningFilter.id}
+                  expiredCount={rsvpSummary.readyToRelease}
+                />
+              )}
+            </div>
+            <div className="admin-rsvp-metrics">
+              <div><strong>{rsvpSummary.confirmed}</strong><span>Confirmed</span></div>
+              <div><strong>{rsvpSummary.awaiting}</strong><span>Awaiting response</span></div>
+              <div><strong>{rsvpSummary.readyToRelease}</strong><span>Ready to release</span></div>
+              <div><strong>{rsvpSummary.released + rsvpSummary.expired}</strong><span>Spots to refill</span></div>
+            </div>
+          </section>
+        )}
 
         <form className="admin-filters" method="get">
           <label>

@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <meta name="supported-color-schemes" content="light" />
+    <title>Next steps for your application</title>
+    <style>
+      :root { color-scheme:light; supported-color-schemes:light; }
+      html, body { margin:0 !important; padding:0 !important; width:100% !important; }
+      table, td { border-collapse:collapse !important; mso-table-lspace:0pt !important; mso-table-rspace:0pt !important; }
+      a { color:inherit; }
+      @media only screen and (max-width:620px) {
+        .email-shell { width:100% !important; }
+        .email-content, .email-footer { padding-left:24px !important; padding-right:24px !important; }
+        .email-title { font-size:30px !important; line-height:37px !important; }
+        .email-button a { display:block !important; padding-left:18px !important; padding-right:18px !important; }
+      }
+    </style>
+  </head>
+  <body bgcolor="#f5f5f5" style="margin:0; padding:0; width:100%; background-color:#f5f5f5; color:#202124; font-family:Arial,Helvetica,sans-serif; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%;">
+    <div style="display:none; max-height:0; overflow:hidden; opacity:0; color:transparent; mso-hide:all;">{{ params.preview_text }}</div>
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#f5f5f5" style="width:100%; background-color:#f5f5f5;">
+      <tr><td align="center" bgcolor="#f5f5f5" style="background-color:#f5f5f5; padding:0 16px;">
+        <!--[if mso]><table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0"><tr><td><![endif]-->
+        <table class="email-shell" role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" bgcolor="#f5f5f5" style="width:100%; max-width:600px; background-color:#f5f5f5;">
+          <tr><td style="padding:0; font-size:0; line-height:0;"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"><tr>
+            <td width="25%" height="6" bgcolor="#4285f4" style="height:6px; background-color:#4285f4; font-size:0; line-height:0;">&nbsp;</td>
+            <td width="25%" height="6" bgcolor="#ea4335" style="height:6px; background-color:#ea4335; font-size:0; line-height:0;">&nbsp;</td>
+            <td width="25%" height="6" bgcolor="#fbbc04" style="height:6px; background-color:#fbbc04; font-size:0; line-height:0;">&nbsp;</td>
+            <td width="25%" height="6" bgcolor="#34a853" style="height:6px; background-color:#34a853; font-size:0; line-height:0;">&nbsp;</td>
+          </tr></table></td></tr>
+          <tr><td class="email-content" bgcolor="#f5f5f5" style="padding:42px 40px 38px; background-color:#f5f5f5;">
+            <p style="margin:0 0 34px; color:#202124; font-size:16px; font-weight:700; line-height:22px;">GDG UTDallas</p>
+            <p style="margin:0 0 10px; color:#0b57d0; font-size:12px; font-weight:700; line-height:18px; letter-spacing:0.08em; text-transform:uppercase;">Application update</p>
+            <h1 class="email-title" style="margin:0; color:#202124; font-size:36px; font-weight:700; line-height:43px; letter-spacing:-0.02em;">We’d like to move forward.</h1>
+            <p style="margin:22px 0 0; color:#4d5156; font-size:16px; line-height:26px;">Hi {{ params.first_name }},</p>
+            <p style="margin:16px 0 0; color:#4d5156; font-size:16px; line-height:26px;">After reviewing your application for <strong>{{ params.opening_title }}</strong>, we’d like to continue with you in the interview process.</p>
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-top:26px;"><tr><td bgcolor="#f5f5f5" style="padding:20px 22px; background-color:#f5f5f5; border:1px solid #d3d8e0; border-left:4px solid #4285f4;">
+              <p style="margin:0; color:#6f7479; font-size:11px; font-weight:700; line-height:17px; letter-spacing:0.08em; text-transform:uppercase;">What happens next</p>
+              <p style="margin:6px 0 0; color:#4d5156; font-size:14px; line-height:22px;">A member of our team will contact you with interview scheduling details. No action is needed on the website right now.</p>
+            </td></tr></table>
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-top:28px;"><tr>
+              <td class="email-button" align="center" bgcolor="#0b57d0" style="background-color:#0b57d0;"><a href="{{ params.dashboard_url }}" style="display:inline-block; padding:13px 22px; color:#f5f5f5; font-size:15px; font-weight:700; line-height:20px; text-decoration:none;">View application dashboard</a></td>
+            </tr></table>
+            <p style="margin:24px 0 0; color:#6f7479; font-size:13px; line-height:21px;">If you have questions, reply to this email and our team will help.</p>
+          </td></tr>
+          <tr><td class="email-footer" bgcolor="#f5f5f5" style="padding:22px 40px 32px; background-color:#f5f5f5; border-top:1px solid #d5d9df;">
+            <p style="margin:0; color:#6f7479; font-size:12px; line-height:19px;">Google Developer Groups on Campus at The University of Texas at Dallas</p>
+            <p style="margin:5px 0 0; color:#6f7479; font-size:12px; line-height:19px;">This message was sent because you submitted an application at <a href="https://gdgutd.com" style="color:#0b57d0; text-decoration:underline;">gdgutd.com</a>.</p>
+          </td></tr>
+        </table>
+        <!--[if mso]></td></tr></table><![endif]-->
+      </td></tr>
+    </table>
+  </body>
+</html>

@@ -4,8 +4,10 @@ import { useState } from "react";
 import { useFormStatus } from "react-dom";
 import { ConfirmationDialog } from "@/components/confirmation-dialog";
 import {
+  markOfficerApplicationNotSelected,
   publishApplicationDecision,
   publishStagedDecisions,
+  releaseExpiredMenteeOffers,
 } from "./actions";
 
 function PublishSubmitButton({
@@ -20,6 +22,15 @@ function PublishSubmitButton({
   return (
     <button className="confirmation-primary" disabled={!ready || pending}>
       {pending ? "Publishing…" : idleLabel}
+    </button>
+  );
+}
+
+function ActionSubmitButton({ idleLabel, pendingLabel }: { idleLabel: string; pendingLabel: string }) {
+  const { pending } = useFormStatus();
+  return (
+    <button className="confirmation-primary" disabled={pending}>
+      {pending ? pendingLabel : idleLabel}
     </button>
   );
 }
@@ -143,6 +154,88 @@ export function PublishOpeningDecisionsButton({
           />
         </label>
       </ConfirmationDialog>
+    </>
+  );
+}
+
+export function ReleaseExpiredOffersButton({
+  openingId,
+  expiredCount,
+}: {
+  openingId: number;
+  expiredCount: number;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <button
+        className="admin-release-expired"
+        type="button"
+        disabled={expiredCount === 0}
+        onClick={() => setOpen(true)}
+      >
+        Release expired offers <span>{expiredCount}</span>
+      </button>
+      <ConfirmationDialog
+        open={open}
+        onClose={() => setOpen(false)}
+        title={`Release ${expiredCount} expired offer${expiredCount === 1 ? "" : "s"}?`}
+        description={(
+          <p>
+            These applicants did not respond within 72 hours. Their dashboard status will change to not selected, each will receive the RSVP-expiry email, and the same number of spots can be offered in the next round.
+          </p>
+        )}
+        actions={(
+          <>
+            <button type="button" className="confirmation-cancel" onClick={() => setOpen(false)}>Cancel</button>
+            <form action={releaseExpiredMenteeOffers}>
+              <input type="hidden" name="openingId" value={openingId} />
+              <input type="hidden" name="openingSlug" value="sprint-mentee" />
+              <ActionSubmitButton idleLabel="Release expired offers" pendingLabel="Releasing…" />
+            </form>
+          </>
+        )}
+      />
+    </>
+  );
+}
+
+export function MarkOfficerNotSelectedButton({
+  applicationId,
+  applicantName,
+  returnPosition,
+}: {
+  applicationId: number;
+  applicantName: string;
+  returnPosition?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <button type="button" className="admin-interview-outcome" onClick={() => setOpen(true)}>
+        Mark not selected after interview
+      </button>
+      <ConfirmationDialog
+        open={open}
+        onClose={() => setOpen(false)}
+        title={`Mark ${applicantName} as not selected?`}
+        description={(
+          <>
+            <p>This updates the applicant’s dashboard from selected to not selected.</p>
+            <p><strong>No email will be sent.</strong> Send the personal interview follow-up before changing the status here.</p>
+          </>
+        )}
+        actions={(
+          <>
+            <button type="button" className="confirmation-cancel" onClick={() => setOpen(false)}>Cancel</button>
+            <form action={markOfficerApplicationNotSelected}>
+              <input type="hidden" name="applicationId" value={applicationId} />
+              <input type="hidden" name="returnPosition" value={returnPosition ?? ""} />
+              <ActionSubmitButton idleLabel="Mark not selected" pendingLabel="Updating…" />
+            </form>
+          </>
+        )}
+      />
     </>
   );
 }

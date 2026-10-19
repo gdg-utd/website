@@ -1,10 +1,16 @@
 import { createClient } from "@supabase/supabase-js";
 
-type TemplateKey = "confirmation" | "acceptance" | "rejection";
+type TemplateKey =
+  | "confirmation"
+  | "acceptance"
+  | "rejection"
+  | "officer_update"
+  | "rsvp_expired";
 
 type QueuePayload = {
   first_name?: unknown;
   opening_title?: unknown;
+  rsvp_deadline?: unknown;
 };
 
 type TemplateDefinition = {
@@ -17,6 +23,8 @@ const TEMPLATE_KEYS = new Set<TemplateKey>([
   "confirmation",
   "acceptance",
   "rejection",
+  "officer_update",
+  "rsvp_expired",
 ]);
 
 function response(body: Record<string, unknown>, status = 200) {
@@ -63,6 +71,20 @@ function nextSteps(value: unknown) {
     .filter((item): item is string => typeof item === "string" && Boolean(item.trim()))
     .map((item) => item.trim())
     .join(" ");
+}
+
+function centralDeadline(value: unknown) {
+  const parsed = typeof value === "string" ? new Date(value) : null;
+  if (!parsed || Number.isNaN(parsed.getTime())) return "72 hours after this email was sent";
+  return new Intl.DateTimeFormat("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone: "America/Chicago",
+    timeZoneName: "short",
+  }).format(parsed);
 }
 
 Deno.serve(async (request: Request) => {
@@ -167,6 +189,7 @@ Deno.serve(async (request: Request) => {
   const firstName = stringValue(payload.first_name, "there");
   const openingTitle = stringValue(payload.opening_title, "GDG UTDallas");
   const siteUrl = (Deno.env.get("SITE_URL") || "https://gdgutd.com").replace(/\/$/, "");
+  const applicationsUrl = `${siteUrl}/dashboard/applications`;
   const senderName = Deno.env.get("BREVO_SENDER_NAME")?.trim() || "GDG UTDallas";
   const replyTo = Deno.env.get("BREVO_REPLY_TO")?.trim();
 
@@ -179,7 +202,9 @@ Deno.serve(async (request: Request) => {
       opening_title: openingTitle,
       preview_text: stringValue(template.intro, `An update about your ${openingTitle} application.`),
       next_steps: nextSteps(template.next_steps),
-      dashboard_url: `${siteUrl}/dashboard`,
+      dashboard_url: applicationsUrl,
+      rsvp_url: applicationsUrl,
+      rsvp_deadline: centralDeadline(payload.rsvp_deadline),
     },
     tags: ["applications", templateKey],
     headers: { "Idempotency-Key": queueItem.idempotency_key },

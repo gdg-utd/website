@@ -190,6 +190,44 @@ export type Database = {
         }
         Relationships: []
       }
+      application_rsvps: {
+        Row: {
+          agreements_confirmed_at: string | null
+          application_id: number
+          created_at: string
+          deadline_at: string
+          responded_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          agreements_confirmed_at?: string | null
+          application_id: number
+          created_at?: string
+          deadline_at: string
+          responded_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          agreements_confirmed_at?: string | null
+          application_id?: number
+          created_at?: string
+          deadline_at?: string
+          responded_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "application_rsvps_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: true
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       applications: {
         Row: {
           applicant_email: string
@@ -252,6 +290,27 @@ export type Database = {
           },
         ]
       }
+      password_reset_rate_limits: {
+        Row: {
+          expires_at: string
+          key_hash: string
+          request_count: number
+          window_started_at: string
+        }
+        Insert: {
+          expires_at: string
+          key_hash: string
+          request_count?: number
+          window_started_at?: string
+        }
+        Update: {
+          expires_at?: string
+          key_hash?: string
+          request_count?: number
+          window_started_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -300,16 +359,66 @@ export type Database = {
         }
         Relationships: []
       }
+      system_email_templates: {
+        Row: {
+          active: boolean
+          brevo_template_id: number
+          template_key: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          brevo_template_id: number
+          template_key: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          brevo_template_id?: number
+          template_key?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      consume_password_reset_rate_limit: {
+        Args: {
+          p_key_hash: string
+          p_max_requests: number
+          p_window_seconds: number
+        }
+        Returns: boolean
+      }
+      mark_officer_application_not_selected: {
+        Args: { target_application_id: number }
+        Returns: boolean
+      }
       publish_staged_application_decisions: {
         Args: { target_opening_id: number }
         Returns: {
           application_id: number
           decision: string
+        }[]
+      }
+      release_expired_mentee_offers: {
+        Args: { target_opening_id: number }
+        Returns: {
+          expired_application_id: number
+        }[]
+      }
+      respond_to_mentee_offer: {
+        Args: {
+          agreements_confirmed?: boolean
+          response: string
+          target_application_id: number
+        }
+        Returns: {
+          response_recorded_at: string
+          rsvp_status: string
         }[]
       }
     }

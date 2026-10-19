@@ -157,7 +157,7 @@ export async function publishApplicationDecision(formData: FormData) {
     .eq("id", id)
     .eq("submission_state", "submitted")
     .eq("published_decision", "undecided")
-    .select("id")
+    .select("id, application_openings(slug)")
     .maybeSingle();
 
   if (error) {
@@ -166,15 +166,21 @@ export async function publishApplicationDecision(formData: FormData) {
   }
 
   if (publishedApplication) {
+    const templateKey = decision === "rejected"
+      ? "rejection"
+      : publishedApplication.application_openings?.slug === "sprint-mentee"
+        ? "acceptance"
+        : "officer_update";
     await deliverApplicationEmail(
       supabase,
       publishedApplication.id,
-      decision === "accepted" ? "acceptance" : "rejection",
+      templateKey,
     );
   }
 
   revalidatePath("/admin/applications");
   revalidatePath("/dashboard");
+  revalidatePath("/dashboard/applications");
   redirect(portalPath({ message: "published", count: publishedApplication ? 1 : 0, position }));
 }
 
@@ -215,19 +221,75 @@ export async function publishStagedDecisions(formData: FormData) {
     published.map((application) => deliverApplicationEmail(
       supabase,
       application.application_id,
-      application.decision === "accepted" ? "acceptance" : "rejection",
+      application.decision === "rejected"
+        ? "rejection"
+        : opening.slug === "sprint-mentee" ? "acceptance" : "officer_update",
     )),
   );
   const emailPending = deliveryResults.filter((delivered) => !delivered).length;
 
   revalidatePath("/admin/applications");
   revalidatePath("/dashboard");
+  revalidatePath("/dashboard/applications");
   redirect(portalPath({
     message: "published-all",
     count: published.length,
     emailPending,
     position: opening.slug,
   }));
+}
+
+export async function releaseExpiredMenteeOffers(formData: FormData) {
+  const openingId = Number(value(formData, "openingId"));
+  const openingSlug = value(formData, "openingSlug");
+  if (!Number.isSafeInteger(openingId) || openingId <= 0 || openingSlug !== "sprint-mentee") {
+    redirect(portalPath({ message: "opening-required" }));
+  }
+
+  const { supabase } = await requireApplicationAdmin(portalPath({ position: openingSlug }));
+  const { data: expired, error } = await supabase.rpc("release_expired_mentee_offers", {
+    target_opening_id: openingId,
+  });
+
+  if (error) {
+    console.error("Unable to release expired mentee offers", error.code, error.message);
+    redirect(portalPath({ message: "expire-failed", position: openingSlug }));
+  }
+
+  const applicationIds = (expired ?? []).map((item) => item.expired_application_id);
+  const deliveryResults = await Promise.all(
+    applicationIds.map((id) => deliverApplicationEmail(supabase, id, "rsvp_expired")),
+  );
+  const emailPending = deliveryResults.filter((delivered) => !delivered).length;
+
+  revalidatePath("/admin/applications");
+  revalidatePath("/dashboard/applications");
+  redirect(portalPath({
+    message: applicationIds.length > 0 ? "expired-released" : "no-expired",
+    count: applicationIds.length,
+    emailPending,
+    position: openingSlug,
+  }));
+}
+
+export async function markOfficerApplicationNotSelected(formData: FormData) {
+  const id = applicationId(formData);
+  const position = value(formData, "returnPosition") || undefined;
+  if (!id) redirect("/admin/applications");
+
+  const { supabase } = await requireApplicationAdmin(portalPath({ applicationId: id, position }));
+  const { data: changed, error } = await supabase.rpc("mark_officer_application_not_selected", {
+    target_application_id: id,
+  });
+
+  if (error || !changed) {
+    if (error) console.error("Unable to record officer interview outcome", error.code, error.message);
+    redirect(portalPath({ message: "interview-outcome-failed", applicationId: id, position }));
+  }
+
+  revalidatePath("/admin/applications");
+  revalidatePath("/dashboard/applications");
+  redirect(portalPath({ message: "interview-not-selected", position }));
 }
 
 export async function reopenApplication(formData: FormData) {
@@ -249,5 +311,6 @@ export async function reopenApplication(formData: FormData) {
 
   revalidatePath("/admin/applications");
   revalidatePath("/dashboard");
+  revalidatePath("/dashboard/applications");
   redirect(portalPath({ message: "reopened", position }));
 }

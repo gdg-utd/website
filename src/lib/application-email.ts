@@ -1,7 +1,12 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/database.types";
 
-export type ApplicationEmailTemplate = "confirmation" | "acceptance" | "rejection";
+export type ApplicationEmailTemplate =
+  | "confirmation"
+  | "acceptance"
+  | "rejection"
+  | "officer_update"
+  | "rsvp_expired";
 
 export async function deliverApplicationEmail(
   supabase: SupabaseClient<Database>,

@@ -29,7 +29,7 @@ export async function GET(
     return Response.json({ error: "Application staff access required." }, { status: 403 });
   }
 
-  const [{ data: application }, { data: events }] = await Promise.all([
+  const [{ data: application }, { data: events }, { data: rsvp }] = await Promise.all([
     supabase
       .from("applications")
       .select("*, application_openings(*)")
@@ -42,6 +42,11 @@ export async function GET(
       .eq("application_id", id)
       .order("created_at", { ascending: false })
       .order("id", { ascending: false }),
+    supabase
+      .from("application_rsvps")
+      .select("status, deadline_at, responded_at")
+      .eq("application_id", id)
+      .maybeSingle(),
   ]);
 
   if (!application?.application_openings) {
@@ -69,12 +74,18 @@ export async function GET(
     id: application.id,
     applicantName: `${application.applicant_first_name} ${application.applicant_last_name}`,
     applicantEmail: application.applicant_email,
+    openingSlug: opening.slug,
     openingTitle: opening.title,
     submittedLabel: formatCentralDate(application.submitted_at),
     formVersion: application.form_version,
     publishedDecision: application.published_decision,
     publishedLabel: formatCentralDate(application.decision_published_at),
     stagedDecision,
+    rsvp: rsvp ? {
+      status: rsvp.status as "awaiting_response" | "confirmed" | "released" | "expired",
+      deadlineLabel: formatCentralDate(rsvp.deadline_at),
+      respondedLabel: rsvp.responded_at ? formatCentralDate(rsvp.responded_at) : undefined,
+    } : undefined,
     sections: opening.form_schema.sections.map((section) => ({
       id: section.id,
       title: section.title,
@@ -91,6 +102,10 @@ export async function GET(
         : null;
       const label = event.event_type === "submitted" ? "Application submitted"
         : event.event_type === "reopened" ? "Application reopened"
+          : event.event_type === "rsvp_confirmed" ? "Spot confirmed"
+            : event.event_type === "rsvp_released" ? "Spot released by applicant"
+              : event.event_type === "rsvp_expired" ? "RSVP expired"
+                : event.event_type === "post_interview_rejected" ? "Marked not selected after interview"
           : event.event_type === "decision_staged" && eventDecision === "cleared" ? "Staged decision cleared"
             : event.event_type === "decision_staged" ? `${eventDecision === "accepted" ? "Acceptance" : "Not selected"} staged`
             : `${eventDecision === "accepted" ? "Acceptance" : "Not selected"} published`;
