@@ -1,12 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useState, useTransition } from "react";
-import { reopenApplication, stageApplicationDecision } from "./actions";
+import { stageApplicationDecision } from "./actions";
 import { ApplicationTable, type StaffApplicationRow } from "./application-table";
 import {
   MarkOfficerNotSelectedButton,
   PublishApplicationDecisionButton,
   PublishOpeningDecisionsButton,
+  ReopenApplicationButton,
 } from "./publish-confirmations";
 import type {
   ApplicationReview,
@@ -315,11 +316,12 @@ function ApplicationReviewContent({
             <details className="admin-reopen">
               <summary>Application corrections</summary>
               <p>Reopening returns this application to draft and clears any published decision.</p>
-              <form action={reopenApplication}>
-                <input type="hidden" name="applicationId" value={review.id} />
-                <input type="hidden" name="returnPosition" value={returnPosition ?? ""} />
-                <button>Reopen application</button>
-              </form>
+              <ReopenApplicationButton
+                key={review.id}
+                applicationId={review.id}
+                applicantName={review.applicantName}
+                returnPosition={returnPosition}
+              />
             </details>
           </div>
         )}

@@ -8,6 +8,7 @@ import {
   publishApplicationDecision,
   publishStagedDecisions,
   releaseExpiredMenteeOffers,
+  reopenApplication,
 } from "./actions";
 
 function PublishSubmitButton({
@@ -32,6 +33,49 @@ function ActionSubmitButton({ idleLabel, pendingLabel }: { idleLabel: string; pe
     <button className="confirmation-primary" disabled={pending}>
       {pending ? pendingLabel : idleLabel}
     </button>
+  );
+}
+
+export function ReopenApplicationButton({
+  applicationId,
+  applicantName,
+  returnPosition,
+}: {
+  applicationId: number;
+  applicantName: string;
+  returnPosition?: string;
+}) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <button type="button" aria-haspopup="dialog" onClick={() => setOpen(true)}>
+        Reopen application
+      </button>
+      <ConfirmationDialog
+        open={open}
+        onClose={() => setOpen(false)}
+        title={`Reopen ${applicantName}’s application?`}
+        description={(
+          <p>
+            This will return the application to draft and clear any published decision.
+            {" "}{applicantName} will be able to edit and resubmit their application.
+          </p>
+        )}
+        actions={(
+          <>
+            <button type="button" className="confirmation-cancel" onClick={() => setOpen(false)} autoFocus>
+              Cancel
+            </button>
+            <form action={reopenApplication}>
+              <input type="hidden" name="applicationId" value={applicationId} />
+              <input type="hidden" name="returnPosition" value={returnPosition ?? ""} />
+              <ActionSubmitButton idleLabel="Reopen application" pendingLabel="Reopening…" />
+            </form>
+          </>
+        )}
+      />
+    </>
   );
 }
 
