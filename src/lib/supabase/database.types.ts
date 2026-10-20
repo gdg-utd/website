@@ -14,6 +14,12 @@ export type Database = {
   }
   public: {
     Tables: {
+      email_blacklist: {
+        Row: { email: string; created_at: string }
+        Insert: { email: string; created_at?: string }
+        Update: { email?: string; created_at?: string }
+        Relationships: []
+      }
       application_admins: {
         Row: {
           active: boolean
@@ -385,6 +391,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      is_email_blacklisted: {
+        Args: { candidate_email: string }
+        Returns: boolean
+      }
       consume_password_reset_rate_limit: {
         Args: {
           p_key_hash: string

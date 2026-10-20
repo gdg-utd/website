@@ -118,6 +118,22 @@ export async function signup(
 
   const supabase = await createClient();
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const blacklistMessage = "Sorry, you cannot create an account because your email has been blacklisted by the GDG team. Please contact the GDG team if you believe this is incorrect.";
+  const { data: blacklisted, error: blacklistError } = await supabase.rpc(
+    "is_email_blacklisted",
+    { candidate_email: email },
+  );
+
+  if (blacklistError || typeof blacklisted !== "boolean") {
+    return {
+      status: "error",
+      message: "We could not check signup eligibility. Please try again shortly.",
+    };
+  }
+  if (blacklisted) {
+    return { status: "error", message: blacklistMessage };
+  }
+
   const confirmationDestination = new URL(onboardingPath(next), siteUrl);
   const { data, error } = await supabase.auth.signUp({
     email,
@@ -133,6 +149,13 @@ export async function signup(
   });
 
   if (error) {
+    // The list may have changed between our check and Auth's database insert.
+    const { data: nowBlacklisted } = await supabase.rpc("is_email_blacklisted", {
+      candidate_email: email,
+    });
+    if (nowBlacklisted) {
+      return { status: "error", message: blacklistMessage };
+    }
     return { status: "error", message: authErrorMessage(error.message) };
   }
 
