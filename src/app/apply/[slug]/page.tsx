@@ -100,7 +100,7 @@ export default async function ApplicationPage({ params, searchParams }: Applicat
             <p>{opening.description}</p>
           </div>
           <dl>
-            <div><dt>Form version</dt><dd>{opening.form_version}</dd></div>
+            <div><dt>Form version</dt><dd>{opening.form_version.toFixed(1)}</dd></div>
             <div><dt>Status</dt><dd>{submitted ? "Submitted" : accepting ? "Open" : "Closed"}</dd></div>
             {opening.closes_at && <div><dt>Closes</dt><dd>{formatCentralDate(opening.closes_at)} CT</dd></div>}
           </dl>

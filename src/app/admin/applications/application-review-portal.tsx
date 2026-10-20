@@ -253,7 +253,7 @@ function ApplicationReviewContent({
 
       <dl className="admin-drawer-meta">
         <div><dt>Submitted</dt><dd>{review.submittedLabel} CT</dd></div>
-        <div><dt>Form version</dt><dd>{review.formVersion}</dd></div>
+        <div><dt>Form version</dt><dd>{review.formVersion.toFixed(1)}</dd></div>
         <div><dt>Application ID</dt><dd>#{review.id}</dd></div>
       </dl>
 
