@@ -28,8 +28,8 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
             <p>Create an account for GDG UTDallas programs and resources.</p>
           </div>
           <Image
-            src="/illustrations/productive-success.svg"
-            alt="A hand-drawn illustration celebrating a job well done"
+            src="/illustrations/productive-progress.svg"
+            alt="A hand-drawn illustration of a person completing a set of tasks"
             width={608}
             height={520}
             loading="eager"
