@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { SiteHeader } from "@/components/site-header";
+import { SprintGallery } from "@/components/sprint-gallery";
 import { CHAPTER_URL, DISCORD_URL } from "@/lib/gdg";
 
 export const metadata: Metadata = {
@@ -185,50 +186,8 @@ export default function SprintPage() {
               </div>
               <p>Project teams, working sessions, and presentations from the SPRINT program.</p>
             </div>
-            <div className="sprint-photo-grid">
-              <div className="sprint-photo-column">
-                <figure className="sprint-photo sprint-photo-four-three">
-                  <Image
-                    src="/pictures/sprint-community.jpg"
-                    alt="SPRINT participants gathered in a lecture hall"
-                    fill
-                    loading="eager"
-                    sizes="(max-width: 760px) 100vw, 50vw"
-                  />
-                  <figcaption>SPRINT community</figcaption>
-                </figure>
-                <figure className="sprint-photo sprint-photo-sixteen-nine">
-                  <Image
-                    src="/pictures/sprint-project-team.jpg"
-                    alt="A SPRINT project team standing together"
-                    fill
-                    sizes="(max-width: 760px) 100vw, 50vw"
-                  />
-                  <figcaption>Project team</figcaption>
-                </figure>
-              </div>
-              <div className="sprint-photo-column">
-                <figure className="sprint-photo sprint-photo-sixteen-nine">
-                  <Image
-                    src="/pictures/sprint-project-presentation.jpg"
-                    alt="A SPRINT team presenting its project"
-                    fill
-                    sizes="(max-width: 760px) 100vw, 50vw"
-                  />
-                  <figcaption>Project presentation</figcaption>
-                </figure>
-                <figure className="sprint-photo sprint-photo-four-three">
-                  <Image
-                    src="/pictures/sprint-gdg-team.jpg"
-                    alt="A SPRINT team standing beside a We love GDG sign"
-                    fill
-                    sizes="(max-width: 760px) 100vw, 50vw"
-                  />
-                  <figcaption>Team photo</figcaption>
-                </figure>
-              </div>
-            </div>
           </div>
+          <SprintGallery />
         </section>
 
         <section className="sprint-join shell">
