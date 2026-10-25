@@ -1,10 +1,10 @@
 # Backend and password-workflow fixes — October 24, 2026
 
-Implementation and local validation are complete. The live Supabase migrations, Edge Function deployments, and retry schedule have **not** been applied. Automatic approval review rejected persistent production changes without explicit deployment approval. The expanded production rollback test was also rejected; the complete regression suite was instead run in an isolated local PostgreSQL runtime.
+Implementation, local validation, and the approved Supabase deployment are complete. On October 24 (00:47 UTC October 25), both migrations were applied and all three email functions deployed. The named retry job is active every minute; its first real scheduled HTTP request returned 200 with `processed: 0, sent: 0`. The full regression suite runs in an isolated local PostgreSQL runtime.
 
-Do not deploy the frontend alone: its application queries and admin portal expect the new schema and RPCs. Existing application records, account passwords, and notification delivery were not persistently changed during testing. No email provider was called by the tests.
+The new frontend is also available on the public host, including `/reset-password` and the security headers. The migration backfilled application schema snapshots and repaired draft form versions. Tests did not change account passwords or send notification emails; the live queue contains six previously sent messages and no waiting messages.
 
-## Changes prepared
+## Changes deployed
 
 | Finding | Implementation |
 | --- | --- |
@@ -39,17 +39,19 @@ A server-only `PASSWORD_RECOVERY_SECRET` is required in the Next.js hosting envi
 - Deno checks pass for the three changed/new Edge Functions against the pinned Supabase client and lockfile.
 - Local production HTTP checks verify HSTS, frame/MIME protections, matching script nonces, different nonces on consecutive requests, no production `unsafe-eval`, and removal of the framework version header. The signed-in account UI still works with CSP enabled, with no browser console errors in the checked password flow.
 - Browser verification covers the real profile password link/subpage and the rejected recovery state without a reset link. Mobile and desktop screenshots are saved in the task's `backend-fixes` artifact folder.
-- Pagination, notification states, and an authorized recovery-form layout were also checked with isolated fixture data, because the production migration is pending. The 320px heading overflow found in that preview was fixed; final page width equals viewport content width. Fixture previews do not claim to validate live delivery.
-- Real password changes, email receipt, cron execution, and full production end-to-end checks remain for the approved deployment/user test. The test account's password was not changed.
+- Pagination, notification states, and an authorized recovery-form layout were also checked with isolated fixture data, before production deployment. The 320px heading overflow found in that preview was fixed; final page width equals viewport content width. Fixture previews do not claim to validate live delivery.
+- Live cron execution is verified separately from the local harness: the scheduled request returned HTTP 200 with an empty queue. A request without worker authorization returned HTTP 401. Real password changes and email inbox receipt still require the user test; the account password was not changed.
 
-## Deployment order after approval
+## Deployment record and remaining user test
 
-1. Configure the server-only `PASSWORD_RECOVERY_SECRET` in the Next.js host. Retain the existing Supabase and Brevo secrets.
-2. Apply `20261024222318_harden_applications_and_delivery.sql` using a transaction-aware migration tool. This adds constraints/RPCs, repairs the draft version, backfills schema snapshots, and creates private worker authorization in Vault. Review any constraint failure rather than deleting or silently rewriting invalid user data.
-3. Deploy `send-application-email`, `request-password-reset`, and `process-application-emails`, including `supabase/functions/_shared/application-email.ts` and their import maps. `supabase/config.toml` records the JWT settings; the worker explicitly validates its Vault token. The immediate send function still validates the user's session and application/admin access.
-4. Confirm old in-flight delivery requests have drained, validate the worker's unauthorized-request rejection, and check the pending queue before enabling the schedule. Historical ambiguous failures need administrator review.
-5. Apply `20261024223412_schedule_application_email_retries.sql`. It invokes the worker once per minute with a Vault credential over HTTPS; no credential is stored in source.
-6. Deploy the website, regenerate database types from the deployed schema, run Supabase advisors, and repeat the browser/HTTP smoke checks against the deployed host.
-7. Have the user complete a real password change and email recovery test, then verify the return destinations and new-password login. Verify delivery using an authorized test notification, including retry behavior, without publishing real applicant decisions just to test email.
+1. **Needs hosting confirmation:** configure the server-only `PASSWORD_RECOVERY_SECRET` in Vercel Production and redeploy. Its presence cannot be verified through the public site. Retain existing Supabase and Brevo secrets.
+2. **Applied:** `20261025004702_harden_applications_and_delivery.sql`. This added constraints/RPCs, repaired draft versions, backfilled schema snapshots, and created private worker authorization in Vault.
+3. **Deployed:** `send-application-email`, `request-password-reset`, and `process-application-emails`, including shared delivery code and import maps. JWT settings match `supabase/config.toml`; the worker checks its private Vault token.
+4. **Verified:** the worker rejects an unauthenticated request with HTTP 401. The queue contains no processing/pending/failed entries, and all six existing messages remain sent.
+5. **Applied and running:** `20261025004741_schedule_application_email_retries.sql`. One active named job runs every minute, and consecutive scheduled requests returned HTTP 200 with no work.
+6. **Verified:** live test-account login, admin list pagination display, application review, historical provider status, profile password subpage, and rejection of recovery access without email-link proof. Consecutive public HTTP requests have distinct script nonces matching every script, HSTS, frame denial, MIME protection, no production `unsafe-eval`, and no framework-version header. An unknown reset address returned generic HTTP 200 without adding quota records. Types were regenerated and lint, type checks, all 12 unit groups, and the database regression suite passed.
+7. **Remaining user test:** complete a real password change and emailed recovery flow, verify return destinations and login with the new password, and confirm inbox receipt. Automated browser testing stops before entering a new password. Retry behavior was exercised with isolated test fixtures; the live worker was verified on an empty queue without publishing real applicant decisions.
 
-The existing live advisor findings include intentional authenticated SECURITY DEFINER endpoints with role/ownership checks and server-only RLS tables without public policies. New admin delivery implementations live in the private schema behind invoker wrappers; worker/reset helpers are service-role only. Re-run advisors after the approved migration to check the deployed result.
+Live post-deployment checks: 159 academic program pairs, a validated profile constraint, zero missing application snapshots, zero draft version drift, and no anon/member execution privilege on the claim, quota-reservation, or worker-auth helpers. Function versions: `send-application-email` 11, `request-password-reset` 3, `process-application-emails` 1. Local filenames match the migration versions recorded by Supabase. Database TypeScript types were regenerated from the deployed schema and type checking passed.
+
+Post-deployment security advisors report the same three existing guarded authenticated SECURITY DEFINER endpoints, three intentionally server-only RLS tables without public policies, and disabled paid leaked-password protection. There are no additional security findings from this migration. See [function advisory guidance](https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable) and [RLS advisory guidance](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy). Performance advisors report five unused indexes, including newly created indexes on this small dataset; no removal was made based only on initial usage statistics. See [unused index guidance](https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index).

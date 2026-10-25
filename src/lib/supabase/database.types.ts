@@ -14,14 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      utd_academic_programs: { Row: {degree: string; major: string}; Insert: {degree: string; major: string}; Update: {degree?: string; major?: string}; Relationships: [] }
-
-      email_blacklist: {
-        Row: { email: string; created_at: string }
-        Insert: { email: string; created_at?: string }
-        Update: { email?: string; created_at?: string }
-        Relationships: []
-      }
       application_admins: {
         Row: {
           active: boolean
@@ -48,18 +40,18 @@ export type Database = {
       }
       application_email_queue: {
         Row: {
-          attempts: number
-          next_attempt_at: string
-          provider_idempotency_key: string
-          lease_token: string | null
-          locked_until: string | null
           application_id: number
+          attempts: number
           created_at: string
           id: number
           idempotency_key: string
           last_error: string | null
+          lease_token: string | null
+          locked_until: string | null
+          next_attempt_at: string
           opening_id: number
           payload: Json
+          provider_idempotency_key: string
           provider_message_id: string | null
           recipient: string
           sent_at: string | null
@@ -67,18 +59,18 @@ export type Database = {
           template_key: string
         }
         Insert: {
-          attempts?: number
-          next_attempt_at?: string
-          provider_idempotency_key?: string
-          lease_token?: string | null
-          locked_until?: string | null
           application_id: number
+          attempts?: number
           created_at?: string
           id?: never
           idempotency_key: string
           last_error?: string | null
+          lease_token?: string | null
+          locked_until?: string | null
+          next_attempt_at?: string
           opening_id: number
           payload?: Json
+          provider_idempotency_key?: string
           provider_message_id?: string | null
           recipient: string
           sent_at?: string | null
@@ -86,18 +78,18 @@ export type Database = {
           template_key: string
         }
         Update: {
-          attempts?: number
-          next_attempt_at?: string
-          provider_idempotency_key?: string
-          lease_token?: string | null
-          locked_until?: string | null
           application_id?: number
+          attempts?: number
           created_at?: string
           id?: never
           idempotency_key?: string
           last_error?: string | null
+          lease_token?: string | null
+          locked_until?: string | null
+          next_attempt_at?: string
           opening_id?: number
           payload?: Json
+          provider_idempotency_key?: string
           provider_message_id?: string | null
           recipient?: string
           sent_at?: string | null
@@ -316,6 +308,21 @@ export type Database = {
           },
         ]
       }
+      email_blacklist: {
+        Row: {
+          created_at: string
+          email: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+        }
+        Relationships: []
+      }
       password_reset_rate_limits: {
         Row: {
           expires_at: string
@@ -406,23 +413,64 @@ export type Database = {
         }
         Relationships: []
       }
+      utd_academic_programs: {
+        Row: {
+          degree: string
+          major: string
+        }
+        Insert: {
+          degree: string
+          major: string
+        }
+        Update: {
+          degree?: string
+          major?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      reserve_password_reset: { Args: {p_email: string; p_email_key: string; p_global_key: string}; Returns: boolean }
-      claim_application_email: { Args: {queue_id: number}; Returns: Database["public"]["Tables"]["application_email_queue"]["Row"][] }
-      expire_application_email_leases: { Args: Record<PropertyKey, never>; Returns: undefined }
-      is_application_email_worker: { Args: {p_token: string}; Returns: boolean }
-
-      get_staff_application_page: { Args: {p_q?: string; p_position?: string; p_decision?: string; p_page?: number; p_page_size?: number}; Returns: Json }
-      application_email_status: { Args: {target_application_id: number}; Returns: {id: number; template_key: string; status: string; attempts: number; next_attempt_at: string; last_error: string | null}[] }
-      retry_application_email: { Args: {target_queue_id: number}; Returns: {application_id: number; template_key: string}[] }
-
-      is_email_blacklisted: {
-        Args: { candidate_email: string }
-        Returns: boolean
+      application_email_status: {
+        Args: { target_application_id: number }
+        Returns: {
+          attempts: number
+          id: number
+          last_error: string
+          next_attempt_at: string
+          status: string
+          template_key: string
+        }[]
+      }
+      claim_application_email: {
+        Args: { queue_id: number }
+        Returns: {
+          application_id: number
+          attempts: number
+          created_at: string
+          id: number
+          idempotency_key: string
+          last_error: string | null
+          lease_token: string | null
+          locked_until: string | null
+          next_attempt_at: string
+          opening_id: number
+          payload: Json
+          provider_idempotency_key: string
+          provider_message_id: string | null
+          recipient: string
+          sent_at: string | null
+          status: string
+          template_key: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "application_email_queue"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       consume_password_reset_rate_limit: {
         Args: {
@@ -430,6 +478,25 @@ export type Database = {
           p_max_requests: number
           p_window_seconds: number
         }
+        Returns: boolean
+      }
+      expire_application_email_leases: { Args: never; Returns: undefined }
+      get_staff_application_page: {
+        Args: {
+          p_decision?: string
+          p_page?: number
+          p_page_size?: number
+          p_position?: string
+          p_q?: string
+        }
+        Returns: Json
+      }
+      is_application_email_worker: {
+        Args: { p_token: string }
+        Returns: boolean
+      }
+      is_email_blacklisted: {
+        Args: { candidate_email: string }
         Returns: boolean
       }
       mark_officer_application_not_selected: {
@@ -449,6 +516,10 @@ export type Database = {
           expired_application_id: number
         }[]
       }
+      reserve_password_reset: {
+        Args: { p_email: string; p_email_key: string; p_global_key: string }
+        Returns: boolean
+      }
       respond_to_mentee_offer: {
         Args: {
           agreements_confirmed?: boolean
@@ -458,6 +529,13 @@ export type Database = {
         Returns: {
           response_recorded_at: string
           rsvp_status: string
+        }[]
+      }
+      retry_application_email: {
+        Args: { target_queue_id: number }
+        Returns: {
+          application_id: number
+          template_key: string
         }[]
       }
     }

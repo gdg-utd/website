@@ -13,7 +13,7 @@ const root = path.resolve(__dirname, "..");
     .readdirSync(root + "/supabase/migrations")
     .filter((x) => x.endsWith(".sql"))
     .sort();
-  for (const file of files.filter((x) => x < "20261024222318")) {
+  for (const file of files.filter((x) => x < "20261025004702")) {
     try {
       await db.exec(
         fs.readFileSync(root + "/supabase/migrations/" + file, "utf8"),
@@ -39,7 +39,7 @@ const root = path.resolve(__dirname, "..");
   let migration = fs
     .readFileSync(
       root +
-        "/supabase/migrations/20261024222318_harden_applications_and_delivery.sql",
+        "/supabase/migrations/20261025004702_harden_applications_and_delivery.sql",
       "utf8",
     )
     .replace("create extension if not exists pg_cron;", "")
@@ -69,7 +69,7 @@ const root = path.resolve(__dirname, "..");
   await db.exec(
     fs.readFileSync(
       root +
-        "/supabase/migrations/20261024223412_schedule_application_email_retries.sql",
+        "/supabase/migrations/20261025004741_schedule_application_email_retries.sql",
       "utf8",
     ),
   );
