@@ -175,6 +175,7 @@ Give each staff member the role required for their responsibilities. The staff p
 
 ## Project notes
 
+- [Maintainer guide — deployments, operations, and officer handover](./docs/MAINTAINER_GUIDE.md)
 - [Artwork and photography credits](./ASSETS.md)
 - [UI validation notes](./docs/ui-fixes-validation.md)
 - [Backend and password workflow validation](./docs/backend-fixes-validation.md)
