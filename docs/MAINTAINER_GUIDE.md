@@ -112,13 +112,14 @@ npm test
 npm run test:database
 npx next typegen
 npx tsc --noEmit
+npm run test:browser
 npm run build -- --webpack
 git diff --check
 ```
 
 The build uses the environment configured for that build; it may fetch public chapter information. Tests use mocks and synthetic data, but ordinary browser use against production remains real activity.
 
-GitHub Actions currently runs lint, both test suites, route type generation, and TypeScript checks. **It does not currently run the production build or automated browser tests.** Run the build separately and perform the manual checks appropriate to the change.
+GitHub Actions runs lint, unit/database regressions, route type generation, TypeScript checks, a production build, and desktop/mobile Playwright tests. The browser suite uses the real built application with a local synthetic service double. Install Chromium once with `npx playwright install chromium`, then run `npm run test:browser`; see the [browser test guide](./BROWSER_TESTS.md) for coverage, reports, and limitations. Real inbox delivery and hosted Auth behavior still need the designated manual checks.
 
 ### Critical browser checks
 

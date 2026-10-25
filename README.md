@@ -110,12 +110,14 @@ docs/                   Validation notes and project documentation
 | `npm run lint` | Check code style and common mistakes |
 | `npm test` | Run application regression tests |
 | `npm run test:database` | Run migrations and database regressions in isolated local PostgreSQL |
+| `npm run test:browser` | Build production code and test critical flows on desktop and mobile |
+| `npm run build:check` | Check a production build with synthetic service configuration |
 | `npm run build -- --webpack` | Verify a production build using Webpack |
 | `npm run start` | Serve the completed production build |
 
-GitHub Actions runs lint, application tests, database tests, route type generation, and TypeScript checks. The database test suite uses synthetic records and does not require production credentials. See [the workflow](./.github/workflows/checks.yml).
+GitHub Actions runs lint, application tests, database tests, route type generation, TypeScript checks, a production build, and desktop/mobile browser tests. The database test suite uses synthetic records and does not require production credentials. See [the workflow](./.github/workflows/checks.yml).
 
-For interface changes, also check desktop and mobile layouts, keyboard navigation, and loading/error states. Before merging, run the checks above and the production build.
+See [Browser tests](./docs/BROWSER_TESTS.md) for the one-time Chromium installation, coverage, isolation, and failure reports. For interface changes, also check desktop and mobile layouts, keyboard navigation, and loading/error states. Before merging, run the checks above and the production build.
 
 ## Working with the backend
 
@@ -177,6 +179,7 @@ Give each staff member the role required for their responsibilities. The staff p
 
 - [Maintainer guide — deployments, operations, and officer handover](./docs/MAINTAINER_GUIDE.md)
 - [Artwork and photography credits](./ASSETS.md)
+- [Browser test guide](./docs/BROWSER_TESTS.md)
 - [UI validation notes](./docs/ui-fixes-validation.md)
 - [Backend and password workflow validation](./docs/backend-fixes-validation.md)
 
