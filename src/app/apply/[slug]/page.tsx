@@ -1,19 +1,18 @@
+import { DataUnavailable } from "@/components/data-unavailable";
+import { normalizeQuery } from "@/lib/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
-import { UtdProgramFields } from "@/components/utd-program-fields";
 import {
   formatCentralDate,
   isOpeningAccepting,
   parseApplicationOpening,
-  type ApplicationField,
   type ApplicationResponses,
 } from "@/lib/applications";
 import { createClient } from "@/lib/supabase/server";
-import { saveApplication } from "./actions";
-import { ApplicationSubmitControls } from "./submit-controls";
+import { ApplicationForm } from "./application-form";
 
 type ApplicationPageProps = {
   params: Promise<{ slug: string }>;
@@ -47,14 +46,15 @@ export async function generateMetadata({ params }: ApplicationPageProps): Promis
 export const dynamic = "force-dynamic";
 
 export default async function ApplicationPage({ params, searchParams }: ApplicationPageProps) {
-  const [{ slug }, query] = await Promise.all([params, searchParams]);
+  const [{ slug }, rawQuery] = await Promise.all([params, searchParams]);
+  const query = normalizeQuery(rawQuery);
   const supabase = await createClient();
   const { data: authData } = await supabase.auth.getClaims();
   const userId = authData?.claims?.sub;
 
   if (!userId) redirect(`/login?next=${encodeURIComponent(`/apply/${slug}`)}`);
 
-  const [{ data: openingData }, { data: profile }] = await Promise.all([
+  const [{ data: openingData, error: openingError }, { data: profile, error: profileError }] = await Promise.all([
     supabase
       .from("application_openings")
       .select("*")
@@ -67,6 +67,10 @@ export default async function ApplicationPage({ params, searchParams }: Applicat
       .maybeSingle(),
   ]);
 
+  if (openingError || profileError) {
+    console.error("Unable to load application form", openingError?.code ?? profileError?.code);
+    return <><SiteHeader isSignedIn /><main id="main-content" tabIndex={-1}><DataUnavailable href={`/apply/${encodeURIComponent(slug)}`} label="this application" /></main></>;
+  }
   if (profile && !profile.onboarding_completed_at) {
     redirect(`/onboarding?next=${encodeURIComponent(`/apply/${slug}`)}`);
   }
@@ -74,13 +78,17 @@ export default async function ApplicationPage({ params, searchParams }: Applicat
   if (!openingData) notFound();
   const opening = parseApplicationOpening(openingData);
 
-  const { data: application } = await supabase
+  const { data: application, error: applicationError } = await supabase
     .from("applications")
-    .select("id, responses, submission_state, submitted_at")
+    .select("id, responses, submission_state, submitted_at, form_version")
     .eq("opening_id", opening.id)
     .eq("applicant_id", userId)
     .maybeSingle();
 
+  if (applicationError) {
+    console.error("Unable to load saved application", applicationError.code);
+    return <><SiteHeader isSignedIn /><main id="main-content" tabIndex={-1}><DataUnavailable href={`/apply/${encodeURIComponent(slug)}`} label="your saved responses" /></main></>;
+  }
   const responses = (application?.responses && typeof application.responses === "object" && !Array.isArray(application.responses)
     ? application.responses
     : {}) as ApplicationResponses;
@@ -91,7 +99,7 @@ export default async function ApplicationPage({ params, searchParams }: Applicat
   return (
     <div className="application-form-page">
       <SiteHeader isSignedIn />
-      <main>
+      <main id="main-content" tabIndex={-1}>
         <section className="application-form-hero shell">
           <div>
             <Link href="/apply" className="application-back">← All applications</Link>
@@ -100,7 +108,7 @@ export default async function ApplicationPage({ params, searchParams }: Applicat
             <p>{opening.description}</p>
           </div>
           <dl>
-            <div><dt>Form version</dt><dd>{opening.form_version.toFixed(1)}</dd></div>
+            <div><dt>Form version</dt><dd>{(submitted ? application.form_version : opening.form_version).toFixed(1)}</dd></div>
             <div><dt>Status</dt><dd>{submitted ? "Submitted" : accepting ? "Open" : "Closed"}</dd></div>
             {opening.closes_at && <div><dt>Closes</dt><dd>{formatCentralDate(opening.closes_at)} CT</dd></div>}
           </dl>
@@ -124,139 +132,12 @@ export default async function ApplicationPage({ params, searchParams }: Applicat
                 <Link className="secondary-link" href="/apply">View available positions</Link>
               </div>
             ) : (
-              <form className="application-form" action={saveApplication}>
-                <input type="hidden" name="openingSlug" value={opening.slug} />
-                {opening.form_schema.sections.map((section, sectionIndex) => (
-                  <section
-                    className="application-form-group"
-                    aria-labelledby={`application-section-${section.id}`}
-                    key={section.id}
-                  >
-                    <header className="application-form-group-heading">
-                      <span>{String(sectionIndex + 1).padStart(2, "0")}</span>
-                      <h2 id={`application-section-${section.id}`}>{section.title}</h2>
-                      {section.description && <p>{section.description}</p>}
-                    </header>
-                    <div className="application-form-fields">
-                      {section.fields.map((field) => {
-                        const degreeField = section.fields.find((item) => item.id === "degree");
-                        const majorField = section.fields.find((item) => item.id === "major");
-
-                        if (degreeField && majorField && field.id === "major") return null;
-                        if (degreeField && majorField && field.id === "degree") {
-                          return (
-                            <UtdProgramFields
-                              degreeName="field:degree"
-                              majorName="field:major"
-                              idPrefix={`application-${section.id}-program`}
-                              defaultDegree={typeof responses.degree === "string" ? responses.degree : ""}
-                              defaultMajor={typeof responses.major === "string" ? responses.major : ""}
-                              degreeRequired={degreeField.required}
-                              majorRequired={majorField.required}
-                              degreeClassName="application-text-field"
-                              majorClassName="application-text-field"
-                              key="utd-program"
-                            />
-                          );
-                        }
-
-                        return <ApplicationInput field={field} value={responses[field.id]} key={field.id} />;
-                      })}
-                    </div>
-                  </section>
-                ))}
-
-                <div className="application-form-submit-row">
-                  <p>Save a draft at any time. After submitting, contact the GDG UTDallas team if something needs to be corrected.</p>
-                  <ApplicationSubmitControls />
-                </div>
-              </form>
+              <ApplicationForm opening={opening} initialResponses={responses} />
             )}
           </div>
         </section>
       </main>
       <SiteFooter />
     </div>
-  );
-}
-
-function ApplicationInput({ field, value }: { field: ApplicationField; value: ApplicationResponses[string] | undefined }) {
-  const id = `application-field-${field.id}`;
-  const descriptionId = field.help ? `${id}-help` : undefined;
-  const textValue = typeof value === "string" ? value : "";
-
-  if (field.type === "checkbox") {
-    return (
-      <label className="application-checkbox" htmlFor={id}>
-        <input id={id} name={`field:${field.id}`} type="checkbox" value="true" defaultChecked={value === true} required={field.required} />
-        <span><ApplicationFieldLabel label={field.label} />{field.required && <i aria-hidden="true"> *</i>}</span>
-      </label>
-    );
-  }
-
-  if (field.type === "single_choice" || field.type === "multiple_choice") {
-    const selected = new Set(Array.isArray(value) ? value : [value]);
-    return (
-      <fieldset className="application-choice-field" aria-describedby={descriptionId}>
-        <legend>{field.label}{field.required && <i aria-hidden="true"> *</i>}</legend>
-        {field.help && <p id={descriptionId}>{field.help}</p>}
-        <div className="application-options">
-          {field.options?.map((option) => (
-            <label key={option.value}>
-              <input
-                name={`field:${field.id}`}
-                type={field.type === "single_choice" ? "radio" : "checkbox"}
-                value={option.value}
-                defaultChecked={selected.has(option.value)}
-                required={field.required && field.type === "single_choice"}
-              />
-              <span>{option.label}</span>
-            </label>
-          ))}
-        </div>
-      </fieldset>
-    );
-  }
-
-  return (
-    <label className="application-text-field" htmlFor={id}>
-      <span>{field.label}{field.required && <i aria-hidden="true"> *</i>}</span>
-      {field.help && <small id={descriptionId}>{field.help}</small>}
-      {field.type === "long_text" ? (
-        <textarea
-          id={id}
-          name={`field:${field.id}`}
-          defaultValue={textValue}
-          placeholder={field.placeholder}
-          maxLength={field.max_length}
-          aria-describedby={descriptionId}
-          required={field.required}
-          rows={7}
-        />
-      ) : (
-        <input
-          id={id}
-          name={`field:${field.id}`}
-          type={field.type === "url" ? "url" : "text"}
-          defaultValue={textValue}
-          placeholder={field.placeholder}
-          maxLength={field.max_length}
-          aria-describedby={descriptionId}
-          required={field.required}
-        />
-      )}
-    </label>
-  );
-}
-
-function ApplicationFieldLabel({ label }: { label: string }) {
-  const agreementPrefix = "Agreement:";
-  if (!label.startsWith(agreementPrefix)) return label;
-
-  return (
-    <>
-      <strong>{agreementPrefix}</strong>
-      {label.slice(agreementPrefix.length)}
-    </>
   );
 }

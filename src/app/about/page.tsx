@@ -37,7 +37,7 @@ export default function AboutPage() {
     <div className="about-page">
       <SiteHeader />
 
-      <main>
+      <main id="main-content" tabIndex={-1}>
         <section className="about-page-hero shell">
           <div className="about-page-copy">
             <p className="section-label">About GDG UTDallas</p>

@@ -110,7 +110,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
         </div>
       )}
 
-      <main id="top">
+      <main id="main-content" tabIndex={-1}><span id="top" />
         <section className="hero shell" aria-labelledby="hero-title">
           <HeroBackdrop />
           <div className="hero-copy">
@@ -277,7 +277,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
               ))
             ) : (
               <div className="no-events">
-                <p>No upcoming events are currently listed.</p>
+                <p>{chapter.eventsUnavailable ? "We couldn’t load the event calendar. Please check the official chapter page." : "No upcoming events are currently listed."}</p>
                 <a href={CHAPTER_URL} target="_blank" rel="noreferrer">Check the official chapter page ↗</a>
               </div>
             )}

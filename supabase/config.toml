@@ -1,0 +1,17 @@
+project_id = "gdgwebsite"
+
+[functions.send-application-email]
+verify_jwt = true
+entrypoint = "./functions/send-application-email/index.ts"
+import_map = "./functions/send-application-email/deno.json"
+
+[functions.request-password-reset]
+verify_jwt = false
+entrypoint = "./functions/request-password-reset/index.ts"
+import_map = "./functions/request-password-reset/deno.json"
+
+[functions.process-application-emails]
+# The function validates its private Vault token before reading any queued mail.
+verify_jwt = false
+entrypoint = "./functions/process-application-emails/index.ts"
+import_map = "./functions/process-application-emails/deno.json"

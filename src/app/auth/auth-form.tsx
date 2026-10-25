@@ -15,6 +15,8 @@ type AuthFormProps = {
 };
 
 export function AuthForm({ mode, nextPath = "/" }: AuthFormProps) {
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [signupEmail, setSignupEmail] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
   const [signupConfirmation, setSignupConfirmation] = useState("");
@@ -47,6 +49,8 @@ export function AuthForm({ mode, nextPath = "/" }: AuthFormProps) {
             <span>First name</span>
             <input
               name="firstName"
+              value={firstName}
+              onChange={(event) => setFirstName(event.target.value)}
               type="text"
               autoComplete="given-name"
               maxLength={50}
@@ -57,6 +61,8 @@ export function AuthForm({ mode, nextPath = "/" }: AuthFormProps) {
             <span>Last name</span>
             <input
               name="lastName"
+              value={lastName}
+              onChange={(event) => setLastName(event.target.value)}
               type="text"
               autoComplete="family-name"
               maxLength={50}
@@ -67,9 +73,10 @@ export function AuthForm({ mode, nextPath = "/" }: AuthFormProps) {
       )}
 
       <label>
-        <span>Email</span>
+        <span id="auth-email-label">Email</span>
         <input
           name="email"
+          aria-labelledby="auth-email-label"
           type="email"
           autoComplete={isSignup ? "email" : "username"}
           inputMode="email"
@@ -78,8 +85,8 @@ export function AuthForm({ mode, nextPath = "/" }: AuthFormProps) {
           aria-describedby={isSignup ? "signup-email-help" : undefined}
           aria-invalid={isSignup && emailStatus === "invalid" ? true : undefined}
           placeholder={isSignup ? "dal123456@utdallas.edu" : undefined}
-          value={isSignup ? signupEmail : undefined}
-          onChange={isSignup ? (event) => setSignupEmail(event.target.value) : undefined}
+          value={signupEmail}
+          onChange={(event) => setSignupEmail(event.target.value)}
           required
         />
         {isSignup && (
@@ -105,12 +112,14 @@ export function AuthForm({ mode, nextPath = "/" }: AuthFormProps) {
       </label>
 
       <label>
-        <span>Password</span>
+        <span id="auth-password-label">Password</span>
         <input
           name="password"
+          aria-labelledby="auth-password-label"
           type="password"
           autoComplete={isSignup ? "new-password" : "current-password"}
           minLength={8}
+          maxLength={isSignup ? 128 : undefined}
           aria-describedby={isSignup ? "signup-password-strength" : undefined}
           value={isSignup ? signupPassword : undefined}
           onChange={isSignup ? (event) => setSignupPassword(event.target.value) : undefined}
@@ -154,12 +163,14 @@ export function AuthForm({ mode, nextPath = "/" }: AuthFormProps) {
 
       {isSignup && (
         <label>
-          <span>Confirm password</span>
+          <span id="auth-confirm-label">Confirm password</span>
           <input
             name="confirmPassword"
+            aria-labelledby="auth-confirm-label"
             type="password"
             autoComplete="new-password"
             minLength={8}
+            maxLength={128}
             aria-describedby="signup-password-match"
             aria-invalid={confirmationMismatch || undefined}
             value={signupConfirmation}

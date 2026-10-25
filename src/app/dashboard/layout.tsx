@@ -66,8 +66,9 @@ export default async function DashboardLayout({ children }: { children: ReactNod
             </div>
           </div>
           <DashboardNavigation />
+          {staff && <Link className="dashboard-mobile-admin-link" href="/admin/applications">Application portal <span aria-hidden="true">→</span></Link>}
         </aside>
-        <div className="dashboard-content">{children}</div>
+        <div id="main-content" tabIndex={-1} className="dashboard-content">{children}</div>
       </div>
     </main>
   );

@@ -1,5 +1,7 @@
 "use server";
 
+import { safeNextPath } from "@/lib/navigation";
+
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getPasswordStrength } from "@/lib/password";
@@ -21,11 +23,6 @@ function passwordField(formData: FormData, name: string) {
   return typeof value === "string" ? value : "";
 }
 
-function safeNextPath(value: string) {
-  return value.startsWith("/") && !value.startsWith("//") && !value.includes("\\")
-    ? value
-    : "/";
-}
 
 function onboardingPath(next: string) {
   const destination = next === "/" ? "/dashboard" : next;
@@ -67,6 +64,13 @@ export async function login(
   const { data: signInData, error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
+    if (error.code === "email_not_confirmed") {
+      const confirmationQuery = new URLSearchParams({
+        email: email.toLowerCase(),
+        next: next === "/" ? "/dashboard" : next,
+      });
+      redirect(`/auth/confirm?${confirmationQuery.toString()}`);
+    }
     return { status: "error", message: authErrorMessage(error.message) };
   }
 
@@ -109,7 +113,7 @@ export async function signup(
   if (!getPasswordStrength(password).isValid) {
     return {
       status: "error",
-      message: "Use 8 or more characters with uppercase, lowercase, a number, and a symbol.",
+      message: "Use 8–128 characters with uppercase, lowercase, a number, and a symbol.",
     };
   }
   if (password !== confirmPassword) {

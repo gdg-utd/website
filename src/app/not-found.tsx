@@ -19,7 +19,7 @@ export default function NotFound() {
         </div>
       </header>
 
-      <main className="not-found-page" aria-labelledby="not-found-title">
+      <main id="main-content" tabIndex={-1} className="not-found-page" aria-labelledby="not-found-title">
         <Image
           src="/illustrations/not-found-lost-gps.svg"
           alt="A lost traveler checking a GPS that shows a 404 error"

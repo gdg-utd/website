@@ -1,5 +1,6 @@
 "use server";
 
+import { editFormError, type EditFormState } from "@/lib/edit-form-state";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -29,7 +30,7 @@ function isValidHttpUrl(value: string) {
   }
 }
 
-export async function updateProfile(formData: FormData) {
+export async function updateProfile(previous: EditFormState, formData: FormData) {
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
   const userId = data?.claims?.sub;
@@ -47,23 +48,23 @@ export async function updateProfile(formData: FormData) {
   const portfolioUrl = textField(formData, "portfolioUrl");
 
   if (!firstName || !lastName || firstName.length > 50 || lastName.length > 50) {
-    redirect(profilePath("invalid-name"));
+    return editFormError(previous, formData, "Enter a valid first and last name.");
   }
 
   if (netId && !/^[A-Za-z0-9]{2,30}$/.test(netId)) {
-    redirect(profilePath("invalid-netid"));
+    return editFormError(previous, formData, "Enter a valid NetID using letters and numbers only.");
   }
 
   if ((degree || major) && !isValidUtdProgram(degree, major)) {
-    redirect(profilePath("invalid-program"));
+    return editFormError(previous, formData, "Select a valid UT Dallas degree and major.");
   }
 
   if (personalEmail && !isValidEmail(personalEmail)) {
-    redirect(profilePath("invalid-email"));
+    return editFormError(previous, formData, "Enter a valid personal email address.");
   }
 
   if ([linkedinUrl, githubUrl, portfolioUrl].some((value) => value && !isValidHttpUrl(value))) {
-    redirect(profilePath("invalid-url"));
+    return editFormError(previous, formData, "Enter complete links beginning with http:// or https://.");
   }
 
   const { error } = await supabase
@@ -86,7 +87,7 @@ export async function updateProfile(formData: FormData) {
 
   if (error) {
     console.error("Unable to update profile", error.code, error.message);
-    redirect(profilePath("failed"));
+    return editFormError(previous, formData, "We could not update your profile. Please try again.");
   }
 
   revalidatePath("/dashboard");

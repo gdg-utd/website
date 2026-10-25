@@ -20,7 +20,17 @@ export function ApplicationSubmitControls() {
           disabled={pending}
           aria-haspopup="dialog"
           onClick={(event) => {
-            if (event.currentTarget.form?.reportValidity()) setConfirmationOpen(true);
+            const form = event.currentTarget.form;
+            if (!form) return;
+            for (const group of form.querySelectorAll<HTMLFieldSetElement>("fieldset[data-required-multiple]")) {
+              const inputs = Array.from(group.querySelectorAll<HTMLInputElement>('input[type="checkbox"]'));
+              const first = inputs[0];
+              if (!first) continue;
+              const validate = () => first.setCustomValidity(inputs.some((input) => input.checked) ? "" : "Select at least one option.");
+              validate();
+              group.onchange = validate;
+            }
+            if (form.reportValidity()) setConfirmationOpen(true);
           }}
         >
           Submit application

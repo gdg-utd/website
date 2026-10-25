@@ -1,5 +1,7 @@
 "use server";
 
+import { safeNextPath } from "@/lib/navigation";
+
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
@@ -13,21 +15,6 @@ function field(formData: FormData, name: string) {
   return typeof value === "string" ? value.trim() : "";
 }
 
-function safeNextPath(value: string) {
-  const siteUrl = new URL(
-    process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
-  );
-
-  try {
-    const destination = new URL(value, siteUrl);
-
-    if (destination.origin !== siteUrl.origin) return "/dashboard";
-
-    return `${destination.pathname}${destination.search}`;
-  } catch {
-    return "/dashboard";
-  }
-}
 
 function onboardingPath(next: string) {
   return `/onboarding?next=${encodeURIComponent(next)}`;

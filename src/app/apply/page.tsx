@@ -1,3 +1,4 @@
+import { DataUnavailable } from "@/components/data-unavailable";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -16,25 +17,29 @@ export const dynamic = "force-dynamic";
 
 export default async function ApplyPage() {
   const supabase = await createClient();
-  const [{ data: openingRows }, { data: authData }] = await Promise.all([
+  const [{ data: openingRows, error: openingError }, { data: authData }] = await Promise.all([
     supabase.from("application_openings").select("*").eq("status", "open").order("id"),
     supabase.auth.getClaims(),
   ]);
   const userId = authData?.claims?.sub;
   const openings = (openingRows ?? []).map(parseApplicationOpening).filter(isOpeningAccepting);
-  const { data: applications } = userId
+  const { data: applications, error: applicationsError } = userId
     ? await supabase
       .from("applications")
       .select("opening_id, submission_state, published_decision")
       .eq("applicant_id", userId)
-    : { data: null };
+    : { data: null, error: null };
+  if (openingError || applicationsError) {
+    console.error("Unable to load application choices", openingError?.code ?? applicationsError?.code);
+    return <><SiteHeader /><main id="main-content" tabIndex={-1}><DataUnavailable href="/apply" label="available applications" /></main><SiteFooter /></>;
+  }
   const applicationsByOpening = new Map(applications?.map((application) => [application.opening_id, application]));
 
   return (
     <div className="apply-page">
       <SiteHeader />
 
-      <main>
+      <main id="main-content" tabIndex={-1}>
         <section className="apply-hero shell">
           <div className="apply-hero-copy">
             <p className="section-label">Applications</p>

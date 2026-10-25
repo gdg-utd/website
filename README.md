@@ -31,7 +31,7 @@ Open [http://localhost:3000](http://localhost:3000) in a browser.
 
 ## Authentication
 
-Email-and-password authentication uses Supabase SSR with cookie-based sessions. The Next.js proxy refreshes sessions, `/account` is protected, and email confirmations return through `/auth/callback`.
+Email-and-password authentication uses Supabase SSR with cookie-based sessions. The Next.js proxy refreshes sessions, `/account` is protected, and email confirmations return through `/auth/callback`. Signed-in password changes use `/dashboard/profile/password`; email recovery uses `/reset-password` after a verified callback. Set the server-only `PASSWORD_RECOVERY_SECRET` before deploying those routes.
 
 Database changes live in `supabase/migrations`. The profile table has row-level security: members can only read and update their own profile, anonymous visitors have no table access, and a private trigger creates the profile after signup.
 
@@ -49,7 +49,7 @@ insert into public.application_admins (user_id, role)
 select id, 'reviewer' from auth.users where email = 'reviewer@utdallas.edu';
 ```
 
-Application notifications are recorded in `application_email_queue` and delivered through the protected `send-application-email` Supabase Edge Function. Officer selections receive an interview-stage update. Accepted SPRINT mentees receive a fixed 72-hour offer link in the application dashboard; staff can see response counts, release expired offers, and send the dedicated expiry notice before filling those spots in another selection round.
+Application notifications are recorded in `application_email_queue` and delivered through the protected `send-application-email` Supabase Edge Function. After the backend migration and worker deployment, `process-application-emails` retries explicit delivery failures with bounded attempts; administrators can inspect/retry notifications inside application reviews. Officer selections receive an interview-stage update. Accepted SPRINT mentees receive a fixed 72-hour offer link in the application dashboard; staff can see response counts, release expired offers, and send the dedicated expiry notice before filling those spots in another selection round.
 
 Production credentials belong in **Supabase Dashboard → Edge Functions → Secrets**, not in browser-visible Next.js variables. Add these values before testing delivery:
 
@@ -70,6 +70,8 @@ npm run dev
 npm run build
 npm run start
 npm run lint
+npm test
+npm run test:database
 ```
 
 ## Project structure
@@ -95,3 +97,9 @@ Upcoming event data is refreshed hourly. A verified local fallback keeps the pag
 The site intentionally makes no claim of affiliation with The University of Texas at Dallas and does not use UTD branding or photography.
 
 See [`ASSETS.md`](./ASSETS.md) for artwork sources and licensing notes.
+
+## Validation
+
+Run `npm run lint`, `npm test`, `npm run test:database`, and `npm run build -- --webpack` before merging changes. The regression tests cover safe local redirects, repeated query parameters, form-state preservation, required choices, password boundaries, and unavailable event feeds. GitHub Actions runs lint, regression tests, route type generation, and TypeScript checks without production credentials. Responsive browser verification is documented in `docs/ui-fixes-validation.md`.
+
+Backend and password-workflow validation, deployment dependencies, and the production approval boundary are documented in [`docs/backend-fixes-validation.md`](./docs/backend-fixes-validation.md). Do not deploy the frontend changes before their database migration.

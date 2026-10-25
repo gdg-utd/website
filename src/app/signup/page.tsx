@@ -1,3 +1,4 @@
+import { normalizeQuery, safeNextPath } from "@/lib/navigation";
 import type { Metadata } from "next";
 import Image from "next/image";
 import { AuthForm } from "@/app/auth/auth-form";
@@ -10,17 +11,14 @@ export const metadata: Metadata = {
 
 type SignupPageProps = { searchParams: Promise<{ next?: string }> };
 
-function safeNextPath(value?: string) {
-  return value?.startsWith("/") && !value.startsWith("//") && !value.includes("\\") ? value : "/";
-}
 
 export default async function SignupPage({ searchParams }: SignupPageProps) {
-  const { next } = await searchParams;
+  const { next } = normalizeQuery(await searchParams);
   const nextPath = safeNextPath(next);
   return (
     <main className="auth-page">
       <SiteHeader />
-      <section className="auth-layout auth-layout-signup">
+      <section id="main-content" tabIndex={-1} className="auth-layout auth-layout-signup">
         <div className="auth-copy">
           <div>
             <p className="section-label">Member account</p>

@@ -1,5 +1,7 @@
 "use server";
 
+import { safeNextPath } from "@/lib/navigation";
+
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -15,13 +17,9 @@ function field(formData: FormData, name: string) {
   return typeof value === "string" ? value.trim() : "";
 }
 
-function safeNextPath(value: string) {
-  return value.startsWith("/")
-    && !value.startsWith("//")
-    && !value.includes("\\")
-    && !value.startsWith("/onboarding")
-    ? value
-    : "/dashboard";
+function onboardingNextPath(value: string | string[] | undefined) {
+  const next = safeNextPath(value, "/dashboard");
+  return next.startsWith("/onboarding") ? "/dashboard" : next;
 }
 
 function isValidHttpUrl(value: string) {
@@ -39,7 +37,7 @@ export async function completeOnboarding(
   _previousState: OnboardingActionState,
   formData: FormData,
 ): Promise<OnboardingActionState> {
-  const next = safeNextPath(field(formData, "next"));
+  const next = onboardingNextPath(field(formData, "next"));
   const netId = field(formData, "netId");
   const degree = field(formData, "degree");
   const major = field(formData, "major");

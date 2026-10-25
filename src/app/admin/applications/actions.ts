@@ -314,3 +314,14 @@ export async function reopenApplication(formData: FormData) {
   revalidatePath("/dashboard/applications");
   redirect(portalPath({ message: "reopened", position }));
 }
+
+export async function retryApplicationEmail(queueId: number) {
+  if (!Number.isSafeInteger(queueId) || queueId<=0) return {message:"Invalid email delivery.",error:true};
+  const {supabase}=await requireApplicationAdmin();
+  const {data,error}=await supabase.rpc("retry_application_email",{target_queue_id:queueId});
+  if (error || !data?.[0]) return {message:"This email cannot be retried. Refresh its delivery status.",error:true};
+  const item=data[0];
+  const {error:deliveryError}=await supabase.functions.invoke("send-application-email",{body:{applicationId:item.application_id,templateKey:item.template_key,queueId}});
+  revalidatePath("/admin/applications");
+  return {message:deliveryError ? "The retry did not complete. Check the updated delivery status below." : "Delivery retry processed.",error:Boolean(deliveryError)};
+}

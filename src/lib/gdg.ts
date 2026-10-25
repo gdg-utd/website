@@ -20,6 +20,7 @@ export type ChapterTeamMember = {
 
 export type ChapterData = {
   events: ChapterEvent[];
+  eventsUnavailable?: boolean;
   location: string;
   membersCount: number;
   team: ChapterTeamMember[];
@@ -59,40 +60,7 @@ type BevyPageData = {
 };
 
 const fallbackData: ChapterData = {
-  events: [
-    {
-      title: "Launch Workshop: Connect & Code with Verizon",
-      startDate: "2026-10-01T00:00:00Z",
-      registrationType: "Free registration",
-      description:
-        "Explore current technology trends with a guest from Verizon, meet fellow students, and learn how to turn ideas into impactful projects. No prior coding experience is needed.",
-      url: "https://gdg.community.dev/events/details/google-gdg-on-campus-the-university-of-texas-at-dallas-richardson-united-states-presents-launch-workshop-connect-amp-code-with-verizon/",
-    },
-    {
-      title: "AI in Action: Computer Vision & Hand Gestures",
-      startDate: "2026-10-09T00:00:00Z",
-      registrationType: "Free registration",
-      description:
-        "A hands-on introduction to computer vision and gesture recognition, with resources provided for beginners and experienced developers alike.",
-      url: "https://gdg.community.dev/events/details/google-gdg-on-campus-the-university-of-texas-at-dallas-richardson-united-states-presents-ai-in-action-computer-vision-amp-hand-gestures-2026-10-08/",
-    },
-    {
-      title: "Workshop Wednesday",
-      startDate: "2026-10-15T00:00:00Z",
-      registrationType: "Free registration",
-      description:
-        "Work with other students on a project from scratch. The session is designed for every experience level, with the materials provided.",
-      url: "https://gdg.community.dev/events/details/google-gdg-on-campus-the-university-of-texas-at-dallas-richardson-united-states-presents-workshop-wednesday-2026-10-14/",
-    },
-    {
-      title: "Sprint Social: Connect and Unwind",
-      startDate: "2026-10-16T00:00:00Z",
-      registrationType: "Free registration",
-      description:
-        "Meet developers from different disciplines over games and snacks, exchange ideas, and get to know the community in a relaxed setting.",
-      url: "https://gdg.community.dev/events/details/google-gdg-on-campus-the-university-of-texas-at-dallas-richardson-united-states-presents-sprint-social-connect-and-unwind/",
-    },
-  ],
+  events: [],
   location: "Richardson, TX",
   membersCount: 1169,
   team: [
@@ -117,7 +85,7 @@ function parsePageData(html: string): ChapterData | null {
   if (!chapter || !events) return null;
 
   const parsedEvents = events.flatMap((event) => {
-    if (!event.title || !event.start_date || !event.url) return [];
+    if (!event.title || !event.start_date || !event.url || !Number.isFinite(Date.parse(event.start_date))) return [];
 
     return [
       {
@@ -148,17 +116,21 @@ function parsePageData(html: string): ChapterData | null {
 }
 
 export async function getChapterData(): Promise<ChapterData> {
+  const fallback = { ...fallbackData, events: [], eventsUnavailable: true };
   try {
     const response = await fetch(CHAPTER_URL, {
       headers: { "User-Agent": "GDG-UTD-Community-Site/1.0" },
       next: { revalidate: 3600 },
+      signal: AbortSignal.timeout(8000),
     });
 
-    if (!response.ok) return fallbackData;
+    if (!response.ok) throw new Error(`Chapter feed returned ${response.status}`);
 
     const parsed = parsePageData(await response.text());
-    return parsed || fallbackData;
-  } catch {
-    return fallbackData;
+    if (!parsed) throw new Error("Chapter feed data is unavailable");
+    return { ...parsed, events: parsed.events.filter((event) => Date.parse(event.startDate) > Date.now()).sort((a, b) => Date.parse(a.startDate) - Date.parse(b.startDate)) };
+  } catch (error) {
+    console.warn("Unable to load chapter events", error instanceof Error ? error.message : "Unknown error");
+    return fallback;
   }
 }

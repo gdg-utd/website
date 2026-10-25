@@ -1,3 +1,5 @@
+import { DataUnavailable } from "@/components/data-unavailable";
+import { normalizeQuery } from "@/lib/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -19,18 +21,22 @@ function applicationRsvp(
 }
 
 export default async function ApplicationsPage({ searchParams }: ApplicationsPageProps) {
-  const query = await searchParams;
+  const query = normalizeQuery(await searchParams);
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
   const userId = data?.claims?.sub;
 
   if (!userId) redirect("/login?next=/dashboard/applications");
 
-  const { data: applications } = await supabase
+  const { data: applications, error } = await supabase
     .from("applications")
-    .select("id, opening_id, submission_state, submitted_at, published_decision, decision_published_at, updated_at, application_openings(*), application_rsvps(*)")
+    .select("id, opening_id, submission_state, submitted_at, published_decision, decision_published_at, updated_at, form_schema_snapshot, application_openings(*), application_rsvps(*)")
     .eq("applicant_id", userId)
     .order("updated_at", { ascending: false });
+  if (error) {
+    console.error("Unable to load applicant applications", error.code);
+    return <DataUnavailable href="/dashboard/applications" label="your applications" />;
+  }
   // This authenticated, dynamic page needs the wall clock to close fixed RSVP windows.
   // eslint-disable-next-line react-hooks/purity
   const currentTime = Date.now();
@@ -54,7 +60,7 @@ export default async function ApplicationsPage({ searchParams }: ApplicationsPag
         <div className="dashboard-applications">
           {applications.map((application) => {
             const opening = application.application_openings
-              ? parseApplicationOpening(application.application_openings)
+              ? parseApplicationOpening({...application.application_openings,form_schema:application.submission_state === "submitted" ? application.form_schema_snapshot ?? application.application_openings.form_schema : application.application_openings.form_schema})
               : null;
             const rsvp = applicationRsvp(application.application_rsvps);
             const baseStatus = applicantStatus(application.submission_state, application.published_decision);

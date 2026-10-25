@@ -1,8 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useState, useTransition } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
+import { EmailDelivery } from "./email-delivery";
 import { stageApplicationDecision } from "./actions";
-import { ApplicationTable, type StaffApplicationRow } from "./application-table";
+import {
+  ApplicationTable,
+  type StaffApplicationRow,
+} from "./application-table";
 import {
   MarkOfficerNotSelectedButton,
   PublishApplicationDecisionButton,
@@ -35,14 +39,19 @@ export function ApplicationReviewPortal({
   returnPosition,
   role,
 }: ApplicationReviewPortalProps) {
+  const drawerRef = useRef<HTMLDialogElement>(null);
   const [selectedId, setSelectedId] = useState(initialApplicationId);
   const [loadState, setLoadState] = useState<{
     id: number;
     review?: ApplicationReview;
     error?: string;
   } | null>(null);
-  const [stageOverrides, setStageOverrides] = useState<Map<number, ApplicationStageDecision>>(() => new Map());
-  const [stagedCount, setStagedCount] = useState(publishOpening?.stagedCount ?? 0);
+  const [stageOverrides, setStageOverrides] = useState<
+    Map<number, ApplicationStageDecision>
+  >(() => new Map());
+  const [stagedCount, setStagedCount] = useState(
+    publishOpening?.stagedCount ?? 0,
+  );
 
   const selectApplication = useCallback((id: number | null) => {
     setLoadState(null);
@@ -50,7 +59,9 @@ export function ApplicationReviewPortal({
   }, []);
 
   const selectFromUrl = useCallback(() => {
-    const value = Number(new URLSearchParams(window.location.search).get("application"));
+    const value = Number(
+      new URLSearchParams(window.location.search).get("application"),
+    );
     const nextId = Number.isSafeInteger(value) && value > 0 ? value : null;
     selectApplication(nextId);
   }, [selectApplication]);
@@ -70,17 +81,25 @@ export function ApplicationReviewPortal({
       signal: controller.signal,
     })
       .then(async (response) => {
-        if (!response.ok) throw new Error("We could not load this application.");
+        if (!response.ok)
+          throw new Error("We could not load this application.");
         return response.json() as Promise<ApplicationReview>;
       })
       .then((nextReview) => {
         setLoadState({ id: selectedId, review: nextReview });
       })
       .catch((fetchError: unknown) => {
-        if (fetchError instanceof DOMException && fetchError.name === "AbortError") return;
+        if (
+          fetchError instanceof DOMException &&
+          fetchError.name === "AbortError"
+        )
+          return;
         setLoadState({
           id: selectedId,
-          error: fetchError instanceof Error ? fetchError.message : "We could not load this application.",
+          error:
+            fetchError instanceof Error
+              ? fetchError.message
+              : "We could not load this application.",
         });
       });
 
@@ -89,9 +108,14 @@ export function ApplicationReviewPortal({
 
   function updateUrl(applicationId: number | null) {
     const url = new URL(window.location.href);
-    if (applicationId) url.searchParams.set("application", String(applicationId));
+    if (applicationId)
+      url.searchParams.set("application", String(applicationId));
     else url.searchParams.delete("application");
-    window.history.pushState(null, "", `${url.pathname}${url.search}${url.hash}`);
+    window.history.pushState(
+      null,
+      "",
+      `${url.pathname}${url.search}${url.hash}`,
+    );
   }
 
   function openApplication(id: number) {
@@ -104,6 +128,31 @@ export function ApplicationReviewPortal({
     updateUrl(null);
   }
 
+  useEffect(() => {
+    const dialog = drawerRef.current;
+    if (!selectedId || !dialog) return;
+    const opener =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
+    dialog.showModal();
+    dialog.querySelector<HTMLButtonElement>(".admin-drawer-close")?.focus();
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      dialog.close();
+      document.body.style.overflow = previousOverflow;
+      opener?.focus();
+    };
+  }, [selectedId]);
+
+  useEffect(() => {
+    const dialog = drawerRef.current;
+    if (dialog?.open && !dialog.contains(document.activeElement)) {
+      dialog.querySelector<HTMLButtonElement>(".admin-drawer-close")?.focus();
+    }
+  }, [loadState]);
+
   const review = loadState?.id === selectedId ? loadState.review : undefined;
   const error = loadState?.id === selectedId ? loadState.error : undefined;
   const loading = Boolean(selectedId && !review && !error);
@@ -111,12 +160,19 @@ export function ApplicationReviewPortal({
     if (!stageOverrides.has(application.id)) return application;
     const stagedDecision = stageOverrides.get(application.id);
     if (!stagedDecision) {
-      return { ...application, decisionKey: "undecided", decisionLabel: "Undecided" };
+      return {
+        ...application,
+        decisionKey: "undecided",
+        decisionLabel: "Undecided",
+      };
     }
     return {
       ...application,
       decisionKey: stagedDecision,
-      decisionLabel: stagedDecision === "accepted" ? "accepted staged" : "Not selected staged",
+      decisionLabel:
+        stagedDecision === "accepted"
+          ? "accepted staged"
+          : "Not selected staged",
     };
   });
 
@@ -132,7 +188,9 @@ export function ApplicationReviewPortal({
         review: {
           ...current.review,
           stagedDecision: result.stagedDecision ?? undefined,
-          events: result.event ? [result.event, ...current.review.events] : current.review.events,
+          events: result.event
+            ? [result.event, ...current.review.events]
+            : current.review.events,
         },
       };
     });
@@ -141,8 +199,10 @@ export function ApplicationReviewPortal({
       next.set(applicationId, result.stagedDecision);
       return next;
     });
-    if (!previousDecision && result.stagedDecision) setStagedCount((count) => count + 1);
-    if (previousDecision && !result.stagedDecision) setStagedCount((count) => Math.max(0, count - 1));
+    if (!previousDecision && result.stagedDecision)
+      setStagedCount((count) => count + 1);
+    if (previousDecision && !result.stagedDecision)
+      setStagedCount((count) => Math.max(0, count - 1));
   }
 
   return (
@@ -161,31 +221,57 @@ export function ApplicationReviewPortal({
           )}
         </div>
       </div>
-      {displayedApplications.length > 0
-        ? <ApplicationTable applications={displayedApplications} onOpenApplication={openApplication} />
-        : <div className="admin-table-empty">No applications match these filters.</div>}
-      {selectedId && (
-        <div className="admin-drawer-layer">
-          <button
-            type="button"
-            className="admin-drawer-backdrop"
-            onClick={closeApplication}
-            aria-label="Close application review"
-          />
-          <aside className="admin-drawer" role="dialog" aria-modal="true" aria-labelledby="application-review-title">
-            {loading && <ApplicationReviewLoading onClose={closeApplication} />}
-            {error && <ApplicationReviewError message={error} onClose={closeApplication} />}
-            {review && (
-              <ApplicationReviewContent
-                review={review}
-                returnPosition={returnPosition}
-                role={role}
-                onClose={closeApplication}
-                onStageChanged={(previousDecision, result) => handleStageChanged(review.id, previousDecision, result)}
-              />
-            )}
-          </aside>
+      {displayedApplications.length > 0 ? (
+        <ApplicationTable
+          applications={displayedApplications}
+          onOpenApplication={openApplication}
+        />
+      ) : (
+        <div className="admin-table-empty">
+          No applications match these filters.
         </div>
+      )}
+      {selectedId && (
+        <dialog
+          ref={drawerRef}
+          className="admin-drawer"
+          aria-label="Application review"
+          onCancel={(event) => {
+            event.preventDefault();
+            closeApplication();
+          }}
+          onClick={(event) => {
+            if (event.target !== event.currentTarget) return;
+            const bounds = event.currentTarget.getBoundingClientRect();
+            if (
+              event.clientX < bounds.left ||
+              event.clientX > bounds.right ||
+              event.clientY < bounds.top ||
+              event.clientY > bounds.bottom
+            )
+              closeApplication();
+          }}
+        >
+          {loading && <ApplicationReviewLoading onClose={closeApplication} />}
+          {error && (
+            <ApplicationReviewError
+              message={error}
+              onClose={closeApplication}
+            />
+          )}
+          {review && (
+            <ApplicationReviewContent
+              key={review.id}
+              review={review}
+              returnPosition={returnPosition}
+              role={role}
+              onClose={closeApplication}
+              onStageChanged={(previousDecision, result) =>
+                handleStageChanged(review.id, previousDecision, result)
+              }
+            />
+          )}
+        </dialog>
       )}
     </>
   );
@@ -193,7 +279,12 @@ export function ApplicationReviewPortal({
 
 function DrawerCloseButton({ onClose }: { onClose: () => void }) {
   return (
-    <button type="button" className="admin-drawer-close" onClick={onClose} aria-label="Close application review">
+    <button
+      type="button"
+      className="admin-drawer-close"
+      onClick={onClose}
+      aria-label="Close application review"
+    >
       ×
     </button>
   );
@@ -214,7 +305,13 @@ function ApplicationReviewLoading({ onClose }: { onClose: () => void }) {
   );
 }
 
-function ApplicationReviewError({ message, onClose }: { message: string; onClose: () => void }) {
+function ApplicationReviewError({
+  message,
+  onClose,
+}: {
+  message: string;
+  onClose: () => void;
+}) {
   return (
     <div className="admin-drawer-error" role="alert">
       <DrawerCloseButton onClose={onClose} />
@@ -241,56 +338,96 @@ function ApplicationReviewContent({
     result: Extract<ApplicationStageResult, { status: "updated" }>,
   ) => void;
 }) {
+  const [extraHistory, setExtraHistory] = useState<ApplicationReview["events"]>(
+    [],
+  );
+  const [historyCursor, setHistoryCursor] = useState(review.historyCursor);
+  const [historyPending, startHistoryTransition] = useTransition();
+  const [historyError, setHistoryError] = useState("");
   return (
     <>
       <header className="admin-drawer-header">
         <div>
           <p className="section-label">{review.openingTitle}</p>
           <h2 id="application-review-title">{review.applicantName}</h2>
-          <a href={`mailto:${review.applicantEmail}`}>{review.applicantEmail}</a>
+          <a href={`mailto:${review.applicantEmail}`}>
+            {review.applicantEmail}
+          </a>
         </div>
         <DrawerCloseButton onClose={onClose} />
       </header>
 
       <dl className="admin-drawer-meta">
-        <div><dt>Submitted</dt><dd>{review.submittedLabel} CT</dd></div>
-        <div><dt>Form version</dt><dd>{review.formVersion.toFixed(1)}</dd></div>
-        <div><dt>Application ID</dt><dd>#{review.id}</dd></div>
+        <div>
+          <dt>Submitted</dt>
+          <dd>{review.submittedLabel} CT</dd>
+        </div>
+        <div>
+          <dt>Form version</dt>
+          <dd>{review.formVersion.toFixed(1)}</dd>
+        </div>
+        <div>
+          <dt>Application ID</dt>
+          <dd>#{review.id}</dd>
+        </div>
       </dl>
 
       <section className="admin-drawer-decision">
         <div>
           <p className="section-label">Decision</p>
-          <h3>{review.publishedDecision === "undecided"
-            ? "Not published"
-            : review.publishedDecision === "accepted" && review.openingSlug !== "sprint-mentee"
-              ? "Selected"
-              : review.publishedDecision === "accepted" ? "Accepted" : "Not selected"}</h3>
+          <h3>
+            {review.publishedDecision === "undecided"
+              ? "Not published"
+              : review.publishedDecision === "accepted" &&
+                  review.openingSlug !== "sprint-mentee"
+                ? "Selected"
+                : review.publishedDecision === "accepted"
+                  ? "Accepted"
+                  : "Not selected"}
+          </h3>
           {review.publishedDecision === "undecided" ? (
-            <p>{review.stagedDecision === "accepted"
-              ? "Acceptance is staged."
-              : review.stagedDecision === "rejected"
-                ? "Not selected is staged."
-                : "No decision has been staged."}</p>
-          ) : <p>Published {review.publishedLabel} CT.</p>}
+            <p>
+              {review.stagedDecision === "accepted"
+                ? "Acceptance is staged."
+                : review.stagedDecision === "rejected"
+                  ? "Not selected is staged."
+                  : "No decision has been staged."}
+            </p>
+          ) : (
+            <p>Published {review.publishedLabel} CT.</p>
+          )}
         </div>
 
         {review.publishedDecision === "undecided" && (
-          <ApplicationStageControls review={review} onStageChanged={onStageChanged} />
+          <ApplicationStageControls
+            review={review}
+            onStageChanged={onStageChanged}
+          />
         )}
 
         {review.rsvp && (
           <dl className="admin-rsvp-details">
             <div>
               <dt>RSVP status</dt>
-              <dd>{review.rsvp.status === "awaiting_response" ? "Awaiting response" : review.rsvp.status === "confirmed" ? "Spot confirmed" : review.rsvp.status === "released" ? "Spot released" : "Expired"}</dd>
+              <dd>
+                {review.rsvp.status === "awaiting_response"
+                  ? "Awaiting response"
+                  : review.rsvp.status === "confirmed"
+                    ? "Spot confirmed"
+                    : review.rsvp.status === "released"
+                      ? "Spot released"
+                      : "Expired"}
+              </dd>
             </div>
             <div>
               <dt>72-hour deadline</dt>
               <dd>{review.rsvp.deadlineLabel} CT</dd>
             </div>
             {review.rsvp.respondedLabel && (
-              <div><dt>Responded</dt><dd>{review.rsvp.respondedLabel} CT</dd></div>
+              <div>
+                <dt>Responded</dt>
+                <dd>{review.rsvp.respondedLabel} CT</dd>
+              </div>
             )}
           </dl>
         )}
@@ -306,16 +443,20 @@ function ApplicationReviewContent({
                 returnPosition={returnPosition}
               />
             )}
-            {review.publishedDecision === "accepted" && review.openingSlug !== "sprint-mentee" && (
-              <MarkOfficerNotSelectedButton
-                applicationId={review.id}
-                applicantName={review.applicantName}
-                returnPosition={returnPosition}
-              />
-            )}
+            {review.publishedDecision === "accepted" &&
+              review.openingSlug !== "sprint-mentee" && (
+                <MarkOfficerNotSelectedButton
+                  applicationId={review.id}
+                  applicantName={review.applicantName}
+                  returnPosition={returnPosition}
+                />
+              )}
             <details className="admin-reopen">
               <summary>Application corrections</summary>
-              <p>Reopening returns this application to draft and clears any published decision.</p>
+              <p>
+                Reopening returns this application to draft and clears any
+                published decision.
+              </p>
               <ReopenApplicationButton
                 key={review.id}
                 applicationId={review.id}
@@ -326,7 +467,10 @@ function ApplicationReviewContent({
           </div>
         )}
         {role === "reviewer" && review.publishedDecision === "undecided" && (
-          <p className="admin-role-note">An administrator will publish staged decisions and send applicant emails.</p>
+          <p className="admin-role-note">
+            An administrator will publish staged decisions and send applicant
+            emails.
+          </p>
         )}
       </section>
 
@@ -342,13 +486,24 @@ function ApplicationReviewContent({
               <div className="admin-response" key={field.id}>
                 <h5>{field.label}</h5>
                 {field.type === "url" && field.answer ? (
-                  <a href={field.answer} target="_blank" rel="noreferrer">{field.answer} ↗</a>
-                ) : <p>{field.answer || "No response"}</p>}
+                  <a href={field.answer} target="_blank" rel="noreferrer">
+                    {field.answer} ↗
+                  </a>
+                ) : (
+                  <p>{field.answer || "No response"}</p>
+                )}
               </div>
             ))}
           </div>
         ))}
       </section>
+
+      {role === "admin" && (
+        <EmailDelivery
+          applicationId={review.id}
+          initialEmails={review.emails}
+        />
+      )}
 
       <section className="admin-drawer-history">
         <div className="admin-drawer-section-heading">
@@ -356,10 +511,53 @@ function ApplicationReviewContent({
           <h3>Application activity</h3>
         </div>
         <ol>
-          {review.events.map((event) => (
-            <li key={event.id}><span>{event.label}</span><time>{event.createdLabel} CT</time></li>
+          {[
+            ...review.events,
+            ...extraHistory.filter(
+              (event) =>
+                !review.events.some((current) => current.id === event.id),
+            ),
+          ].map((event) => (
+            <li key={event.id}>
+              <span>{event.label}</span>
+              <time>{event.createdLabel} CT</time>
+            </li>
           ))}
         </ol>
+        {historyCursor && (
+          <button
+            className="admin-history-more"
+            type="button"
+            disabled={historyPending}
+            onClick={() =>
+              startHistoryTransition(async () => {
+                try {
+                  const response = await fetch(
+                    `/api/admin/applications/${review.id}?beforeEvent=${historyCursor}`,
+                    { cache: "no-store" },
+                  );
+                  if (!response.ok)
+                    throw new Error("Unable to load earlier activity.");
+                  const result = (await response.json()) as ApplicationReview;
+                  setExtraHistory((current) => [...current, ...result.events]);
+                  setHistoryCursor(result.historyCursor);
+                  setHistoryError("");
+                } catch {
+                  setHistoryError(
+                    "Unable to load earlier activity. Please try again.",
+                  );
+                }
+              })
+            }
+          >
+            {historyPending ? "Loading…" : "Load earlier activity"}
+          </button>
+        )}
+        {historyError && (
+          <p className="admin-history-error" role="alert">
+            {historyError}
+          </p>
+        )}
       </section>
     </>
   );
@@ -423,7 +621,11 @@ function ApplicationStageControls({
           Clear staged selection
         </button>
       )}
-      {error && <p className="admin-stage-error" role="alert">{error}</p>}
+      {error && (
+        <p className="admin-stage-error" role="alert">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

@@ -50,7 +50,7 @@ export default function SprintPage() {
     <div className="sprint-page">
       <SiteHeader />
 
-      <main>
+      <main id="main-content" tabIndex={-1}>
         <section className="sprint-hero shell" id="sprint-top">
           <div className="sprint-hero-copy">
             <p className="section-label">GDG UTDallas · SPRINT</p>

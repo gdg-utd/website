@@ -43,7 +43,7 @@ export default function OfficersPage() {
     <div className="team-page">
       <SiteHeader />
 
-      <main>
+      <main id="main-content" tabIndex={-1}>
         <section className="team-hero shell">
           <div className="team-hero-copy">
             <p className="section-label">GDG UTDallas</p>

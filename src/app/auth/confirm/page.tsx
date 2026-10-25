@@ -1,3 +1,4 @@
+import { normalizeQuery, safeNextPath } from "@/lib/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SiteHeader } from "@/components/site-header";
@@ -12,16 +13,11 @@ type ConfirmEmailPageProps = {
   }>;
 };
 
-function safeNextPath(value?: string) {
-  return value?.startsWith("/") && !value.startsWith("//") && !value.includes("\\")
-    ? value
-    : "/dashboard";
-}
 
 export default async function ConfirmEmailPage({
   searchParams,
 }: ConfirmEmailPageProps) {
-  const params = await searchParams;
+  const params = normalizeQuery(await searchParams);
   const email = typeof params.email === "string" ? params.email.trim().toLowerCase() : "";
   const next = safeNextPath(params.next);
   const hasValidEmail = /^[^@\s]+@utdallas\.edu$/i.test(email);
@@ -29,7 +25,7 @@ export default async function ConfirmEmailPage({
   return (
     <main className="auth-page">
       <SiteHeader />
-      <section className="email-confirm-layout" aria-labelledby="email-confirm-title">
+      <section id="main-content" tabIndex={-1} className="email-confirm-layout" aria-labelledby="email-confirm-title">
         <div className="email-confirm-card">
           <p className="section-label">Account verification</p>
           <h1 id="email-confirm-title">

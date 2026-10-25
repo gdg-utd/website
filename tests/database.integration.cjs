@@ -1,0 +1,90 @@
+/* eslint-disable @typescript-eslint/no-require-imports -- Isolated PostgreSQL integration harness. */
+const fs = require("node:fs"),
+  path = require("node:path");
+const { PGlite } = require("@electric-sql/pglite");
+const { pgcrypto } = require("@electric-sql/pglite/contrib/pgcrypto");
+const root = path.resolve(__dirname, "..");
+(async () => {
+  const db = new PGlite({ extensions: { pgcrypto } });
+  await db.exec(
+    `create role anon; create role authenticated; create role service_role bypassrls; create schema auth; create schema extensions; create extension pgcrypto with schema extensions; create table auth.users(id uuid primary key,email text,raw_user_meta_data jsonb default '{}'::jsonb,deleted_at timestamptz); create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$; grant usage on schema auth to anon,authenticated,service_role; grant execute on function auth.uid() to public;`,
+  );
+  const files = fs
+    .readdirSync(root + "/supabase/migrations")
+    .filter((x) => x.endsWith(".sql"))
+    .sort();
+  for (const file of files.filter((x) => x < "20261024222318")) {
+    try {
+      await db.exec(
+        fs.readFileSync(root + "/supabase/migrations/" + file, "utf8"),
+      );
+    } catch (error) {
+      console.log("BASE MIGRATION FAILED", file, error.message);
+      throw error;
+    }
+  }
+  const uid = "11111111-1111-4111-8111-111111111111";
+  await db.exec(
+    `insert into auth.users(id,email,raw_user_meta_data) values('${uid}','local-test@utdallas.edu','{"first_name":"Local","last_name":"Test"}'); select set_config('request.jwt.claim.sub','${uid}',false); insert into public.application_admins(user_id,role) values('${uid}','admin'); update public.profiles set degree='Bachelor of Science',major='Computer Science' where id='${uid}'; alter table public.applications disable trigger user;`,
+  );
+  await db.exec(`insert into public.applications(opening_id,applicant_id,applicant_email,applicant_first_name,applicant_last_name,form_version,responses,submission_state,submitted_at)
+ select o.id,'${uid}','local-test@utdallas.edu','Local','Test',case when o.slug='industry-officer' then o.form_version-1 else o.form_version end,
+ (select jsonb_object_agg(f->>'id',case when f->>'id'='degree' then to_jsonb('Bachelor of Science'::text) when f->>'id'='major' then to_jsonb('Computer Science'::text) when f->>'type'='checkbox' then 'true'::jsonb when f->>'type'='single_choice' then to_jsonb(f->'options'->0->>'value') when f->>'type'='multiple_choice' then jsonb_build_array(f->'options'->0->>'value') when f->>'type'='url' then to_jsonb('https://example.com'::text) else to_jsonb('Local test answer'::text) end) from jsonb_array_elements(o.form_schema->'sections') s cross join lateral jsonb_array_elements(s->'fields') f),
+ case when o.slug='industry-officer' then 'draft' else 'submitted' end,case when o.slug='industry-officer' then null else now() end
+ from public.application_openings o where o.slug in ('tech-officer','industry-officer'); alter table public.applications enable trigger user;`);
+  // Only Supabase-managed infrastructure is stubbed. All application SQL, RLS, triggers and functions execute in PostgreSQL.
+  await db.exec(
+    `create schema vault;create table vault.secrets(id uuid default gen_random_uuid(),name text,decrypted_secret text);create view vault.decrypted_secrets as select * from vault.secrets;create function vault.create_secret(secret text,name text) returns uuid language sql as $$insert into vault.secrets(decrypted_secret,name) values(secret,name) returning id$$;`,
+  );
+  let migration = fs
+    .readFileSync(
+      root +
+        "/supabase/migrations/20261024222318_harden_applications_and_delivery.sql",
+      "utf8",
+    )
+    .replace("create extension if not exists pg_cron;", "")
+    .replace(
+      "create extension if not exists pg_net with schema extensions;",
+      "",
+    );
+  await db.exec(migration);
+  await db.exec(`select set_config('test.member_id','${uid}',false);`);
+  await db.exec("begin");
+  await db.exec(
+    fs.readFileSync(root + "/tests/database-regressions.sql", "utf8"),
+  );
+  await db.exec("rollback");
+  console.log(
+    "PASS: local PostgreSQL migration, program constraints, RSVP null guards, notification cycles, schema snapshots, retry leases/limits, pagination, reset quotas and privilege checks.",
+  );
+  await db.exec(
+    `set role authenticated;select public.get_staff_application_page();reset role;`,
+  );
+  console.log("PASS: staff page executes with authenticated role and RLS.");
+  await db.exec(`create schema cron; create schema net;
+    create table cron.fixture_jobs(command text);
+    create table net.fixture_requests(headers jsonb);
+    create function cron.schedule(job_name text,schedule text,command text) returns bigint language sql as $$insert into cron.fixture_jobs values(command); select 1::bigint$$;
+    create function net.http_post(url text,headers jsonb,body jsonb,timeout_milliseconds integer) returns bigint language sql as $$insert into net.fixture_requests values(headers); select 1::bigint$$;`);
+  await db.exec(
+    fs.readFileSync(
+      root +
+        "/supabase/migrations/20261024223412_schedule_application_email_retries.sql",
+      "utf8",
+    ),
+  );
+  const job = await db.query("select command from cron.fixture_jobs");
+  await db.exec(job.rows[0].command);
+  const authorized = await db.query(
+    "select public.is_application_email_worker(headers->>'x-worker-token') as allowed from net.fixture_requests",
+  );
+  if (authorized.rows[0]?.allowed !== true)
+    throw new Error("Worker schedule did not supply its private authorization");
+  console.log(
+    "PASS: schedule SQL supplies the private worker token to a stubbed local HTTP transport.",
+  );
+  await db.close();
+})().catch((error) => {
+  console.error(error.message);
+  process.exitCode = 1;
+});

@@ -19,17 +19,20 @@ export type ApplicationReviewEvent = {
 
 export type ApplicationStageDecision = "accepted" | "rejected" | null;
 
-export type ApplicationStageResult = {
-  status: "updated";
-  stagedDecision: ApplicationStageDecision;
-  event: ApplicationReviewEvent;
-} | {
-  status: "unchanged";
-  stagedDecision: ApplicationStageDecision;
-} | {
-  status: "error";
-  message: string;
-};
+export type ApplicationStageResult =
+  | {
+      status: "updated";
+      stagedDecision: ApplicationStageDecision;
+      event: ApplicationReviewEvent;
+    }
+  | {
+      status: "unchanged";
+      stagedDecision: ApplicationStageDecision;
+    }
+  | {
+      status: "error";
+      message: string;
+    };
 
 export type ApplicationReview = {
   id: number;
@@ -48,5 +51,14 @@ export type ApplicationReview = {
     respondedLabel?: string;
   };
   sections: ApplicationReviewSection[];
+  historyCursor: number | null;
+  emails: {
+    id: number;
+    template_key: string;
+    status: string;
+    attempts: number;
+    next_attempt_at: string;
+    last_error: string | null;
+  }[];
   events: ApplicationReviewEvent[];
 };

@@ -1,3 +1,4 @@
+import { safeNextPath } from "@/lib/navigation";
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import type { Database } from "@/lib/supabase/database.types";
@@ -16,8 +17,8 @@ function responseWithCookies(
   return target;
 }
 
-export async function updateSession(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({ request });
+export async function updateSession(request: NextRequest, requestHeaders: Headers = request.headers) {
+  let supabaseResponse = NextResponse.next({ request: { headers: requestHeaders } });
 
   const supabase = createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -29,7 +30,8 @@ export async function updateSession(request: NextRequest) {
         },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-          supabaseResponse = NextResponse.next({ request });
+          requestHeaders.set("cookie", request.headers.get("cookie") ?? "");
+          supabaseResponse = NextResponse.next({ request: { headers: requestHeaders } });
           cookiesToSet.forEach(({ name, value, options }) => {
             supabaseResponse.cookies.set(name, value, options);
           });
@@ -58,14 +60,11 @@ export async function updateSession(request: NextRequest) {
     );
   }
 
-  if (isSignedIn && (pathname === "/login" || pathname === "/signup")) {
+  if (isSignedIn && (pathname === "/login" || pathname === "/signup")
+    && !(pathname === "/login" && request.nextUrl.searchParams.get("forgot") === "1")) {
     const homeUrl = request.nextUrl.clone();
     const requestedNext = request.nextUrl.searchParams.get("next");
-    const next = requestedNext?.startsWith("/")
-      && !requestedNext.startsWith("//")
-      && !requestedNext.includes("\\")
-      ? requestedNext
-      : "/";
+    const next = safeNextPath(requestedNext);
     const target = new URL(next, request.url);
     homeUrl.pathname = target.pathname;
     homeUrl.search = target.search;

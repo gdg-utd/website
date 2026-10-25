@@ -15,8 +15,8 @@ export function getPasswordStrength(password: string): PasswordStrength {
   const requirements: PasswordRequirement[] = [
     {
       key: "length",
-      label: "8 or more characters",
-      met: password.length >= 8,
+      label: "8–128 characters",
+      met: password.length >= 8 && password.length <= 128,
     },
     {
       key: "mixedCase",

@@ -14,6 +14,8 @@ export type Database = {
   }
   public: {
     Tables: {
+      utd_academic_programs: { Row: {degree: string; major: string}; Insert: {degree: string; major: string}; Update: {degree?: string; major?: string}; Relationships: [] }
+
       email_blacklist: {
         Row: { email: string; created_at: string }
         Insert: { email: string; created_at?: string }
@@ -46,6 +48,11 @@ export type Database = {
       }
       application_email_queue: {
         Row: {
+          attempts: number
+          next_attempt_at: string
+          provider_idempotency_key: string
+          lease_token: string | null
+          locked_until: string | null
           application_id: number
           created_at: string
           id: number
@@ -60,6 +67,11 @@ export type Database = {
           template_key: string
         }
         Insert: {
+          attempts?: number
+          next_attempt_at?: string
+          provider_idempotency_key?: string
+          lease_token?: string | null
+          locked_until?: string | null
           application_id: number
           created_at?: string
           id?: never
@@ -74,6 +86,11 @@ export type Database = {
           template_key: string
         }
         Update: {
+          attempts?: number
+          next_attempt_at?: string
+          provider_idempotency_key?: string
+          lease_token?: string | null
+          locked_until?: string | null
           application_id?: number
           created_at?: string
           id?: never
@@ -243,6 +260,7 @@ export type Database = {
           created_at: string
           decision_published_at: string | null
           decision_published_by: string | null
+          form_schema_snapshot: Json
           form_version: number
           id: number
           opening_id: number
@@ -260,6 +278,7 @@ export type Database = {
           created_at?: string
           decision_published_at?: string | null
           decision_published_by?: string | null
+          form_schema_snapshot: Json
           form_version: number
           id?: never
           opening_id: number
@@ -277,6 +296,7 @@ export type Database = {
           created_at?: string
           decision_published_at?: string | null
           decision_published_by?: string | null
+          form_schema_snapshot?: Json
           form_version?: number
           id?: never
           opening_id?: number
@@ -391,6 +411,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      reserve_password_reset: { Args: {p_email: string; p_email_key: string; p_global_key: string}; Returns: boolean }
+      claim_application_email: { Args: {queue_id: number}; Returns: Database["public"]["Tables"]["application_email_queue"]["Row"][] }
+      expire_application_email_leases: { Args: Record<PropertyKey, never>; Returns: undefined }
+      is_application_email_worker: { Args: {p_token: string}; Returns: boolean }
+
+      get_staff_application_page: { Args: {p_q?: string; p_position?: string; p_decision?: string; p_page?: number; p_page_size?: number}; Returns: Json }
+      application_email_status: { Args: {target_application_id: number}; Returns: {id: number; template_key: string; status: string; attempts: number; next_attempt_at: string; last_error: string | null}[] }
+      retry_application_email: { Args: {target_queue_id: number}; Returns: {application_id: number; template_key: string}[] }
+
       is_email_blacklisted: {
         Args: { candidate_email: string }
         Returns: boolean

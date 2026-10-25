@@ -1,3 +1,4 @@
+import { normalizeQuery, safeNextPath } from "@/lib/navigation";
 import type { Metadata } from "next";
 import Image from "next/image";
 import { AuthForm } from "@/app/auth/auth-form";
@@ -18,22 +19,20 @@ type LoginPageProps = {
   }>;
 };
 
-function safeNextPath(value?: string) {
-  return value?.startsWith("/") && !value.startsWith("//") && !value.includes("\\") ? value : "/";
-}
-
 export default async function LoginPage({ searchParams }: LoginPageProps) {
-  const { error, forgot, next, password } = await searchParams;
+  const { error, forgot, next, password } = normalizeQuery(await searchParams);
   const nextPath = safeNextPath(next);
   const isForgotPassword = forgot === "1";
   return (
     <main className="auth-page">
       <SiteHeader />
-      <section className="auth-layout">
+      <section id="main-content" tabIndex={-1} className="auth-layout">
         <div className="auth-copy">
           <div>
             <p className="section-label">Member account</p>
-            <h1>{isForgotPassword ? "Let’s get you back in." : "Welcome back."}</h1>
+            <h1>
+              {isForgotPassword ? "Let’s get you back in." : "Welcome back."}
+            </h1>
             <p>
               {isForgotPassword
                 ? "Enter the UT Dallas email connected to your account and we’ll send a secure reset link."
@@ -53,14 +52,41 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             <p>Account access</p>
             <h2>{isForgotPassword ? "Reset password" : "Log in"}</h2>
           </div>
+          {error === "confirmation" && (
+            <p
+              className="auth-message auth-message-error auth-page-message"
+              role="alert"
+            >
+              That confirmation link is invalid or has expired. Log in again to
+              continue email verification.
+            </p>
+          )}
+          {password === "updated-sessions-warning" && (
+            <p
+              className="auth-message auth-message-error auth-page-message"
+              role="alert"
+            >
+              Your password was updated and you were signed out here, but other
+              sessions could not be ended. Log in with your new password and
+              contact the GDG team if you need help securing your account.
+            </p>
+          )}
           {password === "updated" && (
-            <p className="auth-message auth-message-success auth-page-message" role="status">
-              Your password was updated. Enter the new password you just chose; your browser may still have the old one saved.
+            <p
+              className="auth-message auth-message-success auth-page-message"
+              role="status"
+            >
+              Your password was updated. Enter the new password you just chose;
+              your browser may still have the old one saved.
             </p>
           )}
           {error === "recovery" && isForgotPassword && (
-            <p className="auth-message auth-message-error auth-page-message" role="alert">
-              That reset link is invalid or has expired. Request a new one below.
+            <p
+              className="auth-message auth-message-error auth-page-message"
+              role="alert"
+            >
+              That reset link is invalid or has expired. Request a new one
+              below.
             </p>
           )}
           {isForgotPassword ? (

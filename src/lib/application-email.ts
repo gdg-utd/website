@@ -13,16 +13,16 @@ export async function deliverApplicationEmail(
   applicationId: number,
   templateKey: ApplicationEmailTemplate,
 ) {
-  const { error } = await supabase.functions.invoke("send-application-email", {
+  const { data, error } = await supabase.functions.invoke("send-application-email", {
     body: { applicationId, templateKey },
   });
 
-  if (error) {
+  if (error || data?.sent !== true) {
     console.error(
       "Application email remains queued",
       applicationId,
       templateKey,
-      error.message,
+      error?.message ?? "Delivery has not been acknowledged yet",
     );
     return false;
   }

@@ -1,3 +1,4 @@
+import { normalizeQuery, safeNextPath } from "@/lib/navigation";
 import type { Metadata } from "next";
 import Image from "next/image";
 import { redirect } from "next/navigation";
@@ -16,18 +17,14 @@ type OnboardingPageProps = {
   searchParams: Promise<{ next?: string; preview?: string }>;
 };
 
-function safeNextPath(value?: string) {
-  return value?.startsWith("/")
-    && !value.startsWith("//")
-    && !value.includes("\\")
-    && !value.startsWith("/onboarding")
-    ? value
-    : "/dashboard";
+function onboardingNextPath(value: string | string[] | undefined) {
+  const next = safeNextPath(value, "/dashboard");
+  return next.startsWith("/onboarding") ? "/dashboard" : next;
 }
 
 export default async function OnboardingPage({ searchParams }: OnboardingPageProps) {
-  const query = await searchParams;
-  const next = safeNextPath(query.next);
+  const query = normalizeQuery(await searchParams);
+  const next = onboardingNextPath(query.next);
   const isDevelopmentPreview = process.env.NODE_ENV !== "production" && query.preview === "1";
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
@@ -45,7 +42,7 @@ export default async function OnboardingPage({ searchParams }: OnboardingPagePro
   if (profile?.onboarding_completed_at && !isDevelopmentPreview) redirect(next);
 
   return (
-    <main className="onboarding-page">
+    <main id="main-content" tabIndex={-1} className="onboarding-page">
       <div className="onboarding-shell">
         <header className="onboarding-header">
           <Image src="/brand/gdg-lockup.svg" alt="Google Developer Groups" width={188} height={38} priority />
