@@ -55,13 +55,24 @@ begin
  if (page_one->>'matched')::integer>1 and page_one->'applications'->0->>'id'=page_two->'applications'->0->>'id' then raise exception 'F18 pagination repeats rows'; end if;
  if page_one->'applications'->0 ? 'responses' then raise exception 'F18 list exposes response documents'; end if;
  if public.reserve_password_reset('does-not-exist-audit@utdallas.edu',repeat('a',64),repeat('b',64)) then raise exception 'F27 nonexistent reset accepted'; end if;
- if exists(select 1 from public.password_reset_rate_limits where key_hash in (repeat('a',64),repeat('b',64))) then raise exception 'F27 nonexistent reset consumed budget'; end if;
+ if exists(select 1 from public.password_reset_rate_limits where key_hash=repeat('b',64)) then raise exception 'F27 nonexistent reset consumed global budget'; end if;
+ for counter in 2..3 loop
+  if public.reserve_password_reset_request('does-not-exist-audit@utdallas.edu',repeat('a',64),repeat('b',64))<>'skipped' then raise exception 'Unknown address was not handled generically'; end if;
+ end loop;
+ if public.reserve_password_reset_request('does-not-exist-audit@utdallas.edu',repeat('a',64),repeat('b',64))<>'limited' then raise exception 'Unknown address quota feedback differs from existing accounts'; end if;
  select email into email_address from auth.users where id=account_id;
  for counter in 1..3 loop
   if not public.reserve_password_reset(email_address,repeat('c',64),repeat('d',64)) then raise exception 'F27 existing reset not reserved'; end if;
  end loop;
  if public.reserve_password_reset(email_address,repeat('c',64),repeat('d',64)) then raise exception 'F27 per-account limit ignored'; end if;
  if (select request_count from public.password_reset_rate_limits where key_hash=repeat('d',64))<>3 then raise exception 'F27 rejected request consumed global budget'; end if;
+ if public.reserve_password_reset_request(email_address,repeat('c',64),repeat('d',64))<>'limited' then raise exception 'Existing account did not report quota'; end if;
+ update public.password_reset_rate_limits set expires_at=clock_timestamp()-interval '1 second' where key_hash=repeat('c',64);
+ if public.reserve_password_reset_request(email_address,repeat('c',64),repeat('d',64))<>'allowed' then raise exception 'Expired quota window did not reset'; end if;
+ update public.password_reset_rate_limits set request_count=500 where key_hash=repeat('d',64);
+ if public.reserve_password_reset_request(email_address,repeat('c',64),repeat('d',64))<>'busy' then raise exception 'Global quota ignored'; end if;
+ if public.reserve_password_reset_request('does-not-exist-audit@utdallas.edu',repeat('e',64),repeat('d',64))<>'busy' then raise exception 'Global quota reveals account existence'; end if;
+ if has_function_privilege('anon','public.reserve_password_reset_request(text,text,text)','execute') or has_function_privilege('authenticated','public.reserve_password_reset_request(text,text,text)','execute') then raise exception 'Reset reservation exposed'; end if;
  if has_function_privilege('authenticated','public.claim_application_email(bigint)','execute') or has_function_privilege('anon','public.reserve_password_reset(text,text,text)','execute') or has_function_privilege('authenticated','public.is_application_email_worker(text)','execute') then raise exception 'Server-only function exposed'; end if;
  perform set_config('request.jwt.claim.sub',gen_random_uuid()::text,true);
  failed:=false;

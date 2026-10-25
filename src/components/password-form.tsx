@@ -118,7 +118,7 @@ export function PasswordForm({ mode }: { mode: "profile" | "recovery" }) {
         <span aria-hidden="true">→</span>
       </button>
       <Link
-        className="auth-switch"
+        className={`auth-switch${mode === "profile" ? " password-form-cancel" : ""}`}
         href={mode === "profile" ? "/dashboard/profile" : "/login?forgot=1"}
       >
         {mode === "profile"

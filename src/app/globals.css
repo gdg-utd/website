@@ -633,7 +633,7 @@ img { display: block; }
 .dashboard-profile-actions button:disabled { opacity: .65; cursor: not-allowed; }
 .dashboard-security-section { margin-top: 28px; }
 .dashboard-security-heading { flex-direction: row; }
-.dashboard-security-toggle { min-height: 44px; padding: 0 17px; flex: 0 0 auto; border: 1px solid #a8c7fa; background: #fff; color: var(--blue-dark); font: inherit; font-size: 12px; font-weight: 670; cursor: pointer; }
+.dashboard-security-toggle { min-height: 44px; padding: 10px 17px; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; border: 1px solid #a8c7fa; background: #fff; color: var(--blue-dark); font: inherit; font-size: 12px; font-weight: 670; line-height: 1.4; text-align: center; cursor: pointer; }
 .dashboard-security-toggle:hover { background: #e8f0fe; }
 .dashboard-security-recovery-note { margin: 28px 30px 0; padding: 14px 16px; display: flex; align-items: center; gap: 10px; border-left: 4px solid var(--green); background: #e6f4ea; color: #0d652d; font-size: 13px; }
 .dashboard-security-recovery-note span { width: 19px; height: 19px; display: grid; place-items: center; border: 1px solid currentColor; border-radius: 50%; font-size: 10px; font-weight: 800; }
@@ -1095,7 +1095,7 @@ img { display: block; }
   .dashboard-application { padding: 25px 22px; grid-template-columns: 1fr; gap: 22px; }
   .dashboard-application > a, .dashboard-application-note { grid-column: auto; }
   .dashboard-profile-section-heading { align-items: flex-start; flex-direction: column; gap: 15px; }
-  .dashboard-security-heading { flex-direction: row; align-items: center; }
+  .dashboard-security-heading { flex-direction: column; align-items: stretch; gap: 20px; }
   .dashboard-security-recovery-note { margin: 22px 22px 0; }
   .dashboard-profile-grid { padding: 28px 22px 32px; grid-template-columns: 1fr; }
   .dashboard-profile-full-field { grid-column: auto; }
@@ -1308,6 +1308,7 @@ dialog.admin-drawer::backdrop { background: rgba(31,35,40,.34); backdrop-filter:
 .password-card { margin-top: 28px; padding: 30px; }
 .password-form { max-width: 520px; }
 .password-form-note { color: #626a72; font-size: 13px; line-height: 1.6; }
+.password-form-cancel:hover, .password-form-cancel:focus-visible { color: #b3261e; text-decoration: underline; text-underline-offset: 3px; }
 .password-recovery-page { min-height: 100dvh; padding: 64px 20px; display: grid; place-items: center; background: #f6f8fb; }
 .password-recovery-card { width: min(100%, 560px); padding: 40px; border: 1px solid #d8dde4; background: white; }
 .password-recovery-card h1 { margin: 8px 0 20px; font-size: clamp(2rem, 8vw, 2.8rem); line-height: 1.05; letter-spacing: -.05em; }

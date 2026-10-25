@@ -520,6 +520,10 @@ export type Database = {
         Args: { p_email: string; p_email_key: string; p_global_key: string }
         Returns: boolean
       }
+      reserve_password_reset_request: {
+        Args: { p_email: string; p_email_key: string; p_global_key: string }
+        Returns: string
+      }
       respond_to_mentee_offer: {
         Args: {
           agreements_confirmed?: boolean

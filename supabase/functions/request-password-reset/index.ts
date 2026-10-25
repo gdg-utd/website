@@ -16,6 +16,16 @@ function response(status = 200) {
   );
 }
 
+function limitResponse(code: "RESET_LIMIT_REACHED" | "RESET_SERVICE_BUSY") {
+  return new Response(JSON.stringify({ accepted: false, code }), {
+    status: 429,
+    headers: {
+      "cache-control": "no-store",
+      "content-type": "application/json; charset=utf-8",
+    },
+  });
+}
+
 function requiredEnv(name: string) {
   const value = Deno.env.get(name)?.trim();
   if (!value) throw new Error(`Missing required secret: ${name}`);
@@ -98,15 +108,21 @@ Deno.serve(async (request: Request) => {
     hashKey(rateLimitSecret, "password-reset-email", email),
     hashKey(rateLimitSecret, "password-reset-global", "all"),
   ]);
-  const { data: allowed, error: limitError } = await serviceClient.rpc(
-    "reserve_password_reset",
+  const { data: reservation, error: limitError } = await serviceClient.rpc(
+    "reserve_password_reset_request",
     { p_email: email, p_email_key: emailKey, p_global_key: globalKey },
   );
   if (limitError) {
     console.error("Password reset reservation failed", limitError.code);
     return response(503);
   }
-  if (allowed !== true) return response();
+  if (reservation === "limited") return limitResponse("RESET_LIMIT_REACHED");
+  if (reservation === "busy") return limitResponse("RESET_SERVICE_BUSY");
+  if (reservation === "skipped") return response();
+  if (reservation !== "allowed") {
+    console.error("Unexpected password reset reservation result");
+    return response(503);
+  }
 
   const siteUrl = (Deno.env.get("SITE_URL") || "https://gdgutd.com").replace(
     /\/$/,

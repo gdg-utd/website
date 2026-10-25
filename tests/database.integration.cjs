@@ -48,6 +48,7 @@ const root = path.resolve(__dirname, "..");
       "",
     );
   await db.exec(migration);
+  await db.exec(fs.readFileSync(root + "/supabase/migrations/" + files.find((file) => file.endsWith("_report_password_reset_limits.sql")), "utf8"));
   await db.exec(`select set_config('test.member_id','${uid}',false);`);
   await db.exec("begin");
   await db.exec(

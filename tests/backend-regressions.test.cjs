@@ -426,3 +426,71 @@ test("CSV export streams every row across bounded batches and escapes formulas",
     Module._load = originalLoad;
   }
 });
+
+test("reset quota responses reach the form as an error instead of email success", async () => {
+  const { FunctionsHttpError } = require("@supabase/supabase-js");
+  const originalLoad = Module._load;
+  let result = { data: { accepted: true }, error: null };
+  let invocations = 0;
+  Module._load = function (name, ...args) {
+    if (name === "@/lib/supabase/server") return { createClient: async () => ({
+      functions: { invoke: async () => { invocations++; return result; } },
+    }) };
+    return originalLoad.call(this, name, ...args);
+  };
+  try {
+    const { requestPasswordReset } = require("../src/app/auth/actions.ts");
+    const form = new FormData(), state = { status: "idle", message: "" };
+    form.set("email", "invalid@example.com");
+    assert.equal((await requestPasswordReset(state, form)).status, "error");
+    assert.equal(invocations, 0);
+    form.set("email", "MEMBER@utdallas.edu");
+    assert.equal((await requestPasswordReset(state, form)).status, "success");
+    for (const [code, pattern] of [["RESET_LIMIT_REACHED", /3 per hour/], ["RESET_SERVICE_BUSY", /temporarily unavailable/]]) {
+      result = { data: null, error: new FunctionsHttpError(new Response(JSON.stringify({ code }), { status: 429 })) };
+      const limited = await requestPasswordReset(state, form);
+      assert.equal(limited.status, "error");
+      assert.match(limited.message, pattern);
+      assert.doesNotMatch(limited.message, /on its way/);
+    }
+    result = { data: null, error: new FunctionsHttpError(new Response("gateway limit", { status: 429 })) };
+    assert.equal((await requestPasswordReset(state, form)).status, "error");
+    result = { data: null, error: new FunctionsHttpError(new Response("unavailable", { status: 503 })) };
+    assert.match((await requestPasswordReset(state, form)).message, /could not start/);
+  } finally { Module._load = originalLoad; }
+});
+
+test("reset function distinguishes quotas while unknown accounts never generate email", async () => {
+  const originalDeno = global.Deno, originalLoad = Module._load;
+  let handler, reservation = "skipped", rpcError = null, generated = 0;
+  global.Deno = {
+    env: { get: (key) => ({ SUPABASE_URL: "https://example.supabase.co", SUPABASE_SERVICE_ROLE_KEY: "test", BREVO_API_KEY: "test", BREVO_SENDER_EMAIL: "sender@example.com" })[key] },
+    serve: (callback) => { handler = callback; },
+  };
+  Module._load = function (name, ...args) {
+    if (name === "@supabase/supabase-js") return { createClient: () => ({
+      rpc: async (name) => { assert.equal(name, "reserve_password_reset_request"); return { data: reservation, error: rpcError }; },
+      auth: { admin: { generateLink: async () => { generated++; throw new Error("Must not generate email"); } } },
+    }) };
+    return originalLoad.call(this, name, ...args);
+  };
+  try {
+    require("../supabase/functions/request-password-reset/index.ts");
+    const request = () => new Request("https://example.invalid", { method: "POST", body: JSON.stringify({ email: "unknown@utdallas.edu" }) });
+    let response = await handler(request());
+    assert.equal(response.status, 200);
+    assert.equal((await response.json()).accepted, true);
+    for (const [status, code] of [["limited", "RESET_LIMIT_REACHED"], ["busy", "RESET_SERVICE_BUSY"]]) {
+      reservation = status;
+      response = await handler(request());
+      assert.equal(response.status, 429);
+      assert.equal(response.headers.get("cache-control"), "no-store");
+      assert.deepEqual(await response.json(), { accepted: false, code });
+    }
+    reservation = "unexpected";
+    assert.equal((await handler(request())).status, 503);
+    rpcError = { code: "test_error" };
+    assert.equal((await handler(request())).status, 503);
+    assert.equal(generated, 0);
+  } finally { global.Deno = originalDeno; Module._load = originalLoad; }
+});

@@ -1,6 +1,7 @@
 "use server";
 
 import { safeNextPath } from "@/lib/navigation";
+import { FunctionsHttpError } from "@supabase/supabase-js";
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -206,6 +207,20 @@ export async function requestPasswordReset(
   });
 
   if (error) {
+    if (error instanceof FunctionsHttpError && error.context.status === 429) {
+      let code: unknown;
+      try {
+        code = (await error.context.json()).code;
+      } catch {
+        // A gateway may return a non-JSON rate-limit response.
+      }
+      return {
+        status: "error",
+        message: code === "RESET_SERVICE_BUSY"
+          ? "Password reset emails are temporarily unavailable. Please try again later."
+          : "You've reached the password reset request limit for this email (3 per hour). Please try again later.",
+      };
+    }
     console.error("Unable to request a password reset", error.message);
     return {
       status: "error",
