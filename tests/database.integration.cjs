@@ -55,6 +55,57 @@ const root = path.resolve(__dirname, "..");
     fs.readFileSync(root + "/tests/database-regressions.sql", "utf8"),
   );
   await db.exec("rollback");
+  const beforeRoleUpdate = await db.query("select slug, form_schema, form_version, status, opens_at, closes_at, email_templates from public.application_openings order by slug");
+  const applicationsBeforeRoleUpdate = await db.query("select * from public.applications order by id");
+  await db.exec(fs.readFileSync(root + "/supabase/migrations/" + files.find((file) => file.endsWith("_update_f26_role_applications.sql")), "utf8"));
+  const afterRoleUpdate = await db.query("select slug, form_schema, form_version, status, opens_at, closes_at, email_templates from public.application_openings order by slug");
+  const assert = require("node:assert/strict");
+  const updatedRoles = new Set(["sprint-mentee", "sprint-officer", "finance-officer", "tech-officer"]);
+  for (const opening of afterRoleUpdate.rows) {
+    const previous = beforeRoleUpdate.rows.find((row) => row.slug === opening.slug);
+    if (!updatedRoles.has(opening.slug)) {
+      assert.deepEqual(opening, previous);
+      continue;
+    }
+    assert.equal(opening.form_version, previous.form_version + 1);
+    for (const key of ["status", "opens_at", "closes_at", "email_templates"]) assert.deepEqual(opening[key], previous[key]);
+    const sections = opening.form_schema.sections;
+    const fields = sections.flatMap((section) => section.fields);
+    assert.equal(new Set(fields.map((field) => field.id)).size, fields.length);
+    assert.deepEqual(fields.filter((field) => ["degree", "major"].includes(field.id)), previous.form_schema.sections.flatMap((section) => section.fields).filter((field) => ["degree", "major"].includes(field.id)));
+    const field = (id) => fields.find((item) => item.id === id);
+    if (opening.slug === "sprint-mentee") {
+      assert.equal(field("track").type, "single_choice");
+      assert.deepEqual(field("track").options.map((option) => option.label), ["Backend", "Frontend", "AI/Machine Learning"]);
+      assert.equal(field("meeting_preference").options.length, 3);
+      assert.equal(field("time_restrictions").required, true);
+      assert.equal(field("technical_skills").required, false);
+      assert.equal(sections.find((section) => section.id === "agreements").fields.length, 2);
+    } else {
+      assert.equal(field("netid").required, true);
+      assert.equal(field("portfolio_url").required, true);
+      assert.equal(field("program_fit").required, false);
+      assert.equal(field("other_roles").type, "multiple_choice");
+      assert.equal(field("other_roles").required, false);
+      assert.deepEqual(sections.find((section) => section.id === "agreements"), previous.form_schema.sections.find((section) => section.id === "agreements"));
+      if (opening.slug === "sprint-officer") {
+        assert.equal(field("meeting_availability").type, "multiple_choice");
+        assert.equal(field("meeting_availability").required, true);
+        assert.equal(field("track_interests").options.length, 4);
+        assert.ok(field("project_idea"));
+      } else {
+        assert.equal(field("meeting_availability"), undefined);
+        assert.equal(field("project_idea"), undefined);
+      }
+      if (opening.slug === "finance-officer") {
+        const originalQuestions = previous.form_schema.sections.find((section) => section.id === "questionnaire").fields;
+        assert.deepEqual(sections.find((section) => section.id === "questionnaire").fields.slice(0, originalQuestions.length), originalQuestions);
+        assert.equal(field("technical_experience"), undefined);
+      } else assert.ok(field("technical_experience"));
+    }
+  }
+  assert.deepEqual((await db.query("select * from public.applications order by id")).rows, applicationsBeforeRoleUpdate.rows);
+  console.log("PASS: F26 role questions, required fields, choice types, Finance question preservation, version increments and unchanged submitted applications.");
   console.log(
     "PASS: local PostgreSQL migration, program constraints, RSVP null guards, notification cycles, schema snapshots, retry leases/limits, pagination, reset quotas and privilege checks.",
   );
