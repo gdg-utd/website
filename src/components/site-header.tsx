@@ -27,7 +27,7 @@ export async function SiteHeader({ isSignedIn: suppliedAuthState }: SiteHeaderPr
           <Link href="/about">About</Link>
           <Link href="/officers">Officers</Link>
           <Link href="/apply">Apply</Link>
-          <Link href="/#events">Events</Link>
+          <Link href="/events">Events</Link>
         </nav>
         <a className="chapter-link" href={CHAPTER_URL} target="_blank" rel="noreferrer">Join chapter ↗</a>
         {isSignedIn ? (
@@ -44,7 +44,7 @@ export async function SiteHeader({ isSignedIn: suppliedAuthState }: SiteHeaderPr
             <Link href="/about">About</Link>
             <Link href="/officers">Officers</Link>
             <Link href="/apply">Apply</Link>
-            <Link href="/#events">Events</Link>
+            <Link href="/events">Events</Link>
             <a href={CHAPTER_URL} target="_blank" rel="noreferrer">Join chapter ↗</a>
             {isSignedIn ? (
               <Link href="/dashboard">Dashboard</Link>

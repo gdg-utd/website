@@ -14,6 +14,7 @@ export function SiteFooter() {
           <Link href="/about">About</Link>
           <Link href="/officers">Officers</Link>
           <Link href="/apply">Apply</Link>
+          <Link href="/events">Events</Link>
           <a className="footer-social-link" href={DISCORD_URL} target="_blank" rel="noreferrer"><Image src="/icons/discord.svg" alt="" width={15} height={15} />Discord <span aria-hidden="true">↗</span></a>
           <a className="footer-social-link" href={INSTAGRAM_URL} target="_blank" rel="noreferrer"><Image src="/icons/instagram.svg" alt="" width={15} height={15} />Instagram <span aria-hidden="true">↗</span></a>
           <a className="footer-social-link" href={LINKTREE_URL} target="_blank" rel="noreferrer"><Image src="/icons/linktree.svg" alt="" width={15} height={15} />Linktree <span aria-hidden="true">↗</span></a>

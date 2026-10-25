@@ -91,7 +91,7 @@ export default function AboutPage() {
           </div>
           <div className="about-program-links">
             <Link href="/sprints">Learn about SPRINT <span aria-hidden="true">→</span></Link>
-            <Link href="/#events">View upcoming events <span aria-hidden="true">→</span></Link>
+            <Link href="/events">View upcoming events <span aria-hidden="true">→</span></Link>
           </div>
         </section>
 

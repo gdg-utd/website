@@ -272,7 +272,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
 
           <div className="event-list">
             {chapter.events.length ? (
-              chapter.events.map((event, index) => (
+              chapter.events.slice(0, 3).map((event, index) => (
                 <EventRow event={event} index={index} key={`${event.startDate}-${event.title}`} />
               ))
             ) : (
@@ -281,6 +281,10 @@ export default async function Home({ searchParams }: PageProps<"/">) {
                 <a href={CHAPTER_URL} target="_blank" rel="noreferrer">Check the official chapter page ↗</a>
               </div>
             )}
+          </div>
+
+          <div className="hero-actions">
+            <Link className="secondary-link" href="/events">View all events <span aria-hidden="true">→</span></Link>
           </div>
 
           <div className="events-footer">
@@ -364,7 +368,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
           <div className="footer-groups">
             <div className="footer-nav">
               <strong>Explore</strong>
-              <Link href="/about">About</Link><Link href="/officers">Officers</Link><Link href="/apply">Apply</Link><a href="#events">Events</a><Link href="/sprints">SPRINT</Link>
+              <Link href="/about">About</Link><Link href="/officers">Officers</Link><Link href="/apply">Apply</Link><Link href="/events">Events</Link><Link href="/sprints">SPRINT</Link>
             </div>
             <div className="footer-nav">
               <strong>Connect</strong>
