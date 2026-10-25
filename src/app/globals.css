@@ -920,16 +920,22 @@ img { display: block; }
 .sprint-section-heading { margin-bottom: 53px; display: grid; grid-template-columns: 1fr 420px; gap: 80px; align-items: end; }
 .sprint-section-heading > p { margin: 0; color: #676e75; font-size: 15px; line-height: 1.7; }
 .sprint-project-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
-.sprint-project-card { min-height: 355px; padding: 27px; display: flex; flex-direction: column; justify-content: space-between; border: 1px solid; }
+.sprint-project-card { min-width: 0; min-height: 390px; padding: 27px; display: flex; flex-direction: column; gap: 32px; border: 1px solid; transition: border-color .18s ease, box-shadow .18s ease; }
+.sprint-project-card:hover { border-color: currentColor; box-shadow: 0 8px 24px rgba(32,33,36,.07); }
+.sprint-project-card:focus-visible { outline: 3px solid var(--blue-dark); outline-offset: 4px; }
 .sprint-project-blue { border-color: #b8ccec; background: #f5f9ff; }
 .sprint-project-red { border-color: #ebc0bb; background: #fff7f5; }
 .sprint-project-green { border-color: #b9d8c1; background: #f5fbf7; }
 .sprint-project-topline { display: flex; justify-content: space-between; color: #6f767d; font: 650 10px var(--font-geist-mono), monospace; text-transform: uppercase; letter-spacing: .08em; }
-.sprint-project-card > div:last-child > p { margin: 0 0 11px; color: var(--blue-dark); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .09em; }
-.sprint-project-red > div:last-child > p { color: #b3261e; }
-.sprint-project-green > div:last-child > p { color: #137333; }
+.sprint-project-category { margin: 0 0 11px; color: var(--blue-dark); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .09em; }
+.sprint-project-red .sprint-project-category { color: #b3261e; }
+.sprint-project-green .sprint-project-category { color: #137333; }
 .sprint-project-card h3 { margin: 0 0 14px; font-size: 26px; line-height: 1.12; letter-spacing: -.038em; }
-.sprint-project-card > div:last-child > span { color: #71777d; font-size: 12px; line-height: 1.6; }
+.sprint-project-description { margin: 0; color: #626a72; font-size: 13px; line-height: 1.65; }
+.sprint-project-technologies { margin: 20px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 7px; list-style: none; }
+.sprint-project-technologies li { padding: 5px 8px; border: 1px solid rgba(98,106,114,.2); color: #4f555c; font-size: 10px; font-weight: 600; line-height: 1.4; }
+.sprint-project-link { margin-top: auto; display: flex; justify-content: space-between; gap: 16px; color: var(--ink); font-size: 12px; font-weight: 650; }
+.sprint-project-card:hover .sprint-project-link { text-decoration: underline; text-underline-offset: 4px; }
 
 .sprint-gallery { padding: 125px 0 132px; border-block: 1px solid #eadfbd; background: #fffbf1; }
 .sprint-gallery .section-label { color: #8d5d00; }

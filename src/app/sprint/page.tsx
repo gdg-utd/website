@@ -39,10 +39,25 @@ const phases = [
   },
 ];
 
-const projectSlots = [
-  { number: "01", accent: "blue" },
-  { number: "02", accent: "red" },
-  { number: "03", accent: "green" },
+const projects = [
+  {
+    number: "01", accent: "blue", title: "Critique AI", category: "AI feedback",
+    description: "A writing companion that analyzes assignment drafts, offers actionable AI feedback, and tracks improvements across revisions.",
+    technologies: ["Next.js", "Firebase", "Gemini"],
+    href: "https://github.com/Pranav593/gdg-critique-ai",
+  },
+  {
+    number: "02", accent: "red", title: "Moneyball Academics", category: "Academic planning",
+    description: "A degree planner that maps prerequisites and builds four-year schedules around GPA, tuition, workload, and scholarship requirements.",
+    technologies: ["Python", "DEAP", "React Flow"],
+    href: "https://github.com/MMehta45/moneyball-ml-1",
+  },
+  {
+    number: "03", accent: "green", title: "Retail AI", category: "Customer analytics",
+    description: "A retail analytics dashboard that brings together customer segmentation, churn prediction, product recommendations, and personalized offers.",
+    technologies: ["Python", "Streamlit", "XGBoost"],
+    href: "https://github.com/lavanyabansal03/retail_ai",
+  },
 ];
 
 export default function SprintPage() {
@@ -158,21 +173,32 @@ export default function SprintPage() {
               <p className="section-label">Project showcase</p>
               <h2 id="sprint-projects-title">Built during SPRINT.</h2>
             </div>
-            <p>Each finished project will include a short case study, the team, technology used, and a link to its GitHub repository.</p>
+            <p>Explore student-built tools for writing feedback, degree planning, and retail analytics. Open a repository to see the code and project details.</p>
           </div>
           <div className="sprint-project-grid">
-            {projectSlots.map((project) => (
-              <article className={`sprint-project-card sprint-project-${project.accent}`} key={project.number}>
+            {projects.map((project) => (
+              <a
+                className={`sprint-project-card sprint-project-${project.accent}`}
+                href={project.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-labelledby={`sprint-project-title-${project.number}`}
+                key={project.number}
+              >
                 <div className="sprint-project-topline">
-                  <span>Repository {project.number}</span>
-                  <span aria-hidden="true">↗</span>
+                  <span>Project {project.number}</span>
+                  <span>SPRINT</span>
                 </div>
-                <div>
-                  <p>SPRINT project</p>
-                  <h3>Project details coming soon</h3>
-                  <span>Team, project summary, technology, and GitHub repository</span>
+                <div className="sprint-project-body">
+                  <p className="sprint-project-category">{project.category}</p>
+                  <h3 id={`sprint-project-title-${project.number}`}>{project.title}</h3>
+                  <p className="sprint-project-description">{project.description}</p>
+                  <ul className="sprint-project-technologies" aria-label={`${project.title} technologies`}>
+                    {project.technologies.map((technology) => <li key={technology}>{technology}</li>)}
+                  </ul>
                 </div>
-              </article>
+                <span className="sprint-project-link">View on GitHub <span aria-hidden="true">↗</span></span>
+              </a>
             ))}
           </div>
         </section>
