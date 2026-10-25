@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { headers } from "next/headers";
 import { HeroBackdrop } from "@/components/hero-backdrop";
 import { SiteHeader } from "@/components/site-header";
 import {
@@ -12,9 +13,19 @@ import {
   type ChapterEvent,
 } from "@/lib/gdg";
 import { createClient } from "@/lib/supabase/server";
+import { SITE_NAME, SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/" },
+};
+
+const websiteStructuredData = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "@id": `${SITE_URL}/#website`,
+  url: SITE_URL,
+  name: "GDG UTD",
+  alternateName: [SITE_NAME, "GDG UTDallas", "GDSC UTD"],
 };
 
 function eventDate(date: string) {
@@ -82,6 +93,7 @@ const faqs = [
 ] as const;
 
 export default async function Home({ searchParams }: PageProps<"/">) {
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   const supabase = await createClient();
   const [chapter, { data: authData }, query] = await Promise.all([
     getChapterData(),
@@ -100,6 +112,13 @@ export default async function Home({ searchParams }: PageProps<"/">) {
 
   return (
     <div className="page">
+      <script
+        type="application/ld+json"
+        nonce={nonce}
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(websiteStructuredData).replace(/</g, "\\u003c"),
+        }}
+      />
       <SiteHeader isSignedIn={isSignedIn} />
 
       {authNotice && (

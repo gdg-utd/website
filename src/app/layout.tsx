@@ -23,8 +23,8 @@ export const metadata: Metadata = {
   },
   description: SITE_DESCRIPTION,
   icons: {
-    icon: [{ url: "/brand/gdg-favicon.png", type: "image/png" }],
-    shortcut: "/brand/gdg-favicon.png",
+    icon: [{ url: "/brand/gdg-favicon.png", type: "image/png", sizes: "512x512" }],
+    shortcut: "/favicon.ico",
   },
   openGraph: {
     title: SITE_NAME,
