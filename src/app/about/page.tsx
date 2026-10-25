@@ -4,6 +4,7 @@ import Link from "next/link";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { advisors } from "@/data/advisors";
+import { CHAPTER_URL } from "@/lib/gdg";
 
 export const metadata: Metadata = {
   title: "About",
@@ -43,7 +44,7 @@ export default function AboutPage() {
             <p className="section-label">About GDG UTDallas</p>
             <h1>A student developer community at UT Dallas.</h1>
             <p>
-              GDG on Campus UTD brings students together through technical events, collaborative projects, and opportunities to learn from one another.
+              Google Developer Groups on Campus at The University of Texas at Dallas (GDG UTD) brings students together through technical events, collaborative projects, and opportunities to learn from one another. The chapter was previously known as Google Developer Student Club (GDSC UTD).
             </p>
           </div>
           <div className="about-page-art">
@@ -70,6 +71,9 @@ export default function AboutPage() {
               </p>
               <p>
                 The chapter is run by student officers. Programs and events change throughout the year based on what students want to learn and build.
+              </p>
+              <p className="about-membership-note">
+                Our <a href={CHAPTER_URL} target="_blank" rel="noreferrer">official GDG chapter page</a> lists <strong>1,197 group members</strong> as of <time dateTime="2026-10-25">October 25, 2026</time>. This count reflects members registered on the GDG platform.
               </p>
             </div>
           </div>

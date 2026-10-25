@@ -245,6 +245,8 @@ img { display: block; }
 .about-mission-copy { padding-top: 28px; border-top: 1px solid #bcc7d7; }
 .about-mission-copy p { margin: 0; color: #5d646c; font-size: 16px; line-height: 1.78; }
 .about-mission-copy p + p { margin-top: 20px; }
+.about-mission-copy .about-membership-note { padding-top: 22px; border-top: 1px solid #d5deeb; font-size: 14px; }
+.about-membership-note a { color: var(--blue-dark); text-decoration: underline; text-underline-offset: 3px; }
 .about-programs-page { padding-block: 128px; }
 .about-page-heading { max-width: 760px; margin-bottom: 54px; }
 .about-program-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
