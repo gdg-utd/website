@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./public/brand/gdg-lockup.svg" alt="Google Developer Groups" width="420" />
+  <img src="./docs/assets/readme-gdg-mark.svg" alt="Google Developer Groups" width="90" height="50" />
 </p>
 
 <h1 align="center">GDG on Campus · UT Dallas</h1>
@@ -15,13 +15,8 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Next.js-16-4285F4?style=flat-square" alt="Next.js 16" />
-  <img src="https://img.shields.io/badge/React-19-EA4335?style=flat-square" alt="React 19" />
-  <img src="https://img.shields.io/badge/TypeScript-typed-FBBC04?style=flat-square" alt="TypeScript" />
-  <img src="https://img.shields.io/badge/Supabase-Auth_%2B_Postgres-34A853?style=flat-square" alt="Supabase Auth and Postgres" />
+  <img src="./docs/assets/readme-divider.svg" alt="" width="100%" height="4" />
 </p>
-
-![Build. Learn. Belong. Workshops, projects, and community at UT Dallas.](./docs/assets/readme-banner.svg)
 
 ## A community you can build with
 
