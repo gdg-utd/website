@@ -1,105 +1,202 @@
-# GDG UTD Website
+<p align="center">
+  <img src="./public/brand/gdg-lockup.svg" alt="Google Developer Groups" width="420" />
+</p>
 
-Homepage for the independent GDG UTD developer community website.
+<h1 align="center">GDG on Campus · UT Dallas</h1>
 
-## Stack
+<p align="center">A home for the chapter. A starting point for your next project.</p>
 
-- Next.js 16 with the App Router
-- React 19
-- TypeScript
-- Tailwind CSS 4
-- Supabase Auth and Postgres
-- ESLint with the Next.js Core Web Vitals rules
-- npm
+<p align="center">
+  <a href="https://www.gdgutd.com"><strong>Explore the website ↗</strong></a>
+  &nbsp; · &nbsp;
+  <a href="https://www.gdgutd.com/sprints">Discover SPRINT</a>
+  &nbsp; · &nbsp;
+  <a href="https://www.gdgutd.com/apply">Find an opportunity</a>
+</p>
 
-## Requirements
+<p align="center">
+  <img src="https://img.shields.io/badge/Next.js-16-4285F4?style=flat-square" alt="Next.js 16" />
+  <img src="https://img.shields.io/badge/React-19-EA4335?style=flat-square" alt="React 19" />
+  <img src="https://img.shields.io/badge/TypeScript-typed-FBBC04?style=flat-square" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/Supabase-Auth_%2B_Postgres-34A853?style=flat-square" alt="Supabase Auth and Postgres" />
+</p>
 
-- Node.js 20.9 or newer
-- npm 10 or newer
+![Build. Learn. Belong. Workshops, projects, and community at UT Dallas.](./docs/assets/readme-banner.svg)
 
-## Local development
+## A community you can build with
+
+GDG on Campus at UT Dallas brings students together to explore technology, share what they know, and turn ideas into working projects. Whether someone is attending their first workshop or preparing to mentor a team, this website helps them find a way in.
+
+It connects the public face of the chapter with the practical work behind it: discovering events, exploring SPRINT, applying for opportunities, and keeping up with application decisions.
+
+**The goal is simple: make it easier to take part.**
+
+## What’s inside
+
+| For the community | For applicants and organizers |
+| --- | --- |
+| **Meet the chapter** — Learn about GDG UTDallas, its officers, and its community. | **Your own dashboard** — Manage your profile, save application drafts, and track published decisions. |
+| **Find your next event** — Browse upcoming sessions and RSVP on the official GDG chapter platform. | **A connected application process** — Apply for officer roles or SPRINT opportunities through one portal. |
+| **Explore SPRINT** — Discover the eight-week mentored project program and see moments from past and current cohorts. | **Tools for application staff** — Review submissions, stage and publish decisions, manage mentee RSVPs, and export applications. |
+
+### SPRINT: from an idea to a presentation
+
+Small teams. Regular mentor support. Eight weeks of building something together.
+
+The SPRINT experience introduces the program, shares chapter photography in a moving gallery, and connects prospective participants to available applications. Accepted mentees can respond to their offer through the dashboard.
+
+[Explore the SPRINT program →](https://www.gdgutd.com/sprints)
+
+## Built with
+
+| Layer | Technology | What it does |
+| --- | --- | --- |
+| Website | Next.js 16 · React 19 · TypeScript | Public pages, member dashboards, and the staff portal |
+| Styling | Tailwind CSS 4 · custom CSS | GDG colors, responsive layouts, and interaction states |
+| Accounts & data | Supabase Auth · PostgreSQL | Member accounts, profiles, applications, and access controls |
+| Background work | Supabase Edge Functions · Cron | Email requests, application notifications, and bounded delivery retries |
+| Transactional email | Brevo | Account recovery and application updates |
+| Hosting | Vercel | Website builds and deployment |
+| Checks | ESLint · Node.js tests · PGlite · GitHub Actions | Code checks and isolated database regression tests |
+
+## Run it locally
+
+Use **Node.js 22** (see [`.nvmrc`](./.nvmrc)) and **npm 10 or newer**.
 
 ```bash
-npm install
+npm ci
 cp .env.example .env.local
+```
+
+Fill in these values in `.env.local`:
+
+| Variable | Purpose |
+| --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL` | Your Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Your project’s browser-safe publishable key |
+| `NEXT_PUBLIC_SITE_URL` | `http://localhost:3000` for local development |
+| `PASSWORD_RECOVERY_SECRET` | A private signing secret for short-lived password recovery authorization |
+
+Generate a recovery secret with `openssl rand -hex 32`, then paste its value into the server-only variable. Keep `.env.local` private.
+
+Use a development Supabase project with the schema in [`supabase/migrations`](./supabase/migrations) applied. The URL and key alone do not create the required tables and functions.
+
+```bash
 npm run dev
 ```
 
-Fill `.env.local` with the project URL and publishable key from the Supabase project’s Connect dialog. Never place a Supabase secret or service-role key in a `NEXT_PUBLIC_` variable.
+Open [localhost:3000](http://localhost:3000). To exercise email delivery, configure the corresponding Edge Functions and Brevo secrets as described below.
 
-Open [http://localhost:3000](http://localhost:3000) in a browser.
+## Find your way around
 
-## Authentication
-
-Email-and-password authentication uses Supabase SSR with cookie-based sessions. The Next.js proxy refreshes sessions, `/account` is protected, and email confirmations return through `/auth/callback`. Signed-in password changes use `/dashboard/profile/password`; email recovery uses `/reset-password` after a verified callback. Set the server-only `PASSWORD_RECOVERY_SECRET` before deploying those routes.
-
-Database changes live in `supabase/migrations`. The profile table has row-level security: members can only read and update their own profile, anonymous visitors have no table access, and a private trigger creates the profile after signup.
-
-## Applications
-
-SPRINT Officer and SPRINT Mentee applications are stored in Supabase. Applicants can save drafts, submit once, and track published decisions from `/dashboard`. Submitted responses are available only to application staff through `/admin/applications`. Reviewers can read applications and stage decisions; administrators can also publish decisions, reopen applications, and export CSV data.
-
-To grant portal access after a staff member has created an account, add their user ID and role to `application_admins` from the Supabase SQL editor:
-
-```sql
-insert into public.application_admins (user_id, role)
-select id, 'admin' from auth.users where email = 'admin@utdallas.edu';
-
-insert into public.application_admins (user_id, role)
-select id, 'reviewer' from auth.users where email = 'reviewer@utdallas.edu';
+```text
+src/
+├── app/                 Pages, layouts, server actions, and API routes
+│   ├── admin/           Staff application review and publishing
+│   ├── apply/           Available opportunities and application forms
+│   ├── auth/            Sign-in actions, email verification, and callbacks
+│   ├── dashboard/       Member profiles, applications, and RSVPs
+│   └── reset-password/  Verified email recovery flow
+├── components/          Shared interface components
+└── lib/                 Validation, application logic, and Supabase clients
+supabase/
+├── functions/           Transactional email and background delivery
+└── migrations/          Versioned database changes
+public/                  Chapter photos, brand assets, and illustrations
+tests/                  Application and PostgreSQL regression tests
+docs/                   Validation notes and project documentation
 ```
 
-Application notifications are recorded in `application_email_queue` and delivered through the protected `send-application-email` Supabase Edge Function. After the backend migration and worker deployment, `process-application-emails` retries explicit delivery failures with bounded attempts; administrators can inspect/retry notifications inside application reviews. Officer selections receive an interview-stage update. Accepted SPRINT mentees receive a fixed 72-hour offer link in the application dashboard; staff can see response counts, release expired offers, and send the dedicated expiry notice before filling those spots in another selection round.
+## Check your changes
 
-Production credentials belong in **Supabase Dashboard → Edge Functions → Secrets**, not in browser-visible Next.js variables. Add these values before testing delivery:
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Start the development server |
+| `npm run lint` | Check code style and common mistakes |
+| `npm test` | Run application regression tests |
+| `npm run test:database` | Run migrations and database regressions in isolated local PostgreSQL |
+| `npm run build -- --webpack` | Verify a production build using Webpack |
+| `npm run start` | Serve the completed production build |
+
+GitHub Actions runs lint, application tests, database tests, route type generation, and TypeScript checks. The database test suite uses synthetic records and does not require production credentials. See [the workflow](./.github/workflows/checks.yml).
+
+For interface changes, also check desktop and mobile layouts, keyboard navigation, and loading/error states. Before merging, run the checks above and the production build.
+
+## Working with the backend
+
+Member records and application responses are protected with database access policies. Reviewers can read applications and stage decisions; administrators can also publish decisions, reopen applications, and export CSVs. Submitted applications preserve a snapshot of their form questions.
+
+Password changes have two paths: signed-in members confirm their current password on a dedicated profile page; forgotten-password recovery starts with a unique email link and ends at login. Reset requests are limited per email and across the email service.
+
+Application emails use a delivery queue with bounded retries. The staff portal shows delivery status; ambiguous delivery outcomes require review before retrying. Mentee offers have a 72-hour response window, with staff controls for releasing expired offers.
+
+<details>
+<summary><strong>Email configuration and deployment notes</strong></summary>
+
+Configure these server-only values for the Supabase Edge Functions:
 
 ```text
 BREVO_API_KEY=...
 BREVO_SENDER_EMAIL=...
 BREVO_SENDER_NAME=GDG UTDallas
 BREVO_REPLY_TO=...
-SITE_URL=https://gdgutd.com
+SITE_URL=https://www.gdgutd.com
 ```
 
-For local Edge Function testing, copy the same values into an ignored environment file and pass it to `supabase functions serve --env-file ...`. Never prefix the Brevo API key with `NEXT_PUBLIC_` and never commit it.
+`BREVO_REPLY_TO` is optional. Use a verified sender and the configured Brevo templates. The deployed functions also use Supabase-provided server credentials.
 
-## Available commands
+- `request-password-reset` handles recovery emails and quota feedback.
+- `send-application-email` checks user access and attempts immediate notification delivery.
+- `process-application-emails` handles scheduled retries and validates its private worker authorization.
 
-```bash
-npm run dev
-npm run build
-npm run start
-npm run lint
-npm test
-npm run test:database
+Deploy the required database migrations before website or function changes that depend on them. Enable the retry schedule after its worker is deployed. Function settings are recorded in [`supabase/config.toml`](./supabase/config.toml).
+
+Configure `PASSWORD_RECOVERY_SECRET` separately in the **Next.js hosting environment**. Production environment-variable changes require a new website deployment.
+
+Never expose service-role keys, Brevo credentials, or recovery secrets through `NEXT_PUBLIC_` variables. Keep local function secrets in an ignored environment file.
+
+</details>
+
+<details>
+<summary><strong>Granting application portal access</strong></summary>
+
+After a staff member has created an account, a project administrator can assign their role through the Supabase SQL editor. Replace the example email with the intended account:
+
+```sql
+-- Review applications and stage decisions.
+insert into public.application_admins (user_id, role)
+select id, 'reviewer' from auth.users
+where email = 'reviewer@utdallas.edu';
+
+-- Also publish decisions, reopen applications, and export submissions.
+insert into public.application_admins (user_id, role)
+select id, 'admin' from auth.users
+where email = 'admin@utdallas.edu';
 ```
 
-## Project structure
+Give each staff member the role required for their responsibilities. The staff portal is available at `/admin/applications`.
 
-```text
-src/app/          App Router routes, layouts, and global styles
-src/lib/supabase/ Supabase browser, server, and proxy clients
-supabase/         Database migrations
-public/           Static assets
-next.config.ts    Next.js configuration
-tsconfig.json     TypeScript configuration
-eslint.config.mjs ESLint configuration
-```
+</details>
 
-## Current scope
+## Project notes
 
-The current release includes a responsive public homepage, a dedicated SPRINT program experience, locally bundled official GDG assets and SketchValley illustrations, live chapter information, community links, SPRINT photography, upcoming events synchronized from the official GDG chapter page, Supabase-backed member authentication, and a secure applications workflow.
+- [Artwork and photography credits](./ASSETS.md)
+- [UI validation notes](./docs/ui-fixes-validation.md)
+- [Backend and password workflow validation](./docs/backend-fixes-validation.md)
 
-Authentication is available at `/login` and `/signup`. The protected dashboard is at `/dashboard`, and officers are listed at `/officers`.
+Upcoming events are refreshed hourly from the official chapter platform. Event RSVPs stay on that platform. If the feed is unavailable, the site shows an unavailable state rather than advertising expired fallback events.
 
-Upcoming event data is refreshed hourly. A verified local fallback keeps the page useful when the chapter platform is unavailable. RSVP links always send visitors to the official event page.
+This is an independent, community-run website. It is not an official website of The University of Texas at Dallas. Google Developer Groups and its marks are trademarks of Google LLC and identify the community represented here. See the asset credits for third-party artwork and licensing notes.
 
-The site intentionally makes no claim of affiliation with The University of Texas at Dallas and does not use UTD branding or photography.
+---
 
-See [`ASSETS.md`](./ASSETS.md) for artwork sources and licensing notes.
-
-## Validation
-
-Run `npm run lint`, `npm test`, `npm run test:database`, and `npm run build -- --webpack` before merging changes. The regression tests cover safe local redirects, repeated query parameters, form-state preservation, required choices, password boundaries, and unavailable event feeds. GitHub Actions runs lint, regression tests, route type generation, and TypeScript checks without production credentials. Responsive browser verification is documented in `docs/ui-fixes-validation.md`.
-
-Backend and password-workflow validation, deployment dependencies, and the production approval boundary are documented in [`docs/backend-fixes-validation.md`](./docs/backend-fixes-validation.md). Do not deploy the frontend changes before their database migration.
+<p align="center">
+  <strong>Keep learning. Keep building. Bring someone along.</strong><br /><br />
+  <a href="https://gdg.community.dev/gdg-on-campus-the-university-of-texas-at-dallas-richardson-united-states/">Chapter page</a>
+  &nbsp; · &nbsp;
+  <a href="https://discord.gg/bYNaQbaTQh">Discord</a>
+  &nbsp; · &nbsp;
+  <a href="https://www.instagram.com/gdscutd">Instagram</a>
+  &nbsp; · &nbsp;
+  <a href="https://linktr.ee/gdgutd">Linktree</a>
+</p>
