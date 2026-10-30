@@ -2,7 +2,7 @@ export const CHAPTER_URL =
   "https://gdg.community.dev/gdg-on-campus-the-university-of-texas-at-dallas-richardson-united-states/";
 
 export const DISCORD_URL = "https://discord.gg/bYNaQbaTQh";
-export const INSTAGRAM_URL = "https://www.instagram.com/gdscutd";
+export const INSTAGRAM_URL = "https://www.instagram.com/gdg.utd/";
 export const LINKTREE_URL = "https://linktr.ee/gdgutd";
 
 export type ChapterEvent = {
