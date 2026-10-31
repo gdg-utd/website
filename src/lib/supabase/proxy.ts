@@ -50,10 +50,12 @@ export async function updateSession(request: NextRequest, requestHeaders: Header
     || pathname.startsWith("/admin")
     || isApplicationForm;
 
-  if (!isSignedIn && isProtectedRoute) {
-    const loginUrl = request.nextUrl.clone();
-    loginUrl.pathname = "/login";
-    loginUrl.searchParams.set("next", pathname);
+  // Server Actions must issue their own redirect so Next can handle the action
+  // response, rather than replaying its POST against the login page.
+  const isServerAction = request.method === "POST" && request.headers.has("next-action");
+  if (!isSignedIn && isProtectedRoute && !isServerAction) {
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("next", `${pathname}${request.nextUrl.search}`);
     return responseWithCookies(
       supabaseResponse,
       NextResponse.redirect(loginUrl),

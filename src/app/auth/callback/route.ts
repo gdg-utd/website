@@ -15,6 +15,11 @@ export async function GET(request: Request) {
   const type = url.searchParams.get("type") as EmailOtpType | null;
   const requestedNext = url.searchParams.get("next");
   const next = safeNextPath(requestedNext);
+  // Existing recovery emails use next=/reset-password. New emails carry the
+  // final destination separately to preserve compatibility with those links.
+  const recoveryNext = safeNextPath(url.searchParams.get("returnTo"));
+  const resetPath = recoveryNext === "/" ? "/reset-password" : `/reset-password?next=${encodeURIComponent(recoveryNext)}`;
+  const recoveryError = `/login?forgot=1&error=recovery${recoveryNext !== "/" ? `&next=${encodeURIComponent(recoveryNext)}` : ""}`;
 
   if (code || (tokenHash && type === "recovery")) {
     const supabase = await createClient();
@@ -32,7 +37,7 @@ export async function GET(request: Request) {
         const sessionId = claims?.claims?.session_id;
         if (typeof userId !== "string" || typeof sessionId !== "string")
           return NextResponse.redirect(
-            new URL("/login?forgot=1&error=recovery", url.origin),
+            new URL(recoveryError, url.origin),
           );
         try {
           await allowPasswordRecovery(userId, sessionId);
@@ -41,10 +46,10 @@ export async function GET(request: Request) {
             "Unable to authorize password recovery: signing configuration unavailable",
           );
           return NextResponse.redirect(
-            new URL("/login?forgot=1&error=recovery", url.origin),
+            new URL(recoveryError, url.origin),
           );
         }
-        return NextResponse.redirect(new URL("/reset-password", url.origin));
+        return NextResponse.redirect(new URL(resetPath, url.origin));
       }
 
       const { data } = await supabase.auth.getClaims();
@@ -67,7 +72,7 @@ export async function GET(request: Request) {
 
   const errorPath =
     type === "recovery"
-      ? "/login?forgot=1&error=recovery"
+      ? recoveryError
       : "/login?error=confirmation";
   return NextResponse.redirect(new URL(errorPath, url.origin));
 }

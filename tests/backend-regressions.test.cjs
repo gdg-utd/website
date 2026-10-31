@@ -199,6 +199,11 @@ test("profile and recovery password actions enforce their proof and distinct ret
     assert.ok(
       calls.some((item) => item[0] === "signOut" && item[1] === "global"),
     );
+    form.set("next", "/apply/sprint-mentee");
+    await assert.rejects(recoverPassword(state, form), (error) => error.destination === "/login?password=updated&next=%2Fapply%2Fsprint-mentee");
+    form.set("next", "//example.com");
+    await assert.rejects(recoverPassword(state, form), (error) => error.destination === "/login?password=updated");
+    form.delete("next");
     const originalSignOut = client.auth.signOut;
     client.auth.signOut = async (input) => {
       calls.push(["signOut", input.scope]);
@@ -214,7 +219,7 @@ test("profile and recovery password actions enforce their proof and distinct ret
     client.auth.signOut = originalSignOut;
     userPresent = false;
     calls.length = 0;
-    assert.match((await recoverPassword(state, form)).message, /expired/);
+    await assert.rejects(recoverPassword(state, form), (error) => error.destination === "/login?next=%2Freset-password");
     assert.equal(
       calls.some((item) => item[0] === "update"),
       false,
@@ -493,4 +498,38 @@ test("reset function distinguishes quotas while unknown accounts never generate 
     assert.equal((await handler(request())).status, 503);
     assert.equal(generated, 0);
   } finally { global.Deno = originalDeno; Module._load = originalLoad; }
+});
+
+test("recovery emails retain only validated local return destinations", async () => {
+  const originalDeno = global.Deno, originalLoad = Module._load, originalFetch = global.fetch;
+  let handler, email;
+  global.Deno = {
+    env: { get: (key) => ({ SUPABASE_URL:"https://example.supabase.co", SUPABASE_SERVICE_ROLE_KEY:"test", BREVO_API_KEY:"test", BREVO_SENDER_EMAIL:"sender@example.com", SITE_URL:"https://gdgutd.com" })[key] },
+    serve: callback => { handler = callback; },
+  };
+  Module._load = function(name,...args) {
+    if(name === "@supabase/supabase-js") return {createClient:()=>({
+      rpc:async()=>({data:"allowed",error:null}),
+      auth:{admin:{generateLink:async()=>({data:{properties:{hashed_token:"synthetic-token"},user:{user_metadata:{first_name:"Test"}}},error:null})}},
+      from:()=>({select(){return this;},eq(){return this;},maybeSingle:async()=>({data:{brevo_template_id:1},error:null})}),
+    })};
+    return originalLoad.call(this,name,...args);
+  };
+  global.fetch = async (_url,options) => { email=JSON.parse(options.body); return new Response('{}'); };
+  const file = require.resolve("../supabase/functions/request-password-reset/index.ts");
+  delete require.cache[file];
+  try {
+    require(file);
+    for(const next of ["/apply/sprint-mentee?source=account#form","https://example.com","//example.com","/a/..//example.com","/\\example.com","/\n/example.com"]) {
+      await handler(new Request("https://example.invalid",{method:"POST",body:JSON.stringify({email:"test@utdallas.edu",next})}));
+      const link = new URL(email.params.reset_url);
+      assert.equal(link.origin,"https://gdgutd.com");
+      assert.equal(link.pathname,"/auth/callback");
+      assert.equal(link.searchParams.get("next"),"/reset-password");
+      assert.equal(link.searchParams.get("returnTo"),next.startsWith("/apply/")?next:null);
+    }
+  } finally {
+    delete require.cache[file];
+    global.Deno=originalDeno; Module._load=originalLoad; global.fetch=originalFetch;
+  }
 });

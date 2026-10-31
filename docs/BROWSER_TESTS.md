@@ -1,6 +1,6 @@
 # Browser tests
 
-The suite exercises the real production Next.js application through Playwright. Sixteen critical flows run on desktop Chromium and mobile Chromium (Pixel 7 emulation), giving 32 checks per complete run.
+The suite exercises the real production Next.js application through Playwright. Twenty-five critical flows run on desktop Chromium and mobile Chromium (Pixel 7 emulation), giving 50 checks per complete run.
 
 ## Run locally
 
@@ -53,6 +53,13 @@ This uses synthetic public configuration, not production secrets. Once that buil
 | Expired recovery | Invalid/expired link response returns to requesting a new link |
 | Admin review and publishing | Submitted answers and provider status appear; publishing requires a staged decision; cancelling keeps the decision unpublished; confirming publishes it |
 | Reviewer restrictions | Reviewers can inspect submissions but cannot access CSV export or publishing controls |
+| Unsaved answers | Cancelling a link keeps edits; reverting changes and repeated successful manual saves clear the warning; edits do not create applications automatically |
+| Failed application saves | Entered answers and the unsaved warning remain after an unsuccessful save; accepting leave allows navigation |
+| Reload and close | Native beforeunload warnings let the applicant cancel reload and tab close |
+| Browser history | Cancelling Back retains the form; accepting Back returns to the prior page without artificial history entries |
+| Cross-tab logout | Saving after logout redirects to login and back to the application; returning focus after logout also redirects without an unsaved warning |
+| Recovery destination | Forgot-password navigation, reset request payload, verified callback, password reset and login retain the selected application |
+| Expired staff/RSVP sessions | Review requests and offer responses redirect through login instead of showing generic/session errors |
 
 Every test also fails on unexpected browser exceptions and unexpected service endpoint calls. There are no automatic retries that could hide a flaky first attempt. The shared in-memory fixture is reset before each test, so the suite intentionally uses one worker.
 
@@ -63,6 +70,10 @@ Application components, routing, authentication cookie handling, server actions,
 The test environment fixes service URLs to loopback and substitutes a non-production recovery secret. The test server intercepts public chapter-feed fetches with a deterministic fixture and blocks other external `fetch` destinations. Browser requests to external hosts are blocked too. The production build may download its Google fonts; the interactive flows do not call production Supabase or send real email. No test-only route or authentication bypass is added to the application.
 
 The service double is not a Supabase implementation. These tests do **not** prove database RLS, SQL constraints, hosted token expiry/single-use behavior, real session revocation, Brevo delivery, or Cron execution. Keep `npm run test:database` and the unit regressions, and perform the designated real-account recovery/email checks before relying on a production release. Mobile Chromium emulation is not Safari/iOS coverage.
+
+Unsaved-answer warnings keep manual saving; they do not persist answers in browser storage. Browsers control native reload/close dialog wording and may suppress unload events when a mobile browser is force-closed. Same-document Back/Forward protection uses the Navigation API where supported; link and full-document unload warnings remain independent of it. Successful submission and required authentication redirects are allowed without an extra leave warning.
+
+When deploying the recovery-destination change, update the website and `request-password-reset` Edge Function together. New function emails include a validated `returnTo` destination; existing recovery emails without it continue to open the reset form normally.
 
 ## CI and failure reports
 

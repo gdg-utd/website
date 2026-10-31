@@ -11,7 +11,7 @@ import {
 
 const initialState: PasswordActionState = { status: "idle", message: "" };
 
-export function PasswordForm({ mode }: { mode: "profile" | "recovery" }) {
+export function PasswordForm({ mode, nextPath = "/" }: { mode: "profile" | "recovery"; nextPath?: string }) {
   const [password, setPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
   const [state, formAction, pending] = useActionState(
@@ -22,6 +22,7 @@ export function PasswordForm({ mode }: { mode: "profile" | "recovery" }) {
   const matches = confirmation.length > 0 && password === confirmation;
   return (
     <form className="auth-form password-form" action={formAction}>
+      {mode === "recovery" && <input type="hidden" name="next" value={nextPath} />}
       {mode === "profile" && (
         <label>
           <span>Current password</span>
@@ -119,7 +120,7 @@ export function PasswordForm({ mode }: { mode: "profile" | "recovery" }) {
       </button>
       <Link
         className={`auth-switch${mode === "profile" ? " password-form-cancel" : ""}`}
-        href={mode === "profile" ? "/dashboard/profile" : "/login?forgot=1"}
+        href={mode === "profile" ? "/dashboard/profile" : `/login?forgot=1${nextPath !== "/" ? `&next=${encodeURIComponent(nextPath)}` : ""}`}
       >
         {mode === "profile"
           ? "Cancel and return to profile"

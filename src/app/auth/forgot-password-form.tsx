@@ -12,7 +12,7 @@ const initialState: ForgotPasswordActionState = {
   message: "",
 };
 
-export function ForgotPasswordForm() {
+export function ForgotPasswordForm({ nextPath = "/" }: { nextPath?: string }) {
   const [state, formAction, pending] = useActionState(
     requestPasswordReset,
     initialState,
@@ -20,6 +20,7 @@ export function ForgotPasswordForm() {
 
   return (
     <form className="auth-form" action={formAction}>
+      <input type="hidden" name="next" value={nextPath} />
       <label>
         <span>UT Dallas email</span>
         <input
@@ -50,7 +51,7 @@ export function ForgotPasswordForm() {
       </button>
 
       <p className="auth-switch">
-        Remembered your password? <Link href="/login">Return to log in</Link>
+        Remembered your password? <Link href={nextPath === "/" ? "/login" : `/login?next=${encodeURIComponent(nextPath)}`}>Return to log in</Link>
       </p>
     </form>
   );

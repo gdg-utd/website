@@ -71,10 +71,12 @@ Deno.serve(async (request: Request) => {
   }
 
   let email = "";
+  let requestedNext = "/";
   try {
     const body = await request.json();
     email =
       typeof body?.email === "string" ? body.email.trim().toLowerCase() : "";
+    if (typeof body?.next === "string") requestedNext = body.next;
   } catch {
     return response();
   }
@@ -165,6 +167,13 @@ Deno.serve(async (request: Request) => {
   resetUrl.searchParams.set("token_hash", linkData.properties.hashed_token);
   resetUrl.searchParams.set("type", "recovery");
   resetUrl.searchParams.set("next", "/reset-password");
+  // The function is callable directly: validate independently of the website.
+  if (requestedNext.startsWith("/") && !requestedNext.startsWith("//") && !/[\\\x00-\x20\x7f]/.test(requestedNext)) {
+    const destination = new URL(requestedNext, siteUrl);
+    if (destination.origin === new URL(siteUrl).origin && !destination.pathname.startsWith("//")) {
+      resetUrl.searchParams.set("returnTo", `${destination.pathname}${destination.search}${destination.hash}`);
+    }
+  }
 
   const firstName =
     typeof linkData.user.user_metadata?.first_name === "string"

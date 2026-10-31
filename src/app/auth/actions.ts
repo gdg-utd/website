@@ -203,7 +203,7 @@ export async function requestPasswordReset(
 
   const supabase = await createClient();
   const { error } = await supabase.functions.invoke("request-password-reset", {
-    body: { email },
+    body: { email, next: safeNextPath(field(formData, "next")) },
   });
 
   if (error) {

@@ -64,6 +64,7 @@ function createBackend() {
     if(url.pathname==='/auth/v1/logout'){res.statusCode=204;res.end();return;}
     if(url.pathname==='/auth/v1/resend'){send({});return;}
     if(url.pathname==='/functions/v1/request-password-reset') {
+      state.resetNext = body.next;
       const n=state.quotas[body.email]=(state.quotas[body.email]??0)+1;
       if(n>3){send({accepted:false,code:'RESET_LIMIT_REACHED'},429);return;}
       send({accepted:true});return;
@@ -92,11 +93,12 @@ function createBackend() {
       else if(table==='application_events')rows=state.events;
       else if(table==='application_rsvps')rows=[];
       else {state.unexpected.push(`${req.method} ${url.pathname}`);error('Unexpected fixture endpoint',500);return;}
+      if(state.failApplicationSave&&table==='applications'&&['POST','PATCH'].includes(req.method)){error('Synthetic application save failure',500);return;}
       if(state.failProfileSave&&table==='profiles'&&req.method==='PATCH'){error('Synthetic save failure',500);return;}
       for(const [key,value]of url.searchParams){if(value.startsWith('eq.'))rows=rows.filter(row=>String(row[key])===value.slice(3));}
       if(table==='applications'&&req.method==='POST'){const saved=application({...body,id:1});state.applications.push(saved);rows=[saved];}
       if(table==='application_events'&&req.method==='POST'){const event={...body,id:state.events.length+1,created_at:new Date().toISOString()};state.events.unshift(event);rows=[event];}
-      if(req.method==='PATCH')for(const row of rows)Object.assign(row,body);
+      if(req.method==='PATCH')for(const row of rows)Object.assign(row,body,table==='applications'?{updated_at:new Date().toISOString()}:{});
       const single=(req.headers.accept??'').includes('application/vnd.pgrst.object+json');
       send(single?(rows[0]??null):rows);return;
     }

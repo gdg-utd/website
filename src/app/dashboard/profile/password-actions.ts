@@ -5,6 +5,7 @@ import {
   clearPasswordRecovery,
   clearLocalAuthCookies,
 } from "@/lib/password-recovery";
+import { safeNextPath } from "@/lib/navigation";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getPasswordStrength } from "@/lib/password";
@@ -40,13 +41,14 @@ async function savePassword(
 
   const supabase = await createClient();
   const { data: userData, error: userError } = await supabase.auth.getUser();
-  if (userError || !userData.user) {
-    return {
-      status: "error",
-      message:
-        "Your session has expired. Request a new reset link from the login page.",
-    };
+  const nextPath = safeNextPath(formData.get("next")?.toString());
+  if ((!userError && !userData.user) || userError?.name === "AuthSessionMissingError" || userError?.status === 401 || userError?.status === 403) {
+    const returnPath = mode === "profile"
+      ? "/dashboard/profile/password"
+      : `/reset-password${nextPath !== "/" ? `?next=${encodeURIComponent(nextPath)}` : ""}`;
+    redirect(`/login?next=${encodeURIComponent(returnPath)}`);
   }
+  if (userError || !userData.user) return { status: "error", message: "We could not verify your account. Please try again." };
 
   if (mode === "recovery") {
     const { data: claims } = await supabase.auth.getClaims();
@@ -118,11 +120,10 @@ async function savePassword(
     );
   if (signOutError) await supabase.auth.signOut({ scope: "local" });
   await clearLocalAuthCookies();
-  redirect(
-    signOutError
-      ? "/login?password=updated-sessions-warning"
-      : "/login?password=updated",
-  );
+  const query = new URLSearchParams({ password: signOutError ? "updated-sessions-warning" : "updated" });
+  const next = safeNextPath(formData.get("next")?.toString());
+  if (next !== "/") query.set("next", next);
+  redirect(`/login?${query}`);
 }
 
 export async function changePassword(

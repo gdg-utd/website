@@ -90,7 +90,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             </p>
           )}
           {isForgotPassword ? (
-            <ForgotPasswordForm />
+            <ForgotPasswordForm nextPath={nextPath} />
           ) : (
             <AuthForm mode="login" nextPath={nextPath} />
           )}

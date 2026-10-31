@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { EmailDelivery } from "./email-delivery";
 import { stageApplicationDecision } from "./actions";
 import {
@@ -39,6 +40,7 @@ export function ApplicationReviewPortal({
   returnPosition,
   role,
 }: ApplicationReviewPortalProps) {
+  const router = useRouter();
   const drawerRef = useRef<HTMLDialogElement>(null);
   const [selectedId, setSelectedId] = useState(initialApplicationId);
   const [loadState, setLoadState] = useState<{
@@ -81,11 +83,16 @@ export function ApplicationReviewPortal({
       signal: controller.signal,
     })
       .then(async (response) => {
+        if (response.status === 401) {
+          router.replace(`/login?next=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+          return null;
+        }
         if (!response.ok)
           throw new Error("We could not load this application.");
         return response.json() as Promise<ApplicationReview>;
       })
       .then((nextReview) => {
+        if (!nextReview) return;
         setLoadState({ id: selectedId, review: nextReview });
       })
       .catch((fetchError: unknown) => {
@@ -104,7 +111,7 @@ export function ApplicationReviewPortal({
       });
 
     return () => controller.abort();
-  }, [selectedId]);
+  }, [selectedId, router]);
 
   function updateUrl(applicationId: number | null) {
     const url = new URL(window.location.href);

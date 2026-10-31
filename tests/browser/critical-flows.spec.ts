@@ -255,3 +255,154 @@ test('reviewers can inspect responses but cannot export applications', async ({p
   await expect(review.getByText('A synthetic application for browser review.',{exact:true})).toBeVisible();
   await expect(review.getByRole('button',{name:/Publish this decision/})).toHaveCount(0);
 });
+
+test('unsaved answers warn on navigation; cancelling keeps edits; manual save clears the warning', async ({page,request}) => {
+  await login(page,'member','/apply/sprint-mentee');
+  const answer = page.getByLabel('Why would you like to join?');
+  await answer.fill('Unsaved answer');
+  const untouched = await (await request.get(`${backend}/__state`)).json();
+  expect(untouched.applications).toEqual([]);
+  page.once('dialog', async dialog => {
+    expect(dialog.type()).toBe('confirm');
+    expect(dialog.message()).toContain('unsaved changes');
+    await dialog.dismiss();
+  });
+  await page.getByRole('link',{name:'All applications'}).click();
+  await expect(page).toHaveURL(/\/apply\/sprint-mentee$/);
+  await expect(answer).toHaveValue('Unsaved answer');
+  // Returning to the saved value is clean, including checkbox selections.
+  await answer.fill('');
+  await page.getByLabel('Web development',{exact:true}).check();
+  await page.getByLabel('Web development',{exact:true}).uncheck();
+  page.once('dialog', async dialog => { await dialog.dismiss(); throw new Error('Reverted answers must not warn'); });
+  await page.getByRole('link',{name:'All applications'}).click();
+  await expect(page).toHaveURL(/\/apply$/);
+  page.removeAllListeners('dialog');
+  await page.locator('.application-position-action').click();
+  await answer.fill('Saved answer');
+  await page.getByRole('button',{name:'Save draft',exact:true}).click();
+  await expect(page.getByRole('status')).toContainText('Draft saved');
+  await answer.fill('Saved again');
+  await page.getByRole('button',{name:'Save draft',exact:true}).click();
+  await expect(answer).toHaveValue('Saved again');
+  await expect(page.getByRole('button',{name:'Save draft',exact:true})).toBeEnabled();
+  page.once('dialog', async dialog => { await dialog.dismiss(); throw new Error('Saved answers must not warn'); });
+  await page.getByRole('link',{name:'All applications'}).click();
+  await expect(page).toHaveURL(/\/apply$/);
+  page.removeAllListeners('dialog');
+});
+
+test('failed manual saves keep unsaved warnings and accepting leave discards edits', async ({page,request}) => {
+  await request.post(`${backend}/__reset`,{data:{failApplicationSave:true}});
+  await login(page,'member','/apply/sprint-mentee');
+  await page.getByLabel('Why would you like to join?').fill('Keep after failure');
+  await page.getByRole('button',{name:'Save draft',exact:true}).click();
+  await expect(page.locator('main').getByRole('alert')).toContainText('We could not save');
+  await expect(page.getByLabel('Why would you like to join?')).toHaveValue('Keep after failure');
+  page.once('dialog', async dialog => { expect(dialog.type()).toBe('confirm'); await dialog.accept(); });
+  await page.getByRole('link',{name:'All applications'}).click();
+  await expect(page).toHaveURL(/\/apply$/);
+});
+
+test('unsaved answers warn on reload and closing the tab', async ({page}) => {
+  await login(page,'member','/apply/sprint-mentee');
+  await page.getByLabel('Why would you like to join?').fill('Keep this draft');
+  const reloadDialog = page.waitForEvent('dialog');
+  const reload = page.evaluate(() => window.location.reload());
+  const dialog = await reloadDialog;
+  expect(dialog.type()).toBe('beforeunload');
+  await dialog.dismiss();
+  await reload;
+  await expect(page.getByLabel('Why would you like to join?')).toHaveValue('Keep this draft');
+  const closeDialog = page.waitForEvent('dialog');
+  await page.close({runBeforeUnload:true});
+  const closing = await closeDialog;
+  expect(closing.type()).toBe('beforeunload');
+  await closing.dismiss();
+  expect(page.isClosed()).toBe(false);
+});
+
+test('unsaved answers warn on browser Back without adding history entries', async ({page}) => {
+  await login(page,'member','/apply');
+  await page.locator('.application-position-action').click();
+  await page.getByLabel('Why would you like to join?').fill('Unsaved back navigation');
+  const cancelled = page.waitForEvent('dialog');
+  const back = page.evaluate(() => window.history.back());
+  await (await cancelled).dismiss();
+  await back;
+  await expect(page).toHaveURL(/\/apply\/sprint-mentee$/);
+  page.once('dialog', async dialog => { await dialog.accept(); });
+  await page.goBack();
+  await expect(page).toHaveURL(/\/apply$/);
+});
+
+test('saving after logout in another tab redirects to login and returns to the application', async ({page,context}) => {
+  await login(page,'member','/apply/sprint-mentee');
+  const other = await context.newPage();
+  await other.goto('/dashboard');
+  await other.getByRole('button',{name:'Log out'}).click();
+  await expect(other).toHaveURL('http://localhost:3100/');
+  await page.getByLabel('Why would you like to join?').fill('An edit after logout');
+  await page.getByRole('button',{name:'Save draft',exact:true}).click();
+  await expect(page).toHaveURL(/\/login\?next=%2Fapply%2Fsprint-mentee/);
+  await expect(page.locator('main').getByRole('alert')).toHaveCount(0);
+  await page.getByLabel('Email',{exact:true}).fill('member@utdallas.edu');
+  await page.getByLabel('Password',{exact:true}).fill(password);
+  await page.getByRole('button',{name:'Log in',exact:true}).click();
+  await expect(page).toHaveURL(/\/apply\/sprint-mentee$/);
+  await expect(page.getByLabel('Why would you like to join?')).toHaveValue('');
+  await other.close();
+});
+
+test('password recovery retains the requested application through links, reset, and login', async ({page,request}) => {
+  const destination = '/apply/sprint-mentee';
+  await page.goto(`/login?next=${encodeURIComponent(destination)}`);
+  await page.getByRole('link',{name:'Forgot password?'}).click();
+  await page.getByRole('link',{name:'Return to log in'}).click();
+  await expect(page).toHaveURL(/\/login\?next=%2Fapply%2Fsprint-mentee$/);
+  await page.getByRole('link',{name:'Forgot password?'}).click();
+  await page.getByLabel('UT Dallas email',{exact:true}).fill('member@utdallas.edu');
+  await page.getByRole('button',{name:'Send reset link'}).click();
+  await expect(page.getByRole('status')).toContainText('a reset link is on its way');
+  const state = await (await request.get(`${backend}/__state`)).json();
+  expect(state.resetNext).toBe(destination);
+  await page.goto(`/auth/callback?token_hash=browser-recovery&type=recovery&returnTo=${encodeURIComponent(destination)}`);
+  await expect(page).toHaveURL(/\/reset-password\?next=%2Fapply%2Fsprint-mentee$/);
+  await passwordFields(page,'RecoveredBrowser123!');
+  await page.getByRole('button',{name:'Update password'}).click();
+  await expect(page).toHaveURL(/\/login\?password=updated&next=%2Fapply%2Fsprint-mentee$/);
+  await page.getByLabel('Email',{exact:true}).fill('member@utdallas.edu');
+  await page.getByLabel('Password',{exact:true}).fill('RecoveredBrowser123!');
+  await page.getByRole('button',{name:'Log in',exact:true}).click();
+  await expect(page).toHaveURL(/\/apply\/sprint-mentee$/);
+});
+
+test('returning to an application tab after logout redirects without an unsaved warning', async ({page,context}) => {
+  await login(page,'member','/apply/sprint-mentee');
+  await page.getByLabel('Why would you like to join?').fill('An unsaved answer');
+  await context.clearCookies();
+  // Focus is the browser event the guard listens for when revisiting a tab.
+  await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+  await expect(page).toHaveURL(/\/login\?next=%2Fapply%2Fsprint-mentee$/);
+  await expect(page.locator('main').getByRole('alert')).toHaveCount(0);
+});
+
+test('expired staff review requests return through login with the selected application', async ({page,context}) => {
+  await login(page,'admin','/admin/applications');
+  await context.clearCookies();
+  await page.getByRole('button',{name:'Review',exact:true}).first().click();
+  await expect(page).toHaveURL(/\/login\?next=%2Fadmin%2Fapplications%3Fapplication%3D1$/);
+  await expect(page.locator('main').getByRole('alert')).toHaveCount(0);
+});
+
+test('expired offer responses redirect through login instead of showing a session error', async ({page,request,context}) => {
+  await request.post(`${backend}/__reset`,{data:{offer:true}});
+  await login(page,'member','/dashboard/applications');
+  await page.getByRole('button',{name:'Respond to offer'}).click();
+  await page.getByRole('button',{name:'Yes, confirm my spot'}).click();
+  await page.getByRole('dialog').getByRole('checkbox').check();
+  await context.clearCookies();
+  await page.getByRole('button',{name:'Confirm my spot',exact:true}).click();
+  await expect(page).toHaveURL(/\/login\?next=%2Fdashboard%2Fapplications$/);
+  await expect(page.locator('main').getByRole('alert')).toHaveCount(0);
+});

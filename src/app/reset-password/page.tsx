@@ -1,3 +1,4 @@
+import { safeNextPath } from "@/lib/navigation";
 import { canRecoverPassword } from "@/lib/password-recovery";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -10,7 +11,8 @@ export const metadata: Metadata = {
 };
 export const dynamic = "force-dynamic";
 
-export default async function ResetPasswordPage() {
+export default async function ResetPasswordPage({ searchParams }: { searchParams: Promise<{ next?: string | string[] }> }) {
+  const nextPath = safeNextPath((await searchParams).next);
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getUser();
   const { data: claims } = await supabase.auth.getClaims();
@@ -31,7 +33,7 @@ export default async function ResetPasswordPage() {
               Your reset link is invalid or has expired. Request a new link to
               continue.
             </p>
-            <Link className="primary-link" href="/login?forgot=1">
+            <Link className="primary-link" href={`/login?forgot=1${nextPath !== "/" ? `&next=${encodeURIComponent(nextPath)}` : ""}`}>
               Request a reset link <span aria-hidden="true">→</span>
             </Link>
           </>
@@ -40,7 +42,7 @@ export default async function ResetPasswordPage() {
             <p>
               Choose a new password for <strong>{data.user.email}</strong>.
             </p>
-            <PasswordForm mode="recovery" />
+            <PasswordForm mode="recovery" nextPath={nextPath} />
           </>
         )}
       </section>

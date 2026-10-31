@@ -1,21 +1,26 @@
 "use client";
 import { FormErrorSummary } from "@/components/form-error-summary";
-import { useActionState } from "react";
+import { useActionState, useRef } from "react";
 import { UtdProgramFields } from "@/components/utd-program-fields";
 import { initialEditFormState } from "@/lib/edit-form-state";
 import { buildResponses, type ApplicationOpening, type ApplicationField, type ApplicationResponses } from "@/lib/applications";
 import { saveApplication } from "./actions";
 import { ApplicationSubmitControls } from "./submit-controls";
+import { useUnsavedChanges } from "./use-unsaved-changes";
+import { useApplicationSession } from "./use-application-session";
 
 export function ApplicationForm({ opening, initialResponses }: { opening: ApplicationOpening; initialResponses: ApplicationResponses }) {
   const [state, formAction] = useActionState(saveApplication, initialEditFormState);
+  const formRef = useRef<HTMLFormElement>(null);
+  useUnsavedChanges(formRef, state.revision);
+  useApplicationSession(opening.slug);
   const submitted = new FormData();
   for (const [name, value] of Object.entries(state.values ?? {})) {
     for (const item of Array.isArray(value) ? value : [value]) submitted.append(name, item);
   }
   const responses = state.values ? buildResponses(opening.form_schema, submitted) : initialResponses;
   return (
-              <form className="application-form" action={formAction} key={state.revision}>
+              <form ref={formRef} className="application-form" action={formAction} key={state.revision}>
                 {state.error && <FormErrorSummary message={state.error}>Your responses are still here.</FormErrorSummary>}
                 <input type="hidden" name="openingVersion" value={opening.form_version} />
                 <input type="hidden" name="openingSlug" value={opening.slug} />

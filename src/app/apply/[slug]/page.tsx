@@ -80,7 +80,7 @@ export default async function ApplicationPage({ params, searchParams }: Applicat
 
   const { data: application, error: applicationError } = await supabase
     .from("applications")
-    .select("id, responses, submission_state, submitted_at, form_version")
+    .select("id, responses, submission_state, submitted_at, form_version, updated_at")
     .eq("opening_id", opening.id)
     .eq("applicant_id", userId)
     .maybeSingle();
@@ -132,7 +132,7 @@ export default async function ApplicationPage({ params, searchParams }: Applicat
                 <Link className="secondary-link" href="/apply">View available positions</Link>
               </div>
             ) : (
-              <ApplicationForm opening={opening} initialResponses={responses} />
+              <ApplicationForm key={application?.updated_at ?? "new"} opening={opening} initialResponses={responses} />
             )}
           </div>
         </section>

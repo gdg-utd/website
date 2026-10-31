@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 type RsvpResponseState = {
@@ -34,7 +35,7 @@ export async function respondToMenteeOffer(
   const supabase = await createClient();
   const { data: authData } = await supabase.auth.getClaims();
   if (!authData?.claims?.sub) {
-    return { status: "error", message: "Your session expired. Sign in and try again." };
+    redirect("/login?next=%2Fdashboard%2Fapplications");
   }
 
   const { data, error } = await supabase.rpc("respond_to_mentee_offer", {
