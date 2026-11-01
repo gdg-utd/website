@@ -121,14 +121,11 @@ export function PasswordForm({ mode, nextPath = "/" }: { mode: "profile" | "reco
         {pending ? "Updating…" : "Update password"}
         <span aria-hidden="true">→</span>
       </button>
-      <Link
-        className={`auth-switch${mode === "profile" ? " password-form-cancel" : ""}`}
-        href={mode === "profile" ? "/dashboard/profile" : `/login?forgot=1${nextPath !== "/" ? `&next=${encodeURIComponent(nextPath)}` : ""}`}
-      >
-        {mode === "profile"
-          ? "Cancel and return to profile"
-          : "Request a new reset link"}
-      </Link>
+      {mode === "profile" && (
+        <Link className="auth-switch password-form-cancel" href="/dashboard/profile">
+          Cancel and return to profile
+        </Link>
+      )}
     </form>
   );
 }

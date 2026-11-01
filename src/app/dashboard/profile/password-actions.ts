@@ -60,7 +60,7 @@ async function savePassword(
       return {
         status: "error",
         message:
-          "Your reset link is invalid or has expired. Request a new link.",
+          "Your reset link is invalid or has expired. Start the password-reset process again from the login page.",
       };
   }
   const currentPassword = passwordField(formData, "currentPassword");

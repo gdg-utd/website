@@ -30,8 +30,8 @@ export default async function ResetPasswordPage({ searchParams }: { searchParams
         {!allowed ? (
           <>
             <p>
-              Your reset link is invalid or has expired. Request a new link to
-              continue.
+              Your reset link is invalid or has expired. Start the password-reset
+              process again from the login page.
             </p>
             <Link className="primary-link" href={`/login?forgot=1${nextPath !== "/" ? `&next=${encodeURIComponent(nextPath)}` : ""}`}>
               Request a reset link <span aria-hidden="true">→</span>

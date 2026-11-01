@@ -76,8 +76,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               className="auth-message auth-message-success auth-page-message"
               role="status"
             >
-              Your password was updated. Enter the new password you just chose;
-              your browser may still have the old one saved.
+              Your password was updated.
             </p>
           )}
           {error === "recovery" && isForgotPassword && (
