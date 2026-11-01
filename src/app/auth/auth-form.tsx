@@ -121,8 +121,8 @@ export function AuthForm({ mode, nextPath = "/" }: AuthFormProps) {
           minLength={8}
           maxLength={isSignup ? 128 : undefined}
           aria-describedby={isSignup ? "signup-password-strength" : undefined}
-          value={isSignup ? signupPassword : undefined}
-          onChange={isSignup ? (event) => setSignupPassword(event.target.value) : undefined}
+          value={signupPassword}
+          onChange={(event) => setSignupPassword(event.target.value)}
           required
         />
         {isSignup && (

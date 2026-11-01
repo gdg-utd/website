@@ -298,14 +298,12 @@ export async function reopenApplication(formData: FormData) {
   if (!id) redirect("/admin/applications");
 
   const { supabase } = await requireApplicationAdmin(portalPath({ applicationId: id, position }));
-  const { error } = await supabase
-    .from("applications")
-    .update({ submission_state: "draft" })
-    .eq("id", id)
-    .eq("submission_state", "submitted");
+  const { data, error } = await supabase.rpc("reopen_application", {
+    target_application_id: id,
+  });
 
-  if (error) {
-    console.error("Unable to reopen application", error.code, error.message);
+  if (error || data !== true) {
+    console.error("Unable to reopen application", error?.code ?? "not-submitted");
     redirect(portalPath({ message: "reopen-failed", applicationId: id, position }));
   }
 

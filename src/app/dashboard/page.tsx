@@ -2,7 +2,7 @@ import { normalizeQuery } from "@/lib/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { DISCORD_URL, INSTAGRAM_URL, LINKTREE_URL } from "@/lib/gdg";
+import { CHAPTER_URL, DISCORD_URL, INSTAGRAM_URL, LINKTREE_URL } from "@/lib/gdg";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Dashboard" };
@@ -41,7 +41,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         <p>Manage your GDG UTDallas profile and keep up with your applications in one place.</p>
         <div className="dashboard-welcome-actions">
           <Link className="dashboard-action-pill" href="/dashboard/applications">View your applications <span aria-hidden="true">→</span></Link>
-          <Link className="dashboard-action-pill dashboard-action-pill-secondary" href="/apply/sprint-mentee">Join cohort <span aria-hidden="true">→</span></Link>
+          <a className="dashboard-action-pill dashboard-action-pill-secondary" href={CHAPTER_URL} target="_blank" rel="noreferrer">Join cohort <span aria-hidden="true">↗</span></a>
         </div>
       </section>
 

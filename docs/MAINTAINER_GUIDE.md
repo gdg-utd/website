@@ -280,7 +280,7 @@ Cron success confirms its SQL ran; it does not by itself confirm the HTTP call o
 | --- | --- |
 | Signed in → Profile → Reset password | `/dashboard/profile/password`; confirm current password; save; return to profile; other sessions are signed out |
 | Signed out → Forgot password | Generic confirmation while eligible; a registered account receives a unique recovery link |
-| Valid recovery email link | Verified callback → `/reset-password`; after saving, sign out and redirect to login |
+| Valid recovery email link | `/auth/recovery` → explicitly continue → verified `/reset-password`; after saving, sign out and redirect to login with the selected destination |
 | Direct `/reset-password` visit without recovery proof | An unavailable/expired-link message and a new-link option |
 | Fourth reset request for an email within its hourly window | A quota error, not a message promising another email |
 | Unconfirmed account attempts login | Redirect to the existing OTP page; no extra confirmation button |
@@ -306,7 +306,7 @@ Password reset quota records store hashed keys, counts, and window times—not p
 Use a designated account and an inbox you control. The account owner should enter the new password.
 
 1. Request a reset; confirm the email arrives and points to the intended website.
-2. Open the link, choose a different valid password, and submit.
+2. Open the link, press **Continue to reset password**, choose a different valid password, and submit. Opening/reloading the confirmation page must not consume the token.
 3. Confirm the redirect to login, rejection of the old password, and successful login with the new password.
 4. Confirm the used email link cannot authorize another reset. Test expired-link behavior separately.
 5. Separately change the password while signed in and verify the return to the profile.

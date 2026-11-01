@@ -1,6 +1,6 @@
 # Browser tests
 
-The suite exercises the real production Next.js application through Playwright. Twenty-five critical flows run on desktop Chromium and mobile Chromium (Pixel 7 emulation), giving 50 checks per complete run.
+The suite exercises the real production Next.js application through Playwright. Twenty-seven critical flows run on desktop Chromium and mobile Chromium (Pixel 7 emulation), giving 54 checks per complete run.
 
 ## Run locally
 
@@ -60,6 +60,8 @@ This uses synthetic public configuration, not production secrets. Once that buil
 | Cross-tab logout | Saving after logout redirects to login and back to the application; returning focus after logout also redirects without an unsaved warning |
 | Recovery destination | Forgot-password navigation, reset request payload, verified callback, password reset and login retain the selected application |
 | Expired staff/RSVP sessions | Review requests and offer responses redirect through login instead of showing generic/session errors |
+| Reopening | The admin-only RPC reopens one submission and the applicant can edit/resubmit it |
+| Recovery link previews | GET requests/reloads do not verify recovery tokens; explicit confirmation consumes the token, and reuse fails |
 
 Every test also fails on unexpected browser exceptions and unexpected service endpoint calls. There are no automatic retries that could hide a flaky first attempt. The shared in-memory fixture is reset before each test, so the suite intentionally uses one worker.
 
@@ -73,7 +75,11 @@ The service double is not a Supabase implementation. These tests do **not** prov
 
 Unsaved-answer warnings keep manual saving; they do not persist answers in browser storage. Browsers control native reload/close dialog wording and may suppress unload events when a mobile browser is force-closed. Same-document Back/Forward protection uses the Navigation API where supported; link and full-document unload warnings remain independent of it. Successful submission and required authentication redirects are allowed without an extra leave warning.
 
-When deploying the recovery-destination change, update the website and `request-password-reset` Edge Function together. New function emails include a validated `returnTo` destination; existing recovery emails without it continue to open the reset form normally.
+When deploying the recovery-destination change, update the website and `request-password-reset` Edge Function together. New function emails include a validated `returnTo` destination; existing recovery emails without it remain compatible. Recovery-token GET requests open `/auth/recovery`; only submitting its confirmation form verifies the token, so email scanners and link previews do not consume it.
+
+`npm run test:database` also runs `tests/authorization-regressions.sql` using real `anon`/`authenticated` database roles, four transaction-only identities, and scoped fixtures. The same SQL can be run against the hosted database by its owner: it rolls back all fixtures and queued notifications. It temporarily renames the SPRINT opening inside the uncommitted transaction so expiry-release tests cannot select real offers. It uses a short lock timeout; do not remove the transaction or rollback. PostgreSQL identity sequences may advance even though fixture rows are rolled back.
+
+For read-only schema comparison, `GDG_SCHEMA_SNAPSHOT=/tmp/gdg-schema.json npm run test:database` writes the final isolated schema using `tests/schema-snapshot.sql`. It includes columns/defaults/nullability, functions, policies, constraints and RLS flags, without applicant records or secrets. Explicit NOT NULL catalog constraints are omitted because PostgreSQL versions represent them differently; column nullability is compared separately.
 
 ## CI and failure reports
 

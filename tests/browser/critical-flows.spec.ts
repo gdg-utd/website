@@ -69,6 +69,15 @@ test('incorrect credentials show an error; unconfirmed users go directly to OTP'
   await page.getByLabel('Password',{exact:true}).fill('WrongPassword123!');
   await page.getByRole('button',{name:'Log in',exact:true}).click();
   await expect(page.getByText('The email or password is incorrect.')).toBeVisible();
+  await expect(page.getByLabel('Email',{exact:true})).toHaveValue('member@utdallas.edu');
+  await expect(page.getByLabel('Password',{exact:true})).toHaveValue('WrongPassword123!');
+  await page.getByLabel('Password',{exact:true}).fill(password);
+  await page.getByRole('button',{name:'Log in',exact:true}).click();
+  await expect(page).toHaveURL('http://localhost:3100/');
+  await page.goto('/dashboard');
+  await page.getByRole('button',{name:'Log out'}).click();
+  await expect(page).toHaveURL('http://localhost:3100/');
+  await page.goto('/login');
   await page.getByLabel('Email',{exact:true}).fill('unconfirmed@utdallas.edu');
   await page.getByLabel('Password',{exact:true}).fill(password);
   await page.getByRole('button',{name:'Log in',exact:true}).click();
@@ -92,11 +101,12 @@ test('signup validates password confirmation and proceeds to email verification'
 test('reset requests display a quota error on the fourth request', async ({page}) => {
   await page.goto('/login?forgot=1');
   for (let attempt=1;attempt<=4;attempt++) {
-    await page.getByLabel('UT Dallas email',{exact:true}).fill('member@utdallas.edu');
+    if(attempt===1) await page.getByLabel('UT Dallas email',{exact:true}).fill('member@utdallas.edu');
     await page.getByRole('button',{name:'Send reset link'}).click();
     if(attempt<4) await expect(page.getByRole('status')).toContainText('a reset link is on its way');
     else await expect(page.locator('main').getByRole('alert')).toContainText('3 per hour');
     await expect(page.getByRole('button',{name:'Send reset link'})).toBeEnabled();
+    await expect(page.getByLabel('UT Dallas email',{exact:true})).toHaveValue('member@utdallas.edu');
   }
   await expect(page.getByText(/a reset link is on its way/)).toHaveCount(0);
 });
@@ -131,8 +141,10 @@ test('signed-in password changes validate current password and return to profile
   await passwordFields(page,'ChangedBrowser123!');
   await page.getByRole('button',{name:'Update password'}).click();
   await expect(page.locator('main').getByRole('alert')).toContainText('current password is incorrect');
+  await expect(page.getByLabel('Current password',{exact:true})).toHaveValue('WrongPassword123!');
+  await expect(page.getByLabel('New password',{exact:true})).toHaveValue('ChangedBrowser123!');
+  await expect(page.getByLabel('Confirm new password',{exact:true})).toHaveValue('ChangedBrowser123!');
   await page.getByLabel('Current password',{exact:true}).fill(password);
-  await passwordFields(page,'ChangedBrowser123!');
   await page.getByRole('button',{name:'Update password'}).click();
   await expect(page).toHaveURL(/\/dashboard\/profile\?message=password-updated$/);
   await expect(page.getByRole('status')).toContainText('Your password was updated');
@@ -142,6 +154,7 @@ test('recovery requires email proof, resets the password, and returns to login',
   await page.goto('/reset-password');
   await expect(page.getByRole('heading',{name:'Reset link unavailable'})).toBeVisible();
   await page.goto('/auth/callback?token_hash=browser-recovery&type=recovery&next=/reset-password');
+  await page.getByRole('button',{name:'Continue to reset password',exact:true}).click();
   await expect(page.getByLabel('New password',{exact:true})).toBeVisible();
   await passwordFields(page,'RecoveredBrowser123!');
   await page.getByRole('button',{name:'Update password'}).click();
@@ -217,6 +230,7 @@ test('admin pagination and search update the visible application list', async ({
 
 test('expired recovery links lead back to requesting a new link', async ({page}) => {
   await page.goto('/auth/callback?token_hash=expired-fixture&type=recovery&next=/reset-password');
+  await page.getByRole('button',{name:'Continue to reset password',exact:true}).click();
   await expect(page).toHaveURL(/\/login\?forgot=1&error=recovery/);
   await expect(page.locator('main').getByRole('alert')).toContainText('invalid or has expired');
   await expect(page.getByRole('button',{name:'Send reset link'})).toBeVisible();
@@ -367,6 +381,7 @@ test('password recovery retains the requested application through links, reset, 
   const state = await (await request.get(`${backend}/__state`)).json();
   expect(state.resetNext).toBe(destination);
   await page.goto(`/auth/callback?token_hash=browser-recovery&type=recovery&returnTo=${encodeURIComponent(destination)}`);
+  await page.getByRole('button',{name:'Continue to reset password',exact:true}).click();
   await expect(page).toHaveURL(/\/reset-password\?next=%2Fapply%2Fsprint-mentee$/);
   await passwordFields(page,'RecoveredBrowser123!');
   await page.getByRole('button',{name:'Update password'}).click();
@@ -405,4 +420,39 @@ test('expired offer responses redirect through login instead of showing a sessio
   await page.getByRole('button',{name:'Confirm my spot',exact:true}).click();
   await expect(page).toHaveURL(/\/login\?next=%2Fdashboard%2Fapplications$/);
   await expect(page.locator('main').getByRole('alert')).toHaveCount(0);
+});
+
+test('administrator reopening uses the scoped action and the applicant can resubmit', async ({page,request}) => {
+  await request.post(`${backend}/__reset`,{data:{submitted:true}});
+  await login(page,'admin','/admin/applications');
+  await page.getByRole('button',{name:'Review',exact:true}).first().click();
+  const review=page.getByRole('dialog',{name:'Application review'});
+  await review.getByText('Application corrections',{exact:true}).click();
+  await review.getByRole('button',{name:'Reopen application',exact:true}).click();
+  await page.getByRole('dialog',{name:/Reopen .*application/}).getByRole('button',{name:'Reopen application',exact:true}).click();
+  await expect(page).toHaveURL(/message=reopened/);
+  const state=await (await request.get(`${backend}/__state`)).json();
+  expect(state.applications[0].submission_state).toBe('draft');
+  await page.goto('/dashboard');
+  await page.getByRole('button',{name:'Log out'}).click();
+  await expect(page).toHaveURL('http://localhost:3100/');
+  await login(page,'member','/apply/sprint-mentee');
+  await page.getByLabel('Why would you like to join?').fill('A corrected application.');
+  await page.getByRole('button',{name:'Submit application'}).click();
+  await page.getByRole('button',{name:'Yes, submit application'}).click();
+  await expect(page).toHaveURL(/\/dashboard\/applications\?submitted=/);
+});
+
+test('recovery link previews do not consume tokens; explicit confirmation is single use', async ({page,request}) => {
+  await page.goto('/auth/callback?token_hash=browser-recovery&type=recovery&returnTo=%2Fapply%2Fsprint-mentee');
+  await expect(page.getByRole('button',{name:'Continue to reset password',exact:true})).toBeVisible();
+  expect((await (await request.get(`${backend}/__state`)).json()).recoveryVerifications ?? 0).toBe(0);
+  await page.reload();
+  expect((await (await request.get(`${backend}/__state`)).json()).recoveryVerifications ?? 0).toBe(0);
+  await page.getByRole('button',{name:'Continue to reset password',exact:true}).click();
+  await expect(page).toHaveURL(/\/reset-password\?next=%2Fapply%2Fsprint-mentee$/);
+  expect((await (await request.get(`${backend}/__state`)).json()).recoveryVerifications).toBe(1);
+  await page.goto('/auth/callback?token_hash=browser-recovery&type=recovery&returnTo=%2Fapply%2Fsprint-mentee');
+  await page.getByRole('button',{name:'Continue to reset password',exact:true}).click();
+  await expect(page).toHaveURL(/\/login\?forgot=1&error=recovery&next=%2Fapply%2Fsprint-mentee$/);
 });

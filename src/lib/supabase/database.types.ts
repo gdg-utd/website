@@ -516,6 +516,10 @@ export type Database = {
           expired_application_id: number
         }[]
       }
+      reopen_application: {
+        Args: { target_application_id: number }
+        Returns: boolean
+      }
       reserve_password_reset: {
         Args: { p_email: string; p_email_key: string; p_global_key: string }
         Returns: boolean

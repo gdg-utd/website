@@ -21,14 +21,18 @@ export async function GET(request: Request) {
   const resetPath = recoveryNext === "/" ? "/reset-password" : `/reset-password?next=${encodeURIComponent(recoveryNext)}`;
   const recoveryError = `/login?forgot=1&error=recovery${recoveryNext !== "/" ? `&next=${encodeURIComponent(recoveryNext)}` : ""}`;
 
-  if (code || (tokenHash && type === "recovery")) {
+  // Email scanners and link previews follow GET requests. Never consume a
+  // recovery token until the person explicitly submits the confirmation form.
+  if (tokenHash && type === "recovery") {
+    const confirmation = new URL("/auth/recovery", url.origin);
+    confirmation.searchParams.set("token_hash", tokenHash);
+    if (recoveryNext !== "/") confirmation.searchParams.set("next", recoveryNext);
+    return NextResponse.redirect(confirmation);
+  }
+
+  if (code) {
     const supabase = await createClient();
-    const { error } = code
-      ? await supabase.auth.exchangeCodeForSession(code)
-      : await supabase.auth.verifyOtp({
-          token_hash: tokenHash!,
-          type: "recovery",
-        });
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error) {
       if (type === "recovery") {

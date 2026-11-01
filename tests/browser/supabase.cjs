@@ -58,6 +58,11 @@ function createBackend() {
     }
     if(url.pathname==='/auth/v1/signup'){send({user:user('member'),session:null});return;}
     if(url.pathname==='/auth/v1/verify') {
+      if(body.type==='recovery') {
+        state.recoveryVerifications=(state.recoveryVerifications??0)+1;
+        if(state.usedRecovery){error('Token has expired or is invalid',403,'otp_expired');return;}
+        if(body.token_hash==='browser-recovery')state.usedRecovery=true;
+      }
       if(body.token_hash==='browser-recovery'||body.token==='123456'){send(session('member'));return;}
       error('Token has expired or is invalid',403,'otp_expired');return;
     }
@@ -73,6 +78,12 @@ function createBackend() {
     if(url.pathname.startsWith('/rest/v1/')) {
       const table=url.pathname.slice('/rest/v1/'.length);
       if(table==='rpc/is_email_blacklisted'){send(false);return;}
+      if(table==='rpc/reopen_application') {
+        if(role!=='admin'){error('Administrator required',403);return;}
+        const app=state.applications.find(a=>a.id===body.target_application_id&&a.submission_state==='submitted');
+        if(app) Object.assign(app,{submission_state:'draft',published_decision:'undecided',submitted_at:null});
+        send(Boolean(app));return;
+      }
       if(table==='rpc/get_staff_application_page') {
         const all=Array.from({length:27},(_,i)=>application({id:i+1,submission_state:'submitted',applicant_last_name:`Applicant ${i+1}`})).filter(a=>!body.p_q||a.applicant_last_name.toLowerCase().includes(body.p_q.toLowerCase()));
         const page=body.p_page??1;

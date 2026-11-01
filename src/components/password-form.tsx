@@ -12,6 +12,7 @@ import {
 const initialState: PasswordActionState = { status: "idle", message: "" };
 
 export function PasswordForm({ mode, nextPath = "/" }: { mode: "profile" | "recovery"; nextPath?: string }) {
+  const [currentPassword, setCurrentPassword] = useState("");
   const [password, setPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
   const [state, formAction, pending] = useActionState(
@@ -28,6 +29,8 @@ export function PasswordForm({ mode, nextPath = "/" }: { mode: "profile" | "reco
           <span>Current password</span>
           <input
             name="currentPassword"
+            value={currentPassword}
+            onChange={(event) => setCurrentPassword(event.target.value)}
             type="password"
             autoComplete="current-password"
             required

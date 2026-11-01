@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import {
   requestPasswordReset,
   type ForgotPasswordActionState,
@@ -13,6 +13,7 @@ const initialState: ForgotPasswordActionState = {
 };
 
 export function ForgotPasswordForm({ nextPath = "/" }: { nextPath?: string }) {
+  const [email, setEmail] = useState("");
   const [state, formAction, pending] = useActionState(
     requestPasswordReset,
     initialState,
@@ -25,6 +26,8 @@ export function ForgotPasswordForm({ nextPath = "/" }: { nextPath?: string }) {
         <span>UT Dallas email</span>
         <input
           name="email"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
           type="email"
           autoComplete="email"
           inputMode="email"

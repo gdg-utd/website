@@ -135,8 +135,22 @@ const root = path.resolve(__dirname, "..");
   console.log(
     "PASS: schedule SQL supplies the private worker token to a stubbed local HTTP transport.",
   );
+  for (const file of files.filter((file) => file > "20261025222803_update_f26_role_applications.sql")) {
+    await db.exec(fs.readFileSync(root + "/supabase/migrations/" + file, "utf8"));
+  }
+  for (const section of fs.readFileSync(root + "/tests/authorization-regressions.sql", "utf8").split(/\n(?=-- [A-Z])/)) {
+    try { await db.exec(section); }
+    catch (error) { error.message = `${section.split("\n")[0]}: ${error.message}`; throw error; }
+  }
+  console.log("PASS: actual-role authorization matrix, scoped publishing, admin-applicant resubmission and RSVP ownership/cutoff/idempotency; all fixtures rolled back.");
+  if (process.env.GDG_SCHEMA_SNAPSHOT) {
+    const snapshot = await db.query(fs.readFileSync(root + "/tests/schema-snapshot.sql", "utf8"));
+    fs.writeFileSync(process.env.GDG_SCHEMA_SNAPSHOT, JSON.stringify(snapshot.rows[0].snapshot, null, 2));
+  }
   await db.close();
 })().catch((error) => {
   console.error(error.message);
+  if (error.where) console.error(error.where);
+  if (error.position && error.query) console.error(error.query.slice(Math.max(0, Number(error.position) - 250), Number(error.position) + 250));
   process.exitCode = 1;
 });
