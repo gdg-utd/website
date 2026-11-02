@@ -292,19 +292,24 @@ export async function markOfficerApplicationNotSelected(formData: FormData) {
   redirect(portalPath({ message: "interview-not-selected", position }));
 }
 
-export async function reopenApplication(formData: FormData) {
+export async function reopenApplication(_previousState: { message: string }, formData: FormData) {
   const id = applicationId(formData);
   const position = value(formData, "returnPosition") || undefined;
   if (!id) redirect("/admin/applications");
 
   const { supabase } = await requireApplicationAdmin(portalPath({ applicationId: id, position }));
+  const reason = value(formData, "reason").replace(/\r\n?/g, "\n");
+  if (!reason || reason.length > 2000) {
+    return { message: "Enter a reopening reason of 1 to 2,000 characters." };
+  }
   const { data, error } = await supabase.rpc("reopen_application", {
     target_application_id: id,
+    reason,
   });
 
   if (error || data !== true) {
     console.error("Unable to reopen application", error?.code ?? "not-submitted");
-    redirect(portalPath({ message: "reopen-failed", applicationId: id, position }));
+    return { message: "The application could not be reopened. Refresh the review and try again." };
   }
 
   revalidatePath("/admin/applications");

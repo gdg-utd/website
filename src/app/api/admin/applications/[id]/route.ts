@@ -194,6 +194,8 @@ export async function GET(
       return {
         id: event.id,
         label,
+        reason: event.event_type === "reopened" && event.details && typeof event.details === "object" && !Array.isArray(event.details) && typeof event.details.reason === "string"
+          ? event.details.reason : undefined,
         createdLabel: formatCentralDate(event.created_at),
       };
     }),

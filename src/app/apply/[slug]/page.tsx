@@ -13,6 +13,7 @@ import {
 } from "@/lib/applications";
 import { createClient } from "@/lib/supabase/server";
 import { ApplicationForm } from "./application-form";
+import { ApplicationReopeningNotice } from "@/components/application-reopening-notice";
 
 type ApplicationPageProps = {
   params: Promise<{ slug: string }>;
@@ -80,7 +81,7 @@ export default async function ApplicationPage({ params, searchParams }: Applicat
 
   const { data: application, error: applicationError } = await supabase
     .from("applications")
-    .select("id, responses, submission_state, submitted_at, form_version, updated_at")
+    .select("id, responses, submission_state, submitted_at, form_version, updated_at, reopen_reason")
     .eq("opening_id", opening.id)
     .eq("applicant_id", userId)
     .maybeSingle();
@@ -117,6 +118,7 @@ export default async function ApplicationPage({ params, searchParams }: Applicat
         <section className="application-form-section">
           <div className="application-form-shell">
             {notice && <p className={`application-form-notice application-form-notice-${notice.tone}`} role="status">{notice.text}</p>}
+            {!submitted && application?.reopen_reason && <ApplicationReopeningNotice reason={application.reopen_reason} />}
 
             {submitted ? (
               <div className="application-locked-panel">

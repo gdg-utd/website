@@ -48,7 +48,7 @@ select set_config('request.jwt.claims','{"role":"anon"}',true);
 select pg_temp.denied('select * from public.profiles','anonymous profile isolation');
 select pg_temp.denied('select * from public.applications','anonymous application isolation');
 select pg_temp.denied('select public.publish_staged_application_decisions('||(select id from audit_ids where key='audit-opening-a')||')','anonymous publishing');
-select pg_temp.denied('select public.reopen_application(0)','anonymous reopen RPC');
+select pg_temp.denied('select public.reopen_application(0,''Correction requested'')','anonymous reopen RPC');
 reset role;
 
 -- Alice saves/submits only her own application. Draft data and history stay private.
@@ -94,8 +94,8 @@ do $$declare changed integer; begin
  perform pg_temp.check_true(changed=0,'submitted applicant answers locked');
 end $$;
 select pg_temp.denied('select public.retry_application_email(0)','applicant manual retry');
-select pg_temp.denied('select public.reopen_application('||(select id from audit_ids where key='alice-app')||')','applicant reopen RPC');
-select pg_temp.denied('select private.reopen_application('||(select id from audit_ids where key='alice-app')||')','private helper also checks admin role');
+select pg_temp.denied('select public.reopen_application('||(select id from audit_ids where key='alice-app')||',''Correction requested'')','applicant reopen RPC');
+select pg_temp.denied('select private.reopen_application('||(select id from audit_ids where key='alice-app')||',''Correction requested'')','private helper also checks admin role');
 reset role;
 
 -- Reviewer reads/stages/clears; publishing, reopening, queue and role changes denied.
@@ -112,7 +112,7 @@ select id,(select uid from audit_ids where key='reviewer'),'decision_staged','{"
 select pg_temp.denied('select public.publish_staged_application_decisions('||(select id from audit_ids where key='audit-opening-a')||')','reviewer bulk publish');
 select pg_temp.denied('select public.application_email_status('||(select id from audit_ids where key='alice-app')||')','reviewer delivery payload');
 select pg_temp.denied('select public.release_expired_mentee_offers('||(select id from audit_ids where key='sprint-mentee')||')','reviewer expiry release');
-select pg_temp.denied('select public.reopen_application('||(select id from audit_ids where key='alice-app')||')','reviewer reopen RPC');
+select pg_temp.denied('select public.reopen_application('||(select id from audit_ids where key='alice-app')||',''Correction requested'')','reviewer reopen RPC');
 do $$declare changed integer; begin
  update public.applications set submission_state='draft' where id=(select id from audit_ids where key='alice-app'); get diagnostics changed=row_count;
  perform pg_temp.check_true(changed=0,'reviewer reopen');
@@ -129,14 +129,19 @@ select pg_temp.check_true((select count(*)=1 from public.publish_staged_applicat
 select pg_temp.check_true((select published_decision='undecided' from public.applications where id=(select id from audit_ids where key='bob-app')),'other opening stays unpublished');
 select pg_temp.check_true((select count(*)=0 from public.publish_staged_application_decisions((select id from audit_ids where key='audit-opening-a'))),'repeat publish is no-op');
 -- Admin reopens another applicant's submission.
-select pg_temp.check_true(public.reopen_application((select id from audit_ids where key='alice-app')),'admin scoped reopen');
+select pg_temp.invalid('select public.reopen_application('||(select id from audit_ids where key='alice-app')||',null)','null reason rejected');
+select pg_temp.invalid('select public.reopen_application('||(select id from audit_ids where key='alice-app')||','||quote_literal(E' \t\n ')||')','whitespace reason rejected');
+select pg_temp.invalid('select public.reopen_application('||(select id from audit_ids where key='alice-app')||',repeat(''x'',2001))','oversized reason rejected');
+select pg_temp.check_true((select submission_state='submitted' from public.applications where id=(select id from audit_ids where key='alice-app')),'invalid reopening leaves submission unchanged');
+select pg_temp.check_true(public.reopen_application((select id from audit_ids where key='alice-app'),'  Please clarify your experience.  '),'admin scoped reopen');
 select pg_temp.check_true((select count(*)=0 from public.applications where id=(select id from audit_ids where key='alice-app')),'reopened draft remains private from staff');
-select pg_temp.check_true(not public.reopen_application((select id from audit_ids where key='alice-app')),'repeat reopen no-op');
+select pg_temp.check_true(not public.reopen_application((select id from audit_ids where key='alice-app'),'Another reason'),'repeat reopen no-op');
 -- Admin also applies: own reopened draft follows applicant rules, not admin override.
 with created as (insert into public.applications(opening_id,applicant_id,responses,submission_state)
  values ((select id from audit_ids where key='audit-opening-a'),(select uid from audit_ids where key='admin'),'{"answer":"Admin applicant"}','submitted') returning id)
 insert into audit_ids(key,id) select 'admin-app',id from created;
-update public.applications set submission_state='draft' where id=(select id from audit_ids where key='admin-app');
+select pg_temp.invalid('update public.applications set submission_state=''draft'' where id='||(select id from audit_ids where key='admin-app'),'direct reopen requires reason');
+select pg_temp.check_true(public.reopen_application((select id from audit_ids where key='admin-app'),'Admin applicant correction'),'admin-applicant scoped reopen');
 update public.applications set responses='{"answer":"Admin resubmission"}',submission_state='submitted' where id=(select id from audit_ids where key='admin-app');
 select pg_temp.check_true((select responses->>'answer'='Admin resubmission' and submission_state='submitted' from public.applications where id=(select id from audit_ids where key='admin-app')),'admin-applicant resubmission');
 reset role;
@@ -145,6 +150,9 @@ reset role;
 select set_config('request.jwt.claim.sub',(select uid::text from audit_ids where key='alice'),true);
 select set_config('request.jwt.claims',jsonb_build_object('sub',(select uid from audit_ids where key='alice'),'role','authenticated')::text,true);
 set local role authenticated;
+select pg_temp.check_true((select reopen_reason='Please clarify your experience.' from public.applications where id=(select id from audit_ids where key='alice-app')),'owner reads normalized reason');
+select pg_temp.denied('update public.applications set reopen_reason=''Forged reason'' where id='||(select id from audit_ids where key='alice-app'),'applicant cannot alter reason');
+select pg_temp.denied('insert into public.applications(opening_id,applicant_id,reopen_reason) values ('||(select id from audit_ids where key='audit-opening-b')||','||quote_literal((select uid from audit_ids where key='alice'))||',''Forged reason'')','applicant cannot invent reopening on insert');
 update public.applications set responses='{"answer":"Alice resubmission"}',submission_state='submitted' where id=(select id from audit_ids where key='alice-app');
 select pg_temp.check_true((select published_decision='undecided' from public.applications where id=(select id from audit_ids where key='alice-app')),'reopen clears decision');
 with created as (insert into public.applications(opening_id,applicant_id,responses,submission_state)
@@ -188,5 +196,12 @@ reset role;
 -- now() is fixed within this single rollback transaction. Count the distinct
 -- submission events here; cross-request email cycles have separate regressions.
 select pg_temp.check_true((select count(*)=2 from public.application_events where application_id=(select id from audit_ids where key='alice-app') and event_type='submitted'),'reopen/resubmit events distinct');
+select pg_temp.check_true((select count(*)=1 from public.application_events where application_id=(select id from audit_ids where key='alice-app') and event_type='reopened' and details->>'reason'='Please clarify your experience.' and actor_id=(select uid from audit_ids where key='admin')),'one immutable audit event with reason and admin actor');
+insert into audit_ids(key,id) select 'queue-before-second-reopen',count(*) from public.application_email_queue;
+select pg_temp.check_true(public.reopen_application((select id from audit_ids where key='alice-app'),'A second correction request'),'later reopening succeeds');
+select pg_temp.check_true((select reopen_reason='A second correction request' from public.applications where id=(select id from audit_ids where key='alice-app')),'latest reason replaced');
+select pg_temp.check_true((select count(*)=2 from public.application_events where application_id=(select id from audit_ids where key='alice-app') and event_type='reopened'),'both reopening reasons retained in audit history');
+select pg_temp.check_true((select count(*)=(select id from audit_ids where key='queue-before-second-reopen') from public.application_email_queue),'reopening sends no new notification');
+select pg_temp.check_true((select count(*)=0 from public.application_email_queue where application_id=(select id from audit_ids where key='alice-app') and status in ('pending','failed')),'obsolete unsent notifications cancelled');
 rollback;
 select 'PASS: actual anon/authenticated role matrix; cross-applicant isolation; reviewer denials; scoped publishing; admin-applicant reopen; RSVP ownership/cutoff/idempotency. All fixtures rolled back.' as result;

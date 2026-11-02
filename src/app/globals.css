@@ -707,6 +707,13 @@ img { display: block; }
 .confirmation-phrase-field strong { color: #2f353a; font-family: var(--font-geist-mono), monospace; font-size: 11px; }
 .confirmation-phrase-field input { width: 100%; height: 47px; padding: 0 13px; border: 1px solid #aeb6bf; border-radius: 0; outline: none; background: #fff; color: var(--ink); font: 13px var(--font-geist-mono), monospace; }
 .confirmation-phrase-field input:focus { border-color: var(--blue-dark); box-shadow: 0 0 0 3px rgba(26,115,232,.12); }
+.confirmation-phrase-field textarea { width: 100%; padding: 12px; border: 1px solid #aeb6bf; border-radius: 0; background: #fff; color: var(--ink); font: inherit; font-size: 14px; resize: vertical; }
+.confirmation-phrase-field textarea:focus { outline: 2px solid var(--blue-dark); outline-offset: 2px; }
+.confirmation-phrase-field small { color: #555d65; font-size: 12px; line-height: 1.5; }
+.application-reopening-notice { grid-column: 1 / -1; padding: 18px; border-left: 3px solid var(--blue-dark); background: #eef4ff; color: #343e4b; font-size: 14px; line-height: 1.6; }
+.application-reopening-notice p { margin: 8px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.application-form-shell > .application-reopening-notice { margin-bottom: 24px; }
+.admin-reopen-reason { grid-column: 1 / -1; margin: 6px 0; white-space: pre-wrap; overflow-wrap: anywhere; }
 .application-locked-panel { min-height: 360px; padding: 65px; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; border: 1px solid #d5dae1; background: #fff; }
 .application-locked-panel h2 { max-width: 670px; margin: 0; font-size: clamp(2.4rem, 5vw, 4rem); line-height: 1; letter-spacing: -.05em; }
 .application-locked-panel > p:not(.section-label) { margin: 22px 0 30px; color: #697077; }

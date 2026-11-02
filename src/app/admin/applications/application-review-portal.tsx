@@ -528,6 +528,7 @@ function ApplicationReviewContent({
             <li key={event.id}>
               <span>{event.label}</span>
               <time>{event.createdLabel} CT</time>
+              {event.reason && <p className="admin-reopen-reason">{event.reason}</p>}
             </li>
           ))}
         </ol>

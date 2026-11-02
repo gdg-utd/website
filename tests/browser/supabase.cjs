@@ -80,8 +80,14 @@ function createBackend() {
       if(table==='rpc/is_email_blacklisted'){send(false);return;}
       if(table==='rpc/reopen_application') {
         if(role!=='admin'){error('Administrator required',403);return;}
+        if(state.failReopen){error('Synthetic reopen failure',500);return;}
+        const reason=typeof body.reason==='string'?body.reason.trim():'';
+        if(!reason||reason.length>2000){error('Reopening reason required',400);return;}
         const app=state.applications.find(a=>a.id===body.target_application_id&&a.submission_state==='submitted');
-        if(app) Object.assign(app,{submission_state:'draft',published_decision:'undecided',submitted_at:null});
+        if(app) {
+          Object.assign(app,{submission_state:'draft',published_decision:'undecided',submitted_at:null,reopen_reason:reason,application_rsvps:null});
+          state.events.unshift({id:state.events.length+1,application_id:app.id,actor_id:ids.admin,event_type:'reopened',details:{reason},created_at:new Date().toISOString()});
+        }
         send(Boolean(app));return;
       }
       if(table==='rpc/get_staff_application_page') {

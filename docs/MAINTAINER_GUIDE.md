@@ -225,6 +225,10 @@ When questions change, update the form version. Existing submissions use their s
 
 Use the staff portal to review, stage, and publish decisions. Staging and publishing are separate actions: staging prepares a decision; publishing makes it visible and queues a notification. Reopening and republishing can produce a new notification even when the decision is the same.
 
+Reopening requires an applicant-visible reason (up to 2,000 characters). It returns the submission to draft, clears the decision and RSVP, and cancels obsolete pending/failed notifications. The latest reason appears on the applicant’s dashboard and editable form until resubmission; every reason stays in staff review history. Reopening itself sends no new email and cannot recall an email already sent. Contact the applicant directly if they need immediate notice. A reopened application still follows the opening’s normal submission dates.
+
+Migration `20261102040212_add_application_reopening_reasons.sql` was applied to production for the reopening-reasons website update. It replaces the one-argument reopening RPC with a required reason; the old website cannot reopen submissions after this migration. Rollbacks must preserve this compatible website/database pairing. No existing application data was backfilled or reopened.
+
 Accepted SPRINT mentees receive a 72-hour response window. Inspect RSVP status and use the staff expiry/release controls before reallocating places. Do not assume that the email retry job releases expired offers—it handles email delivery only.
 
 CSV exports contain applicant information. Share them only with the staff who need them and remove working copies according to the chapter’s retention practices.

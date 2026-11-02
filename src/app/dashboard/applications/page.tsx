@@ -7,6 +7,7 @@ import { applicantStatus, formatCentralDate, parseApplicationOpening } from "@/l
 import type { Tables } from "@/lib/supabase/database.types";
 import { createClient } from "@/lib/supabase/server";
 import { RsvpOffer } from "./rsvp-offer";
+import { ApplicationReopeningNotice } from "@/components/application-reopening-notice";
 
 export const metadata: Metadata = { title: "Your applications" };
 
@@ -30,7 +31,7 @@ export default async function ApplicationsPage({ searchParams }: ApplicationsPag
 
   const { data: applications, error } = await supabase
     .from("applications")
-    .select("id, opening_id, submission_state, submitted_at, published_decision, decision_published_at, updated_at, form_schema_snapshot, application_openings(*), application_rsvps(*)")
+    .select("id, opening_id, submission_state, submitted_at, published_decision, decision_published_at, updated_at, form_schema_snapshot, reopen_reason, application_openings(*), application_rsvps(*)")
     .eq("applicant_id", userId)
     .order("updated_at", { ascending: false });
   if (error) {
@@ -84,6 +85,7 @@ export default async function ApplicationsPage({ searchParams }: ApplicationsPag
                   <p>{application.submission_state === "draft" ? "Last saved" : application.decision_published_at ? "Decision posted" : "Submitted"}</p>
                   <time>{formatCentralDate(application.decision_published_at ?? application.submitted_at ?? application.updated_at)} CT</time>
                 </div>
+                {application.submission_state === "draft" && <ApplicationReopeningNotice reason={application.reopen_reason} />}
                 {application.submission_state === "draft" ? (
                   <Link href={`/apply/${opening?.slug ?? ""}`}>Continue application <span aria-hidden="true">→</span></Link>
                 ) : rsvp ? (

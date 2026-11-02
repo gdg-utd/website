@@ -1,6 +1,6 @@
 # Browser tests
 
-The suite exercises the real production Next.js application through Playwright. Twenty-seven critical flows run on desktop Chromium and mobile Chromium (Pixel 7 emulation), giving 54 checks per complete run.
+The suite exercises the real production Next.js application through Playwright. Twenty-eight critical flows run on desktop Chromium and mobile Chromium (Pixel 7 emulation), giving 56 checks per complete run.
 
 ## Run locally
 
@@ -60,7 +60,7 @@ This uses synthetic public configuration, not production secrets. Once that buil
 | Cross-tab logout | Saving after logout redirects to login and back to the application; returning focus after logout also redirects without an unsaved warning |
 | Recovery destination | Forgot-password navigation, reset request payload, verified callback, password reset and login retain the selected application |
 | Expired staff/RSVP sessions | Review requests and offer responses redirect through login instead of showing generic/session errors |
-| Reopening | The admin-only RPC reopens one submission and the applicant can edit/resubmit it |
+| Reopening | A reason is required, shown on the applicant dashboard/form, retained in review history after resubmission, and preserved on failure/cancellation for retry |
 | Recovery link previews | GET requests/reloads do not verify recovery tokens; explicit confirmation consumes the token, and reuse fails |
 
 Every test also fails on unexpected browser exceptions and unexpected service endpoint calls. There are no automatic retries that could hide a flaky first attempt. The shared in-memory fixture is reset before each test, so the suite intentionally uses one worker.

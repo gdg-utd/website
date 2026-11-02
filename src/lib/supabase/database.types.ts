@@ -257,6 +257,7 @@ export type Database = {
           id: number
           opening_id: number
           published_decision: string
+          reopen_reason: string | null
           responses: Json
           submission_state: string
           submitted_at: string | null
@@ -275,6 +276,7 @@ export type Database = {
           id?: never
           opening_id: number
           published_decision?: string
+          reopen_reason?: string | null
           responses?: Json
           submission_state?: string
           submitted_at?: string | null
@@ -293,6 +295,7 @@ export type Database = {
           id?: never
           opening_id?: number
           published_decision?: string
+          reopen_reason?: string | null
           responses?: Json
           submission_state?: string
           submitted_at?: string | null
@@ -517,7 +520,7 @@ export type Database = {
         }[]
       }
       reopen_application: {
-        Args: { target_application_id: number }
+        Args: { reason: string; target_application_id: number }
         Returns: boolean
       }
       reserve_password_reset: {

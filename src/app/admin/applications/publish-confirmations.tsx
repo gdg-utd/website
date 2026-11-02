@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useActionState, useId, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { ConfirmationDialog } from "@/components/confirmation-dialog";
 import {
@@ -27,10 +27,10 @@ function PublishSubmitButton({
   );
 }
 
-function ActionSubmitButton({ idleLabel, pendingLabel }: { idleLabel: string; pendingLabel: string }) {
+function ActionSubmitButton({ idleLabel, pendingLabel, ready = true }: { idleLabel: string; pendingLabel: string; ready?: boolean }) {
   const { pending } = useFormStatus();
   return (
-    <button className="confirmation-primary" disabled={pending}>
+    <button className="confirmation-primary" disabled={pending || !ready}>
       {pending ? pendingLabel : idleLabel}
     </button>
   );
@@ -46,6 +46,9 @@ export function ReopenApplicationButton({
   returnPosition?: string;
 }) {
   const [open, setOpen] = useState(false);
+  const [reason, setReason] = useState("");
+  const [state, formAction] = useActionState(reopenApplication, { message: "" });
+  const formId = useId();
 
   return (
     <>
@@ -57,24 +60,43 @@ export function ReopenApplicationButton({
         onClose={() => setOpen(false)}
         title={`Reopen ${applicantName}’s application?`}
         description={(
-          <p>
-            This will return the application to draft and clear any published decision.
-            {" "}{applicantName} will be able to edit and resubmit their application.
-          </p>
+          <>
+            <p>
+              This returns the application to draft and clears its decision and RSVP.
+              {" "}{applicantName} can edit and resubmit while applications are open.
+            </p>
+            <p>Emails already sent cannot be recalled. No new email is sent when reopening; the reason appears on the applicant’s dashboard.</p>
+          </>
         )}
         actions={(
           <>
             <button type="button" className="confirmation-cancel" onClick={() => setOpen(false)} autoFocus>
               Cancel
             </button>
-            <form action={reopenApplication}>
+            <form id={formId} action={formAction}>
               <input type="hidden" name="applicationId" value={applicationId} />
               <input type="hidden" name="returnPosition" value={returnPosition ?? ""} />
-              <ActionSubmitButton idleLabel="Reopen application" pendingLabel="Reopening…" />
+              <ActionSubmitButton idleLabel="Reopen application" pendingLabel="Reopening…" ready={reason.trim().length > 0} />
             </form>
           </>
         )}
-      />
+      >
+        <label className="confirmation-phrase-field">
+          <span>Reason for reopening</span>
+          <textarea
+            form={formId}
+            name="reason"
+            value={reason}
+            onChange={(event) => setReason(event.target.value)}
+            required
+            maxLength={2000}
+            rows={4}
+            aria-describedby={`${formId}-help`}
+          />
+          <small id={`${formId}-help`}>Tell the applicant what to correct. This message is visible to them.</small>
+        </label>
+        {state.message && <p className="auth-message auth-message-error" role="alert">{state.message}</p>}
+      </ConfirmationDialog>
     </>
   );
 }
