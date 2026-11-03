@@ -307,11 +307,12 @@ export default async function AdminApplicationsPage({
                   {rsvpSummary.released + rsvpSummary.expired === 1 ? "" : "s"}{" "}
                   can be offered in the next round.
                 </p>
+                <p>Counts match the selected filters.</p>
               </div>
               {role === "admin" && (
                 <ReleaseExpiredOffersButton
                   openingId={selectedOpeningFilter.id}
-                  expiredCount={rsvpSummary.readyToRelease}
+                  expiredCount={result.openingExpiredCount}
                 />
               )}
             </div>

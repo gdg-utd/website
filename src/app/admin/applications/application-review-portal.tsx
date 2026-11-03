@@ -210,6 +210,7 @@ export function ApplicationReviewPortal({
       setStagedCount((count) => count + 1);
     if (previousDecision && !result.stagedDecision)
       setStagedCount((count) => Math.max(0, count - 1));
+    router.refresh();
   }
 
   return (

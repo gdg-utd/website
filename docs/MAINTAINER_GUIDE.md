@@ -233,6 +233,10 @@ Accepted SPRINT mentees receive a 72-hour response window. Inspect RSVP status a
 
 CSV exports contain applicant information. Share them only with the staff who need them and remove working copies according to the chapter’s retention practices.
 
+Portal summary cards and RSVP totals use the same search, position and decision filters as the table, across all matching pages. Staged decisions still count as awaiting a published decision. Bulk publishing and releasing expired offers retain their full-opening scope; their button counts and confirmation text describe that scope. CSV exports remain unfiltered.
+
+Deploy migration `20261103012620_filter_staff_summary_totals.sql` before the matching website update. It adds a separate full-opening expiry count so filtering the displayed RSVP totals does not change which offers the release action affects.
+
 ## Understand email delivery
 
 There are two paths:

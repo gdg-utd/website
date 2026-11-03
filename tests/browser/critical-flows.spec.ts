@@ -216,16 +216,56 @@ test('members cannot open the staff portal or read the staff review API', async 
 
 test('admin pagination and search update the visible application list', async ({page}) => {
   await login(page,'admin','/admin/applications');
+  await expect(page.getByRole('region',{name:'Application summary'}).locator('strong').first()).toHaveText('27');
   await expect(page.getByText('Page 1 of 2',{exact:false})).toBeVisible();
   await expect(page.getByRole('row')).toHaveCount(26);
   await page.getByRole('link',{name:/Next/}).click();
   await expect(page).toHaveURL(/page=2/);
   await expect(page.getByRole('row')).toHaveCount(3);
+  await expect(page.getByRole('region',{name:'Application summary'}).locator('strong').first()).toHaveText('27');
   await page.getByRole('textbox',{name:/search/i}).fill('Applicant 27');
   await page.getByRole('button',{name:'Apply filters'}).click();
   await expect(page.getByRole('row')).toHaveCount(2);
+  await expect(page.getByRole('region',{name:'Application summary'}).locator('strong').first()).toHaveText('1');
   await expect(page.getByRole('cell',{name:'Browser Applicant 27',exact:false})).toBeVisible();
   expect(await page.evaluate(()=>document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
+});
+
+test('portal summary totals follow combined filters and clearing restores all results', async ({page,request}) => {
+  await request.post(`${backend}/__reset`,{data:{staffSummary:true}});
+  await login(page,'reviewer','/admin/applications');
+  const totals=page.getByRole('region',{name:'Application summary'}).locator('strong');
+  await expect(totals).toHaveText(['27','9','9','9']);
+  await page.getByRole('combobox',{name:'Position',exact:true}).selectOption('sprint-mentee');
+  await page.getByRole('button',{name:'Apply filters'}).click();
+  await expect(totals).toHaveText(['14','5','5','4']);
+  await page.getByRole('combobox',{name:'Decision',exact:true}).selectOption('accepted');
+  await page.getByRole('button',{name:'Apply filters'}).click();
+  await expect(totals).toHaveText(['5','0','5','0']);
+  await page.getByRole('textbox',{name:/search/i}).fill('Applicant 1');
+  await page.getByRole('button',{name:'Apply filters'}).click();
+  await expect(totals).toHaveText(['3','0','3','0']);
+  await expect(page.getByRole('row')).toHaveCount(4);
+  await page.screenshot({path:test.info().outputPath('filtered-summary.png')});
+  await page.getByRole('textbox',{name:/search/i}).fill('no matching applicant');
+  await page.getByRole('button',{name:'Apply filters'}).click();
+  await expect(totals).toHaveText(['0','0','0','0']);
+  await page.getByRole('link',{name:'Clear',exact:true}).click();
+  await expect(totals).toHaveText(['27','9','9','9']);
+});
+
+test('clearing a staged decision refreshes the staged-filter totals', async ({page,request}) => {
+  await request.post(`${backend}/__reset`,{data:{submitted:true,events:[{id:1,application_id:1,event_type:'decision_staged',details:{decision:'accepted'},created_at:'2026-01-02T00:00:00Z'}]}});
+  await login(page,'admin','/admin/applications');
+  await page.goto('/admin/applications?position=sprint-mentee&decision=staged');
+  const totals=page.getByRole('region',{name:'Application summary'}).locator('strong');
+  await expect(totals).toHaveText(['1','1','0','0']);
+  await page.getByRole('button',{name:'Review',exact:true}).click();
+  const review=page.getByRole('dialog',{name:'Application review'});
+  await review.getByRole('button',{name:'Clear staged selection',exact:true}).click();
+  await expect(review.getByRole('button',{name:'Stage acceptance',exact:true})).toBeEnabled();
+  await review.getByRole('button',{name:'Close application review'}).click();
+  await expect(totals).toHaveText(['0','0','0','0']);
 });
 
 test('expired recovery links lead back to requesting a new link', async ({page}) => {

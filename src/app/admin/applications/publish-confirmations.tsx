@@ -240,7 +240,7 @@ export function ReleaseExpiredOffersButton({
         disabled={expiredCount === 0}
         onClick={() => setOpen(true)}
       >
-        Release expired offers <span>{expiredCount}</span>
+        Release all expired offers <span>{expiredCount}</span>
       </button>
       <ConfirmationDialog
         open={open}
@@ -248,7 +248,7 @@ export function ReleaseExpiredOffersButton({
         title={`Release ${expiredCount} expired offer${expiredCount === 1 ? "" : "s"}?`}
         description={(
           <p>
-            These applicants did not respond within 72 hours. Their dashboard status will change to not selected, each will receive the RSVP-expiry email, and the same number of spots can be offered in the next round.
+            These applicants did not respond within 72 hours. Their dashboard status will change to not selected, each will receive the RSVP-expiry email, and the same number of spots can be offered in the next round. This includes all expired offers for this opening; search and decision filters do not limit this action.
           </p>
         )}
         actions={(

@@ -1,6 +1,6 @@
 # Browser tests
 
-The suite exercises the real production Next.js application through Playwright. Twenty-eight critical flows run on desktop Chromium and mobile Chromium (Pixel 7 emulation), giving 56 checks per complete run.
+The suite exercises the real production Next.js application through Playwright. Thirty critical flows run on desktop Chromium and mobile Chromium (Pixel 7 emulation), giving 60 checks per complete run.
 
 ## Run locally
 
@@ -49,7 +49,7 @@ This uses synthetic public configuration, not production secrets. Once that buil
 | Application submission | Draft save/resume, required choices/agreements, cancel/confirm dialog, submission success, and submitted-form lock |
 | RSVP | Confirmation remains disabled until agreements are checked; a recorded response appears |
 | Member restrictions | Members cannot enter the staff portal or read its review API |
-| Staff pagination | Next page and search change the visible rows; mobile page width stays within the viewport |
+| Staff pagination and totals | Totals cover every matching page; search/position/decision combinations, zero results, clearing filters and clearing a staged decision update the visible counts |
 | Expired recovery | Invalid/expired link response returns to requesting a new link |
 | Admin review and publishing | Submitted answers and provider status appear; publishing requires a staged decision; cancelling keeps the decision unpublished; confirming publishes it |
 | Reviewer restrictions | Reviewers can inspect submissions but cannot access CSV export or publishing controls |

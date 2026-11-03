@@ -203,5 +203,41 @@ select pg_temp.check_true((select reopen_reason='A second correction request' fr
 select pg_temp.check_true((select count(*)=2 from public.application_events where application_id=(select id from audit_ids where key='alice-app') and event_type='reopened'),'both reopening reasons retained in audit history');
 select pg_temp.check_true((select count(*)=(select id from audit_ids where key='queue-before-second-reopen') from public.application_email_queue),'reopening sends no new notification');
 select pg_temp.check_true((select count(*)=0 from public.application_email_queue where application_id=(select id from audit_ids where key='alice-app') and status in ('pending','failed')),'obsolete unsent notifications cancelled');
+-- Summary totals use the same filters as the rows, before pagination.
+select set_config('request.jwt.claim.sub',(select uid::text from audit_ids where key='bob'),true);
+set local role authenticated;
+with created as (insert into public.applications(opening_id,applicant_id,responses,submission_state)
+ values ((select id from audit_ids where key='audit-opening-a'),(select uid from audit_ids where key='bob'),'{"answer":"Summary fixture"}','submitted') returning id)
+insert into audit_ids(key,id) select 'bob-summary',id from created;
+reset role;
+select set_config('request.jwt.claim.sub',(select uid::text from audit_ids where key='admin'),true);
+set local role authenticated;
+update public.applications set published_decision='accepted' where id=(select id from audit_ids where key='admin-app');
+insert into public.application_events(application_id,actor_id,event_type,details)
+select id,(select uid from audit_ids where key='admin'),'decision_staged','{"decision":"rejected"}' from audit_ids where key='bob-summary';
+do $$declare first_page jsonb; second_page jsonb; filtered_page jsonb; begin
+ first_page:=public.get_staff_application_page('','audit-opening-a','',1,1);
+ second_page:=public.get_staff_application_page('','audit-opening-a','',2,1);
+ perform pg_temp.check_true(first_page->'metrics'='{"total":2,"accepted":1,"notSelected":0,"awaiting":1}'::jsonb,'position totals exclude other openings and private drafts');
+ perform pg_temp.check_true((first_page->>'matched')::integer=2 and jsonb_array_length(first_page->'applications')=1,'totals cover all matching pages');
+ perform pg_temp.check_true(first_page->'metrics'=second_page->'metrics' and first_page->'applications'->0->'id'<>second_page->'applications'->0->'id','pagination keeps totals unchanged');
+ filtered_page:=public.get_staff_application_page('BoB','audit-opening-a','staged',1,25);
+ perform pg_temp.check_true(filtered_page->'metrics'='{"total":1,"accepted":0,"notSelected":0,"awaiting":1}'::jsonb,'combined case-insensitive search position and staged filters');
+ perform pg_temp.check_true((public.get_staff_application_page('','audit-opening-a','accepted')->'metrics'->>'total')::integer=1,'accepted filter total');
+ perform pg_temp.check_true((public.get_staff_application_page('','sprint-mentee','rejected')->'metrics'->>'notSelected')::integer=1,'rejected filter total');
+ filtered_page:=public.get_staff_application_page('no matching applicant','audit-opening-a','',1,25);
+ perform pg_temp.check_true(filtered_page->'metrics'='{"total":0,"accepted":0,"notSelected":0,"awaiting":0}'::jsonb and filtered_page->'applications'='[]'::jsonb,'empty filters show zero totals');
+ perform pg_temp.check_true((filtered_page->>'stagedCount')::integer=1,'bulk publish count keeps full opening scope');
+ perform pg_temp.check_true((public.get_staff_application_page('alice','sprint-mentee','')->'rsvpSummary'->>'confirmed')::integer=1,'RSVP summary matches search');
+ perform pg_temp.check_true((public.get_staff_application_page('alice','sprint-mentee','rejected')->'rsvpSummary'->>'confirmed')::integer=0,'RSVP summary matches decision filter');
+end $$;
+reset role;
+-- An operation count remains opening-wide even when a search hides its offers.
+update public.application_rsvps set status='awaiting_response',responded_at=null,agreements_confirmed_at=null,deadline_at=now()-interval '1 second' where application_id=(select id from audit_ids where key='alice-offer');
+select set_config('request.jwt.claim.sub',(select uid::text from audit_ids where key='reviewer'),true);
+set local role authenticated;
+select pg_temp.check_true((public.get_staff_application_page('','audit-opening-a','')->'metrics'->>'total')::integer=2,'reviewer receives the same filtered totals');
+select pg_temp.check_true((public.get_staff_application_page('bob','sprint-mentee','')->'rsvpSummary'->>'readyToRelease')::integer=0 and (public.get_staff_application_page('bob','sprint-mentee','')->>'openingExpiredCount')::integer=1,'RSVP display is filtered but release count covers the opening');
+reset role;
 rollback;
 select 'PASS: actual anon/authenticated role matrix; cross-applicant isolation; reviewer denials; scoped publishing; admin-applicant reopen; RSVP ownership/cutoff/idempotency. All fixtures rolled back.' as result;

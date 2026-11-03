@@ -91,9 +91,14 @@ function createBackend() {
         send(Boolean(app));return;
       }
       if(table==='rpc/get_staff_application_page') {
-        const all=Array.from({length:27},(_,i)=>application({id:i+1,submission_state:'submitted',applicant_last_name:`Applicant ${i+1}`})).filter(a=>!body.p_q||a.applicant_last_name.toLowerCase().includes(body.p_q.toLowerCase()));
+        const base=Array.from({length:27},(_,i)=>{
+          const alternate=state.staffSummary&&i%2===1;
+          const staged=state.events.find(e=>e.application_id===i+1&&e.event_type==='decision_staged')?.details?.decision;
+          return application({id:i+1,submission_state:'submitted',applicant_last_name:`Applicant ${i+1}`,opening_id:alternate?2:1,application_openings:alternate?{...opening,id:2,slug:'tech-officer',title:'Tech officer'}:opening,published_decision:state.staffSummary?['accepted','rejected','undecided'][i%3]:'undecided',staged_decision:['accepted','rejected'].includes(staged)?staged:null});
+        });
+        const all=base.filter(a=>(!body.p_position||a.application_openings.slug===body.p_position)&&(!body.p_decision||a.published_decision===body.p_decision||(body.p_decision==='staged'&&a.published_decision==='undecided'&&a.staged_decision))&&(!body.p_q||`${a.applicant_first_name} ${a.applicant_last_name} ${a.applicant_email}`.toLowerCase().includes(body.p_q.toLowerCase())));
         const page=body.p_page??1;
-        send({applications:all.slice((page-1)*25,page*25),matched:all.length,page,pageSize:25,stagedCount:0,metrics:{total:27,awaiting:27,accepted:0,notSelected:0},rsvpSummary:{confirmed:0,awaiting:0,released:0,expired:0,readyToRelease:0}});return;
+        send({applications:all.slice((page-1)*25,page*25),matched:all.length,page,pageSize:25,stagedCount:base.filter(a=>a.application_openings.slug===body.p_position&&a.published_decision==='undecided'&&a.staged_decision).length,openingExpiredCount:0,metrics:{total:all.length,awaiting:all.filter(a=>a.published_decision==='undecided').length,accepted:all.filter(a=>a.published_decision==='accepted').length,notSelected:all.filter(a=>a.published_decision==='rejected').length},rsvpSummary:{confirmed:0,awaiting:0,released:0,expired:0,readyToRelease:0}});return;
       }
       if(table==='rpc/respond_to_mentee_offer') {
         const app=state.applications.find(a=>a.id===body.target_application_id);
@@ -105,7 +110,7 @@ function createBackend() {
       let rows=[];
       if(table==='profiles')rows=Object.values(state.profiles);
       else if(table==='application_admins')rows=['admin','reviewer'].map(r=>({user_id:ids[r],role:r,active:true}));
-      else if(table==='application_openings')rows=[opening];
+      else if(table==='application_openings')rows=state.staffSummary?[opening,{...opening,id:2,slug:'tech-officer',title:'Tech officer'}]:[opening];
       else if(table==='applications')rows=state.applications;
       else if(table==='application_events')rows=state.events;
       else if(table==='application_rsvps')rows=[];

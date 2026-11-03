@@ -19,6 +19,7 @@ export type StaffApplicationPage = {
   page: number;
   pageSize: number;
   stagedCount: number;
+  openingExpiredCount: number;
   metrics: {
     total: number;
     accepted: number;
