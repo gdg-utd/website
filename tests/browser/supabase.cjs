@@ -11,6 +11,7 @@ const schema = {sections:[{id:'about',title:'About you',fields:[
 const opening = {id:1,slug:'sprint-mentee',title:'SPRINT mentee',eyebrow:'SPRINT PROGRAM',description:'Build with a team and mentor.',status:'open',opens_at:null,closes_at:null,form_version:1,form_schema:schema,accent:'blue',created_at:'2026-01-01T00:00:00Z',updated_at:'2026-01-01T00:00:00Z'};
 function createBackend() {
   let state;
+  let heldRequests=[];
   function reset(options={}) {
     state = {profiles:{},applications:[],events:[],quotas:{},passwords:{},unexpected:[],...options};
     for (const role of Object.keys(ids)) state.profiles[ids[role]]={id:ids[role],first_name:'Browser',last_name:role,degree:'Bachelor of Science',major:'Computer Science',net_id:'abc123',personal_email:null,linkedin_url:null,github_url:null,portfolio_url:null,onboarding_completed_at:'2026-01-01T00:00:00Z'};
@@ -41,6 +42,7 @@ function createBackend() {
     let role;
     try {const claims=JSON.parse(Buffer.from((req.headers.authorization??'').replace('Bearer ','').split('.')[1],'base64url'));role=Object.keys(ids).find(key=>ids[key]===claims.sub);}catch{}
     if(url.pathname==='/__reset'){reset(body);send({ok:true});return;}
+    if(url.pathname==='/__release'){const requests=heldRequests;heldRequests=[];state.holdTables=[];requests.forEach(resolve=>resolve());send({ok:true});return;}
     if(url.pathname==='/__state'){send(state);return;}
     if(url.pathname==='/auth/v1/token') {
       const name=(body.email??'member@utdallas.edu').split('@')[0];
@@ -77,6 +79,7 @@ function createBackend() {
     if(url.pathname==='/functions/v1/send-application-email'){send({sent:true});return;}
     if(url.pathname.startsWith('/rest/v1/')) {
       const table=url.pathname.slice('/rest/v1/'.length);
+      if(state.holdTables?.includes(table)) await new Promise(resolve=>heldRequests.push(resolve));
       if(table==='rpc/is_email_blacklisted'){send(false);return;}
       if(table==='rpc/reopen_application') {
         if(role!=='admin'){error('Administrator required',403);return;}
@@ -91,6 +94,7 @@ function createBackend() {
         send(Boolean(app));return;
       }
       if(table==='rpc/get_staff_application_page') {
+        if(state.unexpectedStaffPage){send({applications:null,metrics:null});return;}
         const base=Array.from({length:27},(_,i)=>{
           const alternate=state.staffSummary&&i%2===1;
           const staged=state.events.find(e=>e.application_id===i+1&&e.event_type==='decision_staged')?.details?.decision;
@@ -116,6 +120,9 @@ function createBackend() {
       else if(table==='application_rsvps')rows=[];
       else {state.unexpected.push(`${req.method} ${url.pathname}`);error('Unexpected fixture endpoint',500);return;}
       if(state.failApplicationSave&&table==='applications'&&['POST','PATCH'].includes(req.method)){error('Synthetic application save failure',500);return;}
+      if(table==='applications'&&req.method==='GET'&&state.unexpectedDashboardPage){send([null]);return;}
+      if(table==='applications'&&req.method==='GET'&&state.failApplicationsRead){error('Private fixture details must never be displayed',500);return;}
+      if(table==='profiles'&&state.unexpectedLayout)rows=rows.map(profile=>({...profile,first_name:{privateDetail:'Do not display this fixture'}}));
       if(state.failProfileSave&&table==='profiles'&&req.method==='PATCH'){error('Synthetic save failure',500);return;}
       for(const [key,value]of url.searchParams){if(value.startsWith('eq.'))rows=rows.filter(row=>String(row[key])===value.slice(3));}
       if(table==='applications'&&req.method==='POST'){const saved=application({...body,id:1});state.applications.push(saved);rows=[saved];}

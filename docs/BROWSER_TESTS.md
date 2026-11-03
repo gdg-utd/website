@@ -1,6 +1,6 @@
 # Browser tests
 
-The suite exercises the real production Next.js application through Playwright. Thirty critical flows run on desktop Chromium and mobile Chromium (Pixel 7 emulation), giving 60 checks per complete run.
+The suite exercises the real production Next.js application through Playwright. Thirty-nine critical flows run on desktop Chromium and mobile Chromium (Pixel 7 emulation), giving 78 checks per complete run.
 
 ## Run locally
 
@@ -44,6 +44,9 @@ This uses synthetic public configuration, not production secrets. Once that buil
 | Reset quotas | The fourth reset request shows the quota warning rather than the success message |
 | Profile save | Edited values persist after reload; logout protects the dashboard again |
 | Save failure | An unsuccessful profile update preserves entered values |
+| Route loading | Held service responses show loading states for public applications, the dashboard layout, dashboard pages and the staff portal; content replaces them after release, and users can leave a pending public page |
+| Unexpected errors | Malformed fixture responses exercise root, dashboard and admin error boundaries; details remain hidden and retry refetches successfully |
+| Distinct recovery states | Missing URLs retain the custom 404 page; expected database failures retain the existing data-unavailable screen and reload action |
 | Signed-in password change | Incorrect current password is rejected; a successful change returns to the profile |
 | Email recovery | Direct access lacks proof; a simulated verified link authorizes the form; saving returns to login; old/new-password behavior is checked; ordinary login does not retain recovery access |
 | Application submission | Draft save/resume, required choices/agreements, cancel/confirm dialog, submission success, and submitted-form lock |

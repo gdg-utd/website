@@ -3,6 +3,7 @@ import { test, expect, type Page } from '@playwright/test';
 const backend = 'http://127.0.0.1:4319';
 const password = 'BrowserTest123!';
 const pageErrors = new WeakMap<Page, string[]>();
+const expectedRenderErrors = new WeakSet<Page>();
 async function login(page: Page, role = 'member', next = '/dashboard/profile') {
   await page.goto(`/login?next=${encodeURIComponent(next)}`);
   await page.getByLabel('Email', {exact:true}).fill(`${role}@utdallas.edu`);
@@ -19,7 +20,11 @@ test.beforeEach(async ({page,request}) => {
   await request.post(`${backend}/__reset`, {data:{}});
   const errors: string[] = [];
   pageErrors.set(page, errors);
-  page.on('pageerror', error => errors.push(error.message));
+  page.on('pageerror', error => {
+    // Deliberate SSR failures can also report recovery of an interrupted Suspense boundary.
+    if(expectedRenderErrors.has(page)&&(error.message.startsWith('An error occurred in the Server Components render.')||error.message.startsWith('Minified React error #419;'))) return;
+    errors.push(error.message);
+  });
   await page.route('**/*', async route => {
     const url = new URL(route.request().url());
     if (['127.0.0.1','localhost'].includes(url.hostname)) await route.continue();
@@ -537,4 +542,78 @@ test('recovery link previews do not consume tokens; explicit confirmation is sin
   await page.goto('/auth/callback?token_hash=browser-recovery&type=recovery&returnTo=%2Fapply%2Fsprint-mentee');
   await page.getByRole('button',{name:'Continue to reset password',exact:true}).click();
   await expect(page).toHaveURL(/\/login\?forgot=1&error=recovery&next=%2Fapply%2Fsprint-mentee$/);
+});
+
+for(const scenario of [
+  {name:'public applications',path:'/apply',table:'application_openings',label:'Loading applications…'},
+  {name:'dashboard layout',path:'/dashboard',table:'profiles',label:'Loading page…'},
+  {name:'dashboard applications',path:'/dashboard/applications',table:'applications',label:'Loading your dashboard…'},
+  {name:'staff portal',path:'/admin/applications',table:'rpc/get_staff_application_page',label:'Loading the application portal…'},
+]) {
+  test(`loading screen: ${scenario.name} announces the wait and completes`, async ({page,request}) => {
+    await login(page,scenario.path.startsWith('/admin')?'admin':'member');
+    await request.post(`${backend}/__reset`,{data:{holdTables:[scenario.table]}});
+    try {
+      await page.goto(scenario.path,{waitUntil:'commit'});
+      await expect(page.getByRole('heading',{name:scenario.label,exact:true})).toBeVisible();
+      await expect(page.getByRole('status')).toHaveAttribute('aria-busy','true');
+      await expect(page.getByRole('status')).toContainText('Please wait a moment.');
+      if(scenario.name==='dashboard applications') await expect(page.getByRole('navigation',{name:'Applicant dashboard'})).toBeVisible();
+      await page.screenshot({path:test.info().outputPath('loading-screen.png')});
+    } finally {
+      await request.post(`${backend}/__release`,{data:{}});
+    }
+    await expect(page.getByRole('heading',{name:scenario.label,exact:true})).toHaveCount(0);
+    await expect(page.locator('main').getByRole('heading',{level:1})).toBeVisible();
+  });
+}
+
+for(const scenario of [
+  {name:'root layout child',path:'/dashboard',flag:'unexpectedLayout'},
+  {name:'dashboard',path:'/dashboard/applications',flag:'unexpectedDashboardPage'},
+  {name:'staff portal',path:'/admin/applications',flag:'unexpectedStaffPage'},
+]) {
+  test(`unexpected-error screen: ${scenario.name} hides details and retries the page`, async ({page,request}) => {
+    await login(page,scenario.path.startsWith('/admin')?'admin':'member');
+    expectedRenderErrors.add(page);
+    await request.post(`${backend}/__reset`,{data:{[scenario.flag]:true}});
+    await page.goto(scenario.path);
+    await expect(page.getByRole('heading',{name:'This page couldn’t load.',exact:true})).toBeVisible();
+    await expect(page.locator('main').getByRole('alert')).toContainText('Please try again.');
+    await expect(page.locator('body')).not.toContainText('TypeError');
+    await expect(page.locator('body')).not.toContainText('Do not display this fixture');
+    await page.screenshot({path:test.info().outputPath('unexpected-error.png')});
+    await request.post(`${backend}/__reset`,{data:{}});
+    await page.getByRole('button',{name:'Try again',exact:true}).click();
+    await expect(page.getByRole('heading',{name:'This page couldn’t load.',exact:true})).toHaveCount(0);
+    await expect(page.locator('main').getByRole('heading',{level:1})).toBeVisible();
+  });
+}
+
+test('missing pages and expected data failures keep their distinct recovery screens', async ({page,request}) => {
+  await page.goto('/this-page-does-not-exist');
+  await expect(page.getByRole('heading',{name:'We can’t find that page.',exact:true})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'This page couldn’t load.',exact:true})).toHaveCount(0);
+  await login(page);
+  await request.post(`${backend}/__reset`,{data:{failApplicationsRead:true}});
+  await page.goto('/dashboard/applications');
+  await expect(page.getByRole('heading',{name:'We couldn’t load your applications.',exact:true})).toBeVisible();
+  await expect(page.locator('body')).not.toContainText('Private fixture details');
+  await expect(page.getByRole('heading',{name:'This page couldn’t load.',exact:true})).toHaveCount(0);
+  await request.post(`${backend}/__reset`,{data:{}});
+  await page.getByRole('link',{name:'Try again'}).click();
+  await expect(page.getByRole('heading',{name:'Applications',exact:true})).toBeVisible();
+});
+
+test('a slow loading page can be left without waiting for its response', async ({page,request}) => {
+  await request.post(`${backend}/__reset`,{data:{holdTables:['application_openings']}});
+  try {
+    await page.goto('/apply',{waitUntil:'commit'});
+    await expect(page.getByRole('heading',{name:'Loading applications…',exact:true})).toBeVisible();
+    await page.getByRole('link',{name:'GDG on Campus UTD home',exact:true}).click();
+    await expect(page).toHaveURL('http://localhost:3100/');
+    await expect(page.locator('main').getByRole('heading',{level:1})).toBeVisible();
+  } finally {
+    await request.post(`${backend}/__release`,{data:{}});
+  }
 });

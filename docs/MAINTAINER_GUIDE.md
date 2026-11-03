@@ -217,6 +217,16 @@ where u.id = a.user_id
 
 Deactivation blocks subsequent protected staff requests; it cannot retract information already viewed or downloaded. Remove separate GitHub, Vercel, Supabase, Brevo, and DNS access during offboarding too.
 
+## Loading and page failures
+
+The existing custom 404 handles missing URLs and unavailable application slugs. Expected fetch failures use the existing data-unavailable messages; form validation and authentication redirects remain in their own flows.
+
+Route loading fallbacks cover public pages (including application forms), the dashboard and the staff portal. They use static placeholders and a screen-reader status. Dashboard page loading and errors keep the surrounding dashboard navigation available. A wait in the dashboard layout itself falls back to the public loading shell.
+
+Unexpected rendering failures use `error.tsx` boundaries at the root, dashboard and admin levels. **Try again** uses Next.js 16’s `retry()` to refetch the failed segment; messages never render the error object, stack or digest. The small standalone `global-error.tsx` also covers root-layout failures without depending on the normal layout, global stylesheet or fonts. This emergency document uses a full-page home link. Event-handler and expected server-action errors still need their existing inline handling.
+
+Browser tests inject delays and malformed responses only in the local service double. They verify the loading and normal error boundaries in a production build, including successful retry, 404/data-error separation and the existing authentication regressions. A failure of the actual root document is not deliberately injected into production.
+
 ## Run an application cycle
 
 Before opening applications, review the opening’s status, dates, form version, questions, options, agreements, and email template mapping in the database. Opening/form management is not a general-purpose editor in the website; make deliberate database changes through reviewed migrations.

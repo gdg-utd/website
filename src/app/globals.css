@@ -1320,6 +1320,19 @@ dialog.admin-drawer::backdrop { background: rgba(31,35,40,.34); backdrop-filter:
 .data-unavailable { max-width: 760px; margin: 48px auto; padding: 32px; }
 .data-unavailable .secondary-link { margin: 16px; }
 
+.page-state-shell { min-height: 100svh; background: #f6f8fb; }
+.page-state { width: min(100%, 800px); margin: 0 auto; padding: clamp(48px, 10vw, 100px) 24px; }
+.page-state-embedded { width: 100%; margin: 0; padding: 36px 0; }
+.page-state h1 { max-width: 680px; margin: 16px 0 22px; font-size: clamp(2rem, 7vw, 3.5rem); line-height: 1.1; letter-spacing: -.045em; }
+.page-state p:not(.section-label) { color: #626a72; line-height: 1.6; }
+.page-state-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 24px; margin-top: 30px; }
+.page-state-actions button { border: 0; font: inherit; cursor: pointer; }
+.page-state-actions button:disabled { opacity: .65; cursor: wait; }
+.page-loading-skeleton { display: grid; gap: 14px; margin-top: 36px; }
+.page-loading-skeleton span { height: 18px; background: #e2e7ef; }
+.page-loading-skeleton span:nth-child(2) { width: 85%; }
+.page-loading-skeleton span:nth-child(3) { width: 60%; }
+
 .password-card { margin-top: 28px; padding: 30px; }
 .password-form { max-width: 520px; }
 .password-form-note { color: #626a72; font-size: 13px; line-height: 1.6; }
