@@ -12,10 +12,10 @@ export type OfficerGroup = {
 };
 
 // Update this file to add, remove, or reorder officers.
-// Roster confirmed by the GDG UTDallas team on October 14, 2026.
+// Roster updated by the GDG UTDallas team on November 4, 2026.
 export const leadership: Officer[] = [
-  { name: "Frabina", role: "President" },
-  { name: "Jaideep", role: "Vice President" },
+  { name: "Frabina", role: "President", photo: "/pictures/officers/frabina-2026-11.webp" },
+  { name: "Jaideep", role: "Vice President", photo: "/pictures/officers/jaideep-2026-11.webp" },
 ];
 
 export const officerGroups: OfficerGroup[] = [
@@ -34,16 +34,11 @@ export const officerGroups: OfficerGroup[] = [
     name: "Technical",
     accent: "green",
     members: [
-      { name: "Sharad", role: "Tech Director" },
+      { name: "Sharad", role: "Tech Director", photo: "/pictures/officers/sharad-2026-11.webp" },
       {
         name: "Ayesha",
         role: "Tech Officer",
         photo: "/pictures/officers/ayesha-shaikh.webp",
-      },
-      {
-        name: "Gourav",
-        role: "Tech Officer",
-        photo: "/pictures/officers/gourav.webp",
       },
       {
         name: "Niket",
@@ -64,7 +59,7 @@ export const officerGroups: OfficerGroup[] = [
       {
         name: "Jiya",
         role: "Marketing & Events Director",
-        photo: "/pictures/officers/jiya-yadav.webp",
+        photo: "/pictures/officers/jiya-yadav-2026-11.webp",
       },
       {
         name: "Zoya",
@@ -76,7 +71,7 @@ export const officerGroups: OfficerGroup[] = [
         role: "Marketing Officer",
         photo: "/pictures/officers/roman.webp",
       },
-      { name: "Ann", role: "Marketing Officer" },
+      { name: "Ann", role: "Marketing Officer", photo: "/pictures/officers/ann-2026-11.webp" },
     ],
   },
   {
@@ -86,7 +81,7 @@ export const officerGroups: OfficerGroup[] = [
       {
         name: "Jiya",
         role: "Marketing & Events Director",
-        photo: "/pictures/officers/jiya-yadav.webp",
+        photo: "/pictures/officers/jiya-yadav-2026-11.webp",
       },
       {
         name: "Sahithi",
@@ -96,12 +91,12 @@ export const officerGroups: OfficerGroup[] = [
       {
         name: "Nathan",
         role: "Events Officer",
-        photo: "/pictures/officers/nathan-han.webp",
+        photo: "/pictures/officers/nathan-han-2026-11.webp",
       },
       {
         name: "Sanchia",
         role: "Events Officer",
-        photo: "/pictures/officers/sanchia-francis.webp",
+        photo: "/pictures/officers/sanchia-francis-2026-11.webp",
       },
       {
         name: "Arjun",
@@ -122,22 +117,22 @@ export const officerGroups: OfficerGroup[] = [
       {
         name: "Siri A.",
         role: "Industry Director",
-        photo: "/pictures/officers/lakshmi-siri-appalaneni.webp",
+        photo: "/pictures/officers/lakshmi-siri-appalaneni-2026-11.webp",
       },
       {
         name: "Siri",
         role: "Industry Officer",
-        photo: "/pictures/officers/siri.webp",
+        photo: "/pictures/officers/siri-2026-11.webp",
       },
       {
         name: "Divya",
         role: "Industry Officer",
-        photo: "/pictures/officers/divya-yalam.webp",
+        photo: "/pictures/officers/divya-yalam-2026-11.webp",
       },
       {
         name: "Indra",
         role: "Industry Officer",
-        photo: "/pictures/officers/indra-erdenebat.webp",
+        photo: "/pictures/officers/indra-erdenebat-2026-11.webp",
       },
     ],
   },
@@ -148,7 +143,7 @@ export const officerGroups: OfficerGroup[] = [
       {
         name: "Akhil",
         role: "Finance Director",
-        photo: "/pictures/officers/akhil-n.webp",
+        photo: "/pictures/officers/akhil-n-2026-11.webp",
       },
       {
         name: "Anh",
@@ -158,12 +153,12 @@ export const officerGroups: OfficerGroup[] = [
       {
         name: "Sobi",
         role: "Finance Officer",
-        photo: "/pictures/officers/sobi-suri.webp",
+        photo: "/pictures/officers/sobi-suri-2026-11.webp",
       },
       {
         name: "Rahul",
         role: "Finance Officer",
-        photo: "/pictures/officers/rahul-satishkumar.webp",
+        photo: "/pictures/officers/rahul-satishkumar-2026-11.webp",
       },
     ],
   },
@@ -189,12 +184,12 @@ export const officerGroups: OfficerGroup[] = [
       {
         name: "Divya",
         role: "GDG Sprints Officer",
-        photo: "/pictures/officers/divya-yalam.webp",
+        photo: "/pictures/officers/divya-yalam-2026-11.webp",
       },
       {
         name: "Jalen",
         role: "GDG Sprints Officer",
-        photo: "/pictures/officers/jalen-a.webp",
+        photo: "/pictures/officers/jalen-a-2026-11.webp",
       },
       {
         name: "Khushi",
@@ -204,22 +199,22 @@ export const officerGroups: OfficerGroup[] = [
       {
         name: "Lavanya",
         role: "GDG Sprints Officer",
-        photo: "/pictures/officers/lavanya-bansal.webp",
+        photo: "/pictures/officers/lavanya-bansal-2026-11.webp",
       },
       {
         name: "Naavya",
         role: "GDG Sprints Officer",
-        photo: "/pictures/officers/naavya.webp",
+        photo: "/pictures/officers/naavya-2026-11.webp",
       },
       {
         name: "Polina",
         role: "GDG Sprints Officer",
-        photo: "/pictures/officers/polina-maidanova.webp",
+        photo: "/pictures/officers/polina-maidanova-2026-11.webp",
       },
       {
         name: "Pranathi",
         role: "GDG Sprints Officer",
-        photo: "/pictures/officers/pranathi-gadhanki.webp",
+        photo: "/pictures/officers/pranathi-gadhanki-2026-11.webp",
       },
       {
         name: "Priyanka",
@@ -229,10 +224,10 @@ export const officerGroups: OfficerGroup[] = [
       {
         name: "Siri",
         role: "GDG Sprints Officer",
-        photo: "/pictures/officers/siri.webp",
+        photo: "/pictures/officers/siri-2026-11.webp",
       },
-      { name: "Snigdha", role: "GDG Sprints Officer" },
-      { name: "Urmi", role: "GDG Sprints Officer" },
+      { name: "Snigdha", role: "GDG Sprints Officer", photo: "/pictures/officers/snigdha-2026-11.webp" },
+      { name: "Urmi", role: "GDG Sprints Officer", photo: "/pictures/officers/urmi-2026-11.webp" },
       {
         name: "Ved",
         role: "GDG Sprints Officer",
