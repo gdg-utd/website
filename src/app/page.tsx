@@ -77,7 +77,7 @@ function EventRow({ event, index }: { event: ChapterEvent; index: number }) {
 const faqs = [
   {
     question: "Who can attend GDG UTDallas events?",
-    answer: "UT Dallas students interested in technology are welcome. Event pages list any capacity limits or specific requirements.",
+    answer: "All UT Dallas students interested in technology are welcome. Event pages list any capacity limits or specific requirements.",
   },
   {
     question: "Do I need coding experience?",
