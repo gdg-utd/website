@@ -76,6 +76,12 @@ function createBackend() {
       if(n>3){send({accepted:false,code:'RESET_LIMIT_REACHED'},429);return;}
       send({accepted:true});return;
     }
+    if(url.pathname==='/functions/v1/email-health'){
+      if(role!=='admin'){error('Administrator required',403);return;}
+      if(state.failEmailHealth){error('Reporting unavailable',503);return;}
+      state.healthReads=(state.healthReads??0)+1;
+      send(require('./email-health-fixture.cjs')(body.days));return;
+    }
     if(url.pathname==='/functions/v1/send-application-email'){send({sent:true});return;}
     if(url.pathname.startsWith('/rest/v1/')) {
       const table=url.pathname.slice('/rest/v1/'.length);

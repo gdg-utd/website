@@ -617,3 +617,32 @@ test('a slow loading page can be left without waiting for its response', async (
     await request.post(`${backend}/__release`,{data:{}});
   }
 });
+
+
+test('email health is admin only and consolidates provider and queue reporting', async ({page,request}) => {
+  await login(page, 'admin', '/admin/email-health');
+  await expect(page.getByRole('heading', {name:'Email health',exact:true})).toBeVisible();
+  await expect(page.getByRole('heading', {name:'Sending capacity'})).toBeVisible();
+  await expect(page.getByText('Not supplied by the reporting API')).toBeVisible();
+  const beforeRefresh = (await (await request.get(`${backend}/__state`)).json()).healthReads;
+  await page.getByRole('button', {name:'Refresh overview'}).click();
+  await expect.poll(async () => (await (await request.get(`${backend}/__state`)).json()).healthReads).toBeGreaterThan(beforeRefresh);
+  await expect(page.locator('.email-metric').filter({hasText:'Bounce rate'})).toContainText('2.5%');
+  await expect(page.getByText('Delivery unknown', {exact:true}).first()).toBeVisible();
+  await page.getByRole('link', {name:'Last 30 days'}).click();
+  await expect(page.getByText('Last 30 days · Brevo')).toBeVisible();
+  await page.getByText('Recent application emails · latest 50 in the last 30 days').click();
+  await expect(page.locator('details table')).toBeVisible();
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
+  await page.screenshot({path:`test-results/email-health-${test.info().project.name}.png`,fullPage:true});
+});
+
+test('email health excludes reviewers and handles an unavailable reporting service', async ({page,request}) => {
+  await login(page, 'reviewer', '/admin/applications');
+  await page.goto('/admin/email-health');
+  await expect(page).toHaveURL(/admin\/applications\?message=admin-required/);
+  await page.context().clearCookies();
+  await request.post(`${backend}/__reset`, {data:{failEmailHealth:true}});
+  await login(page, 'admin', '/admin/email-health');
+  await expect(page.getByRole('heading', {name:'Reporting unavailable'})).toBeVisible();
+});

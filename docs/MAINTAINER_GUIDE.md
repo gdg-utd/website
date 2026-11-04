@@ -87,6 +87,7 @@ When adding a migration, update `tests/database.integration.cjs` so the new SQL 
 | `BREVO_API_KEY`, `BREVO_SENDER_EMAIL` | Supabase Edge Function secrets | Private key and verified sender |
 | `BREVO_SENDER_NAME` | Supabase Edge Function secrets | Normally `GDG UTDallas` |
 | `BREVO_REPLY_TO` | Supabase Edge Function secrets | Optional reply address |
+| `BREVO_DAILY_EMAIL_LIMIT` | Supabase Edge Function secrets | Optional verified daily allowance for the email health page; never inferred from plan credits |
 | `SITE_URL` | Supabase Edge Function secrets | Public origin used in emailed links |
 | Supabase service credentials | Supabase function runtime | Privileged server credentials; never send to the browser |
 | `PASSWORD_RESET_RATE_LIMIT_SECRET` | Supabase Edge Function secrets, if configured | Optional hash secret; function otherwise uses its service key |
@@ -159,6 +160,7 @@ Compare local and remote migration history before applying anything. Some older 
 | Function | Gateway JWT check | Additional protection |
 | --- | --- | --- |
 | `send-application-email` | Enabled | Valid user session and application/staff authorization |
+| `email-health` | Enabled | Valid user session plus active `admin` role; read-only reporting |
 | `request-password-reset` | Disabled | Public recovery entrypoint with server-side quotas |
 | `process-application-emails` | Disabled | Private Vault-backed worker token checked inside the function |
 
@@ -371,3 +373,48 @@ Before the outgoing team loses access:
 - Transfer ownership where needed, then revoke departing staff/provider access and rotate credentials that were personally shared.
 
 Keep this guide aligned with the code. When a workflow, secret, function, or deployment step changes, update its instructions in the same pull request.
+
+
+## Email health overview
+
+Active administrators can open `/admin/email-health` from the application portal or
+member dashboard. Reviewers and members cannot access account-wide email reporting.
+The page includes Brevo transactional metrics for 7 or 30 days, daily history,
+recent provider events, current blocked/unsubscribed contacts, sender status, and
+application notification queue counts. Queue counts cover all time; the recent
+queue list covers the selected rolling period, with a separate all-time list of
+up to 20 failed or uncertain emails. Application reviews remain the place to retry
+an email. Viewing this page does not send, retry, unblock, or change anything.
+
+Deploy the new `email-health` Edge Function with its import map and shared
+`_shared/application-email.ts` dependency before deploying the website feature.
+It reuses the existing Supabase and Brevo function secrets; no database migration
+or additional client credential is needed. Keep gateway JWT checks enabled.
+The website invokes the function on the server using the signed-in session.
+
+Brevo account responses do not reliably specify a daily sending allowance. If
+known, configure `BREVO_DAILY_EMAIL_LIMIT` as a positive integer in the Edge Function
+secrets. Without it, the daily limit is shown as unavailable. Even with a limit,
+transactional requests alone do not establish the remaining account allowance:
+marketing campaigns may consume shared credits. Plan credits are displayed as
+reported, without treating them as a daily limit or calculating remaining credits.
+Provider date buckets use Brevo's reporting boundaries; event timestamps are
+shown in America/Chicago. Delivery and bounce rates use requests as denominator;
+zero requests or unavailable data yields no rate, not a misleading zero percent.
+
+Each report is cached for up to 60 seconds per warm function instance and period
+to reduce provider API usage. Authentication and the active admin role are checked
+before returning a cached report. Cache persistence is not guaranteed. Partial
+provider failures preserve available queue data and show notices. No API keys,
+relay credentials, or marketing tracker keys are returned to the browser.
+
+Validation: `npm test` covers handler authorization, read-only requests, response
+sanitization, missing configuration, partial failures, and cache behavior. Run
+`node tests/browser/run.cjs --grep 'email health'` for production-build desktop/mobile
+checks of the overview, reporting period, access denial, and unavailable-service
+state. Browser fixtures are synthetic; verify the deployed function against the
+intended live account after release.
+
+Reporting references: [Brevo account details](https://developers.brevo.com/reference/get-account),
+[transactional metrics](https://developers.brevo.com/reference/get-aggregated-smtp-report),
+and [daily reports](https://developers.brevo.com/reference/get-smtp-report).

@@ -1,0 +1,6 @@
+// Synthetic reporting only; never reads a production account.
+module.exports = function emailHealthFixture(days = 7) {
+  const metrics = {requests:120,delivered:114,hardBounces:2,softBounces:1,blocked:3,invalid:0,spamReports:0,unsubscribed:1,uniqueOpens:67,uniqueClicks:19};
+  const email = {id:101,application_id:1,recipient:'browser@utdallas.edu',template_key:'confirmation',status:'uncertain',attempts:1,last_error:'Delivery interrupted. Check Brevo before retrying.',created_at:'2026-11-04T15:00:00Z',sent_at:null,next_attempt_at:'2026-11-04T15:00:00Z',provider_message_id:null};
+  return {updatedAt:'2026-11-04T16:00:00Z',days,warnings:[],dailyLimit:null,account:{name:'GDG UTDallas',relayEnabled:true,plans:[{type:'free',credits:250,creditsType:'sendLimit'}]},totals:metrics,today:{...metrics,requests:18,delivered:17},daily:[{...metrics,date:'2026-11-04'}],events:[{date:'2026-11-04T15:00:00Z',email:'browser@utdallas.edu',event:'blocked',reason:'Hard bounce',messageId:'fixture-message'}],blocked:{count:1,contacts:[{email:'blocked@utdallas.edu',blockedAt:'2026-11-04T15:00:00Z',reason:{message:'Hard bounce'}}]},senders:[{email:'hello@example.com',name:'GDG UTDallas',active:true}],queue:{counts:{pending:3,processing:0,sent:114,failed:0,uncertain:1,cancelled:2},issues:[email],recent:[email]}};
+};

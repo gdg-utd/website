@@ -235,6 +235,7 @@ export default async function AdminApplicationsPage({
           <Link href="/admin/applications" aria-current="page">
             Applications
           </Link>
+          {role === "admin" && <Link href="/admin/email-health">Email health</Link>}
         </nav>
       </header>
 
