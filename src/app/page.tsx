@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { headers } from "next/headers";
+import { ChapterGallery } from "@/components/chapter-gallery";
 import { HeroBackdrop } from "@/components/hero-backdrop";
 import { SiteHeader } from "@/components/site-header";
 import {
@@ -245,36 +246,8 @@ export default async function Home({ searchParams }: PageProps<"/">) {
               </div>
               <p>A look at recent GDG UTDallas events and the students who make them happen.</p>
             </div>
-            <div className="gallery-grid">
-              <figure className="event-photo event-photo-large">
-                <Image
-                  src="/pictures/chapter-outreach.png"
-                  alt="GDG UTDallas students welcoming people at an outdoor chapter table"
-                  fill
-                  sizes="(max-width: 720px) 100vw, 66vw"
-                />
-                <figcaption>Meet the chapter</figcaption>
-              </figure>
-              <figure className="event-photo">
-                <Image
-                  src="/pictures/technical-workshop.webp"
-                  alt="Students attending a GDG UTDallas technical workshop"
-                  fill
-                  sizes="(max-width: 720px) 100vw, 34vw"
-                />
-                <figcaption>Technical workshops</figcaption>
-              </figure>
-              <figure className="event-photo event-photo-community">
-                <Image
-                  src="/pictures/community-meetup.png"
-                  alt="Three GDG UTDallas students at a community event"
-                  fill
-                  sizes="(max-width: 720px) 100vw, 34vw"
-                />
-                <figcaption>Community events</figcaption>
-              </figure>
-            </div>
           </div>
+          <ChapterGallery />
         </section>
 
         <section className="events-section shell" id="events" aria-labelledby="events-title">

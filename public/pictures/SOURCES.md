@@ -27,3 +27,10 @@ The 16 images in `sprint/` were supplied by GDG UTDallas from its chapter photo 
 Original filename stems are preserved. HEIC and JPEG originals were converted to WebP, with orientation applied and the longest edge limited to 1,400 pixels. Original aspect ratios are preserved.
 
 Gallery display adjustments lift shadows with highlight-preserving gamma filters. Selected photos use tighter frames and individual focal positions to emphasize teams and reduce empty space. These adjustments are applied at display time; the stored WebP files remain unchanged.
+
+## Around the chapter gallery
+
+Eight photos in `chapter/` were supplied by GDG UTDallas on November 4, 2026.
+Original filename stems are preserved. Images were oriented and converted to WebP,
+with the longest edge limited to 1,400 pixels. The home gallery mixes these photos
+with existing chapter and SPRINT photos; focal positions are applied at display time.
