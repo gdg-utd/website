@@ -59,7 +59,7 @@ export const officerGroups: OfficerGroup[] = [
       {
         name: "Jiya",
         role: "Marketing & Events Director",
-        photo: "/pictures/officers/jiya-yadav-2026-11.webp",
+        photo: "/pictures/officers/jiya-yadav-2026-11-v2.webp",
       },
       {
         name: "Zoya",
@@ -81,7 +81,7 @@ export const officerGroups: OfficerGroup[] = [
       {
         name: "Jiya",
         role: "Marketing & Events Director",
-        photo: "/pictures/officers/jiya-yadav-2026-11.webp",
+        photo: "/pictures/officers/jiya-yadav-2026-11-v2.webp",
       },
       {
         name: "Sahithi",
