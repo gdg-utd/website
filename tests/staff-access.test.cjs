@@ -17,7 +17,7 @@ test('staff access enforces admin authority, protects self access, rejects stale
     revoke all on public.application_admins from public,anon,authenticated;
     insert into auth.users(id,email) values('${admin}','admin@utdallas.edu'),('${reviewer}','reviewer@utdallas.edu'),('${member}','member@utdallas.edu');
     insert into public.application_admins(user_id,role) values('${admin}','admin'),('${reviewer}','reviewer');`);
-  await db.exec(fs.readFileSync('supabase/migrations/20261105052601_add_staff_access_management.sql','utf8'));
+  await db.exec(fs.readFileSync('supabase/migrations/20261105053252_add_staff_access_management.sql','utf8'));
   const actAs=async(id)=>{await db.exec(`reset role;select set_config('request.jwt.claim.sub','${id}',false);set role authenticated;`);};
   const set=(email,role,expected)=>db.query('select public.set_staff_access($1,$2,$3)',[email,role,expected]);
   await actAs(reviewer);

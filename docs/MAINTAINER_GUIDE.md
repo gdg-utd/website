@@ -190,7 +190,7 @@ rechecks current permissions and rejects stale edits; reviewers and members cann
 call either staff-access RPC. Do not grant direct write access to the staff table.
 
 Before releasing this panel, apply
-`20261105052601_add_staff_access_management.sql`. It adds a protected audit table,
+`20261105053252_add_staff_access_management.sql`. It adds a protected audit table,
 private administrator-checked functions, and authenticated RPC wrappers. No new
 Edge Function or secret is required. Existing manual staff assignments continue to
 work; the panel history covers only changes performed through its RPC. Initial
