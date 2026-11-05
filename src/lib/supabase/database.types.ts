@@ -436,6 +436,9 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_staff_access: { Args: never; Returns: Json }
+      set_staff_access: { Args: { target_email: string; desired_role: string; expected_role: string }; Returns: undefined }
+
       application_email_status: {
         Args: { target_application_id: number }
         Returns: {

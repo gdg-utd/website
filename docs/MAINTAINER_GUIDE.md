@@ -180,6 +180,23 @@ Record the affected deployment and timestamps, inspect the first useful error, f
 
 ## Manage application staff
 
+Administrators can use **Staff access** in the application portal sidebar to add
+an existing website account as a reviewer or administrator, switch roles, remove
+portal access, and restore removed accounts as reviewers. The member account and
+applications are preserved, and no invitation or notification email is sent.
+Every mutation has a confirmation step and a database audit entry. The current
+administrator cannot change their own access. A serialized database operation
+rechecks current permissions and rejects stale edits; reviewers and members cannot
+call either staff-access RPC. Do not grant direct write access to the staff table.
+
+Before releasing this panel, apply
+`20261105052601_add_staff_access_management.sql`. It adds a protected audit table,
+private administrator-checked functions, and authenticated RPC wrappers. No new
+Edge Function or secret is required. Existing manual staff assignments continue to
+work; the panel history covers only changes performed through its RPC. Initial
+administrator setup or emergency recovery can still use the SQL below.
+
+
 A staff member must first create a website account. A project administrator can then run the following in the intended Supabase project. Replace the example email and select either `reviewer` or `admin` deliberately.
 
 ```sql

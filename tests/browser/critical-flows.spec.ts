@@ -686,3 +686,46 @@ test('portal sidebar owns email navigation and collapses across portal pages', a
   expect(await page.evaluate(()=>document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
   await page.screenshot({path:`test-results/portal-sidebar-${test.info().project.name}.png`,fullPage:true});
 });
+
+test('staff access grants, changes, removes and restores roles with confirmation', async ({page}) => {
+  await login(page,'admin','/admin/staff-access');
+  await expect(page.getByRole('heading',{name:'Staff access',exact:true})).toBeVisible();
+  await page.getByLabel('Account email',{exact:true}).fill('member@utdallas.edu');
+  await page.getByRole('button',{name:'Review access',exact:true}).click();
+  await expect(page.getByRole('dialog')).toContainText('member@utdallas.edu');
+  await page.getByRole('button',{name:'Confirm access',exact:true}).click();
+  await expect(page.getByRole('status')).toContainText('Reviewer access saved');
+  const member=page.locator('.staff-members li').filter({hasText:'member@utdallas.edu'});
+  await expect(member).toContainText('Reviewer');
+  await member.getByRole('button',{name:'Make administrator'}).click();
+  await page.getByRole('button',{name:'Confirm access',exact:true}).click();
+  await expect(member).toContainText('Administrator');
+  await member.getByRole('button',{name:'Remove access'}).click();
+  await page.getByRole('button',{name:'Cancel',exact:true}).click();
+  await expect(member).toBeVisible();
+  await member.getByRole('button',{name:'Remove access'}).click();
+  await page.getByRole('button',{name:'Confirm removal'}).click();
+  await expect(member).toHaveCount(0);
+  await page.getByRole('button',{name:'Show removed staff'}).click();
+  await member.getByRole('button',{name:'Restore as reviewer'}).click();
+  await page.getByRole('button',{name:'Confirm access',exact:true}).click();
+  await page.getByRole('button',{name:'Show current staff'}).click();
+  await expect(member).toContainText('Reviewer');
+  await expect(page.locator('.staff-history li')).toHaveCount(4);
+  const self=page.locator('.staff-members li').filter({hasText:'admin@utdallas.edu'});
+  await expect(self.getByRole('button')).toHaveCount(0);
+  await page.getByLabel('Account email',{exact:true}).fill('missing@utdallas.edu');
+  await page.getByRole('button',{name:'Review access',exact:true}).click();
+  await page.getByRole('button',{name:'Confirm access',exact:true}).click();
+  await expect(page.getByRole('dialog').getByRole('alert')).toContainText('No website account found');
+  await page.getByRole('button',{name:'Cancel',exact:true}).click();
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
+  await page.screenshot({path:`test-results/staff-access-${test.info().project.name}.png`,fullPage:true});
+});
+
+test('reviewers cannot open staff access or see its sidebar entry',async({page})=>{
+  await login(page,'reviewer','/admin/applications');
+  await expect(page.getByRole('navigation',{name:'Portal navigation'}).getByRole('link',{name:'Staff access'})).toHaveCount(0);
+  await page.goto('/admin/staff-access');
+  await expect(page).toHaveURL(/admin\/applications\?message=admin-required/);
+});

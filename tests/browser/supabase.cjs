@@ -87,6 +87,22 @@ function createBackend() {
     if(url.pathname.startsWith('/rest/v1/')) {
       const table=url.pathname.slice('/rest/v1/'.length);
       if(state.holdTables?.includes(table)) await new Promise(resolve=>heldRequests.push(resolve));
+      if(table==='rpc/get_staff_access'||table==='rpc/set_staff_access') {
+        if(role!=='admin'){error('Administrator access required',403);return;}
+        if(!state.staffAccess) state.staffAccess={members:['admin','reviewer'].map(r=>({user_id:ids[r],email:`${r}@utdallas.edu`,name:`Browser ${r}`,role:r,active:true,created_at:'2026-11-04T12:00:00Z'})),events:[]};
+        if(table==='rpc/get_staff_access'){send(state.staffAccess);return;}
+        const email=body.target_email.toLowerCase().trim();
+        const targetRole=email.split('@')[0];
+        if(!ids[targetRole]){error('No website account found',400,'P0002');return;}
+        if(targetRole==='admin'){error('You cannot change your own access',400,'22023');return;}
+        let target=state.staffAccess.members.find(m=>m.email===email);
+        const oldRole=target?.active?target.role:null;
+        if((body.expected_role==='new'&&target?.active)||(body.expected_role!=='new'&&oldRole!==body.expected_role)){error('Access changed',400,'40001');return;}
+        if(!target){target={user_id:ids[targetRole],email,name:`Browser ${targetRole}`,role:body.desired_role,active:true,created_at:new Date().toISOString()};state.staffAccess.members.push(target);}
+        target.active=body.desired_role!=='revoked';if(target.active)target.role=body.desired_role;
+        state.staffAccess.events.unshift({id:state.staffAccess.events.length+1,target_email:email,actor_email:'admin@utdallas.edu',previous_role:oldRole,new_role:target.active?target.role:null,created_at:new Date().toISOString()});
+        send(null);return;
+      }
       if(table==='rpc/is_email_blacklisted'){send(false);return;}
       if(table==='rpc/reopen_application') {
         if(role!=='admin'){error('Administrator required',403);return;}

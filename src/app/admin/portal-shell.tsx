@@ -9,6 +9,7 @@ import { useState, type ReactNode } from "react";
 const sections = [
   { href: "/admin/applications", label: "Applications", icon: "applications", adminOnly: false },
   { href: "/admin/email-health", label: "Email health", icon: "email", adminOnly: true },
+  { href: "/admin/staff-access", label: "Staff access", icon: "staff", adminOnly: true },
 ];
 
 export function PortalShell({ role, children }: { role: "admin" | "reviewer"; children: ReactNode }) {
@@ -25,7 +26,7 @@ export function PortalShell({ role, children }: { role: "admin" | "reviewer"; ch
         <div className="portal-sidebar-heading"><span>Workspace</span><button type="button" aria-expanded={!collapsed} aria-controls="portal-navigation" aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"} onClick={() => setCollapsed(value => !value)}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/>{collapsed ? <path d="m13 9 3 3-3 3"/> : <path d="m16 9-3 3 3 3"/>}</svg></button></div>
         <nav id="portal-navigation" aria-label="Portal navigation">
           {sections.filter(section => !section.adminOnly || role === "admin").map(section => <Link key={section.href} href={section.href} prefetch={false} aria-label={section.label} title={collapsed ? section.label : undefined} aria-current={pathname.startsWith(section.href) ? "page" : undefined}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true">{section.icon === "email" ? <><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 6 9 7 9-7"/></> : <><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></>}</svg>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true">{section.icon === "staff" ? <><circle cx="9" cy="8" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3M17 5a3 3 0 0 1 0 6M18 15a5 5 0 0 1 3 5"/></> : section.icon === "email" ? <><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 6 9 7 9-7"/></> : <><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></>}</svg>
             <span>{section.label}</span>
           </Link>)}
         </nav>
