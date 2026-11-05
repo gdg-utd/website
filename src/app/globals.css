@@ -1397,3 +1397,79 @@ dialog.admin-drawer::backdrop { background: rgba(31,35,40,.34); backdrop-filter:
 @media (max-width: 600px) { .email-metrics, .email-metrics-three, .email-queue-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; } .email-panel { padding: 20px 16px; } .email-metric { padding: 15px 12px; } .email-metric > strong { font-size: 27px; } .email-bottom-grid { grid-template-columns: 1fr; } .email-summary { align-items: flex-start; flex-direction: column; gap: 5px; } .email-health-page .admin-header { flex-wrap: wrap; gap: 16px; padding-block: 16px; } .email-health-page .admin-header nav { gap: 16px; } .email-health-page .admin-title-actions { flex-wrap: wrap; } }
 .email-health-page button.admin-export { font-family: inherit; cursor: pointer; }
 .email-health-page button.admin-export:disabled { opacity: .65; cursor: wait; }
+
+/* Compact report pages and immediate period-switch feedback. */
+.email-period button { padding: 10px 16px; border: 1px solid #d7dce3; border-radius: 6px; background: white; font: inherit; font-size: 13px; cursor: pointer; }
+.email-period button[aria-pressed="true"] { background: #174ea6; color: white; border-color: #174ea6; }
+.email-period button:disabled { cursor: wait; }
+.email-section-nav { display: flex; flex-wrap: wrap; gap: 6px; padding: 6px; border: 1px solid #dce1e7; border-radius: 10px; background: #edf1f6; }
+.email-section-nav button { padding: 10px 16px; border: 0; border-radius: 6px; background: transparent; color: #596676; font: inherit; font-size: 13px; cursor: pointer; }
+.email-section-nav button[aria-pressed="true"] { background: white; color: #174ea6; box-shadow: 0 1px 4px #20212416; font-weight: 650; }
+.email-overview-actions { display: flex; flex-wrap: wrap; gap: 20px; margin-top: 20px; }
+.email-overview-actions button { border: 0; background: none; padding: 0; font: inherit; font-size: 13px; color: #174ea6; cursor: pointer; }
+.email-report-loading { padding-block: 45px; }
+.email-report-loading h2 { margin-top: 18px; }
+.email-loading-spinner { display: block; width: 24px; height: 24px; border: 3px solid #dce8fb; border-top-color: #174ea6; border-radius: 50%; animation: email-report-spin .8s linear infinite; }
+.email-loading-cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-top: 25px; }
+.email-loading-cards span { height: 100px; border-radius: 8px; background: #f0f3f8; }
+@keyframes email-report-spin { to { transform: rotate(360deg); } }
+@media (max-width: 600px) { .email-section-nav button { padding: 10px 12px; font-size: 12px; } .email-loading-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* Shared application portal workspace; new sections belong in its sidebar. */
+.portal-layout { --portal-sidebar-width: 232px; min-height: 100svh; background: #f7f8fa; }
+.portal-header { min-height: 72px; padding: 16px 28px; display: flex; align-items: center; gap: 28px; border-bottom: 1px solid #dce1e7; background: #fff; }
+.portal-header img { width: 170px; height: auto; }
+.portal-header > span { padding-left: 28px; border-left: 1px solid #dce1e7; color: #687078; font-size: 13px; }
+.portal-header > a:last-child { margin-left: auto; color: #596676; font-size: 12px; }
+.portal-body { display: grid; grid-template-columns: var(--portal-sidebar-width) minmax(0, 1fr); align-items: start; }
+.portal-sidebar { position: sticky; top: 0; min-height: calc(100svh - 72px); padding: 26px 14px; border-right: 1px solid #dce1e7; background: #fff; }
+.portal-sidebar-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 10px 20px; }
+.portal-sidebar-heading > span { color: #7a8491; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; }
+.portal-sidebar-heading button { display: grid; place-items: center; flex-shrink: 0; width: 30px; height: 30px; border: 1px solid #dce1e7; border-radius: 6px; background: white; color: #596676; cursor: pointer; }
+.portal-sidebar nav { display: grid; gap: 6px; }
+.portal-sidebar nav a { display: flex; align-items: center; gap: 12px; min-height: 45px; padding: 12px; border-radius: 7px; color: #596676; font-size: 13px; }
+.portal-sidebar nav svg { flex-shrink: 0; }
+.portal-sidebar nav a[aria-current="page"] { color: #174ea6; background: #e8f0fe; font-weight: 650; }
+.portal-sidebar nav a:hover { background: #f0f4fa; }
+.portal-content { min-width: 0; }
+.portal-content .admin-page { min-height: calc(100svh - 72px); }
+.portal-content .admin-shell { padding-top: 45px; }
+.portal-collapsed { --portal-sidebar-width: 76px; }
+.portal-collapsed .portal-sidebar-heading > span, .portal-collapsed .portal-sidebar nav a > span { display: none; }
+.portal-collapsed .portal-sidebar-heading { padding-inline: 0; justify-content: center; }
+.portal-collapsed .portal-sidebar nav a { justify-content: center; padding-inline: 0; }
+@media (max-width: 1100px) { .portal-content .admin-title-row { flex-wrap: wrap; gap: 25px; } }
+@media (max-width: 760px) {
+  .portal-header { padding: 16px 20px; flex-wrap: wrap; gap: 14px; }
+  .portal-header > span { display: none; }
+  .portal-header > a:last-child { font-size: 11px; }
+  .portal-body { grid-template-columns: minmax(0, 1fr); }
+  .portal-sidebar { position: static; min-height: auto; padding: 12px 20px; border-right: 0; border-bottom: 1px solid #dce1e7; }
+  .portal-sidebar-heading { padding: 0; }
+  .portal-sidebar nav { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .portal-sidebar nav a { padding: 10px 12px; }
+  .portal-collapsed .portal-sidebar-heading > span { display: block; }
+  .portal-collapsed .portal-sidebar-heading { justify-content: space-between; }
+  .portal-collapsed .portal-sidebar nav { display: none; }
+  .portal-content .admin-shell { padding-top: 32px; }
+}
+
+.email-usage-meter { --usage-color: #137333; padding: 24px; border: 1px solid #d6e5dc; border-radius: 10px; background: #f5faf7; }
+.email-usage-heading { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.email-usage-heading > div > span:first-child { font-size: 12px; color: #596676; }
+.email-usage-heading p { margin: 10px 0 2px; line-height: 1.2; }
+.email-usage-heading p strong { color: #202124; font-size: 42px; font-weight: 650; letter-spacing: -.05em; }
+.email-usage-heading p > span { color: #7a8491; font-size: 25px; }
+.email-usage-heading small { color: #687484; font-size: 12px; }
+.email-usage-remaining { display: grid; gap: 5px; text-align: right; }
+.email-usage-remaining strong { color: var(--usage-color); font-size: 30px; letter-spacing: -.04em; }
+.email-usage-remaining span { color: #596676; font-size: 12px; }
+.email-usage-meter progress { display: block; width: 100%; height: 12px; margin-top: 24px; border: 0; border-radius: 20px; overflow: hidden; appearance: none; background: #dde7e1; accent-color: var(--usage-color); }
+.email-usage-meter progress::-webkit-progress-bar { background: #dde7e1; border-radius: 20px; }
+.email-usage-meter progress::-webkit-progress-value { background: var(--usage-color); border-radius: 20px; }
+.email-usage-meter progress::-moz-progress-bar { background: var(--usage-color); border-radius: 20px; }
+.email-usage-caption { display: flex; justify-content: space-between; gap: 12px; margin-top: 10px; color: #687484; font-size: 11px; }
+.email-panel .email-usage-note { margin: 16px 0 0; font-size: 11px; }
+.email-usage-near { --usage-color: #a15c00; background: #fffaf0; border-color: #f0deb6; }
+.email-usage-full { --usage-color: #b3261e; background: #fff6f5; border-color: #edc7c4; }
+@media (max-width: 600px) { .email-usage-meter { padding: 18px; } .email-usage-heading { gap: 12px; } .email-usage-heading p strong { font-size: 36px; } .email-usage-heading p > span { font-size: 22px; } .email-usage-remaining strong { font-size: 27px; } }

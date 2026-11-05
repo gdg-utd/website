@@ -1,7 +1,6 @@
 import { DataUnavailable } from "@/components/data-unavailable";
 import { normalizeQuery } from "@/lib/navigation";
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { ApplicationReviewPortal } from "./application-review-portal";
 import type { StaffApplicationRow } from "./application-table";
@@ -220,24 +219,7 @@ export default async function AdminApplicationsPage({
 
   return (
     <main className="admin-page">
-      <header className="admin-header">
-        <Link href="/" aria-label="GDG UTDallas home">
-          <Image
-            src="/brand/gdg-lockup.svg"
-            alt="Google Developer Groups"
-            width={188}
-            height={38}
-            loading="eager"
-          />
-        </Link>
-        <nav>
-          <Link href="/dashboard">Member dashboard</Link>
-          <Link href="/admin/applications" aria-current="page">
-            Applications
-          </Link>
-          {role === "admin" && <Link href="/admin/email-health">Email health</Link>}
-        </nav>
-      </header>
+
 
       <div id="main-content" tabIndex={-1} className="admin-shell">
         <div className="admin-title-row">

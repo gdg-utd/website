@@ -623,17 +623,32 @@ test('email health is admin only and consolidates provider and queue reporting',
   await login(page, 'admin', '/admin/email-health');
   await expect(page.getByRole('heading', {name:'Email health',exact:true})).toBeVisible();
   await expect(page.getByRole('heading', {name:'Sending capacity'})).toBeVisible();
-  await expect(page.getByText('Not supplied by the reporting API')).toBeVisible();
+  await expect(page.getByRole('progressbar', {name:'Daily email allowance used'})).toHaveAttribute('value','50');
+  await expect(page.getByRole('progressbar', {name:'Daily email allowance used'})).toHaveAttribute('max','300');
+  await expect(page.locator('.email-usage-remaining')).toContainText('250');
   const beforeRefresh = (await (await request.get(`${backend}/__state`)).json()).healthReads;
   await page.getByRole('button', {name:'Refresh overview'}).click();
   await expect.poll(async () => (await (await request.get(`${backend}/__state`)).json()).healthReads).toBeGreaterThan(beforeRefresh);
   await expect(page.locator('.email-metric').filter({hasText:'Bounce rate'})).toContainText('2.5%');
-  await expect(page.getByText('Delivery unknown', {exact:true}).first()).toBeVisible();
-  await page.getByRole('link', {name:'Last 30 days'}).click();
+  await expect(page.getByRole('heading', {name:'Application email queue',exact:true})).toHaveCount(0);
+  await expect(page.getByText('Brevo metrics cover all transactional email', {exact:false})).toHaveCount(0);
+  await page.getByRole('button', {name:'Delivery',exact:true}).click();
+  await expect(page.getByRole('heading', {name:'Delivery overview'})).toBeVisible();
+  await request.post(`${backend}/__reset`, {data:{emailHealthDelayMs:1000}});
+  await page.getByRole('button', {name:'Last 30 days'}).click();
+  await expect(page.getByRole('status').filter({hasText:'Loading 30-day email report'})).toBeVisible();
   await expect(page.getByText('Last 30 days · Brevo')).toBeVisible();
+  await expect(page.getByRole('button', {name:'Delivery',exact:true})).toHaveAttribute('aria-pressed','true');
+  await page.getByRole('button', {name:'Application queue',exact:true}).click();
+  await expect(page.getByText('Delivery unknown', {exact:true}).first()).toBeVisible();
   await page.getByText('Recent application emails · latest 50 in the last 30 days').click();
   await expect(page.locator('details table')).toBeVisible();
   expect(await page.evaluate(()=>document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
+  await page.getByRole('button', {name:'Activity',exact:true}).click();
+  await expect(page.getByRole('heading', {name:'Sending activity'})).toBeVisible();
+  await page.getByRole('button', {name:'Contacts & senders',exact:true}).click();
+  await expect(page.getByRole('heading', {name:'Sender status'})).toBeVisible();
+  await page.getByRole('button', {name:'Overview',exact:true}).click();
   await page.screenshot({path:`test-results/email-health-${test.info().project.name}.png`,fullPage:true});
 });
 
@@ -645,4 +660,29 @@ test('email health excludes reviewers and handles an unavailable reporting servi
   await request.post(`${backend}/__reset`, {data:{failEmailHealth:true}});
   await login(page, 'admin', '/admin/email-health');
   await expect(page.getByRole('heading', {name:'Reporting unavailable'})).toBeVisible();
+});
+
+test('portal sidebar owns email navigation and collapses across portal pages', async ({page,isMobile}) => {
+  await login(page, 'admin', '/dashboard');
+  await expect(page.getByRole('link', {name:'Email health',exact:true})).toHaveCount(0);
+  await page.locator('a:visible').filter({hasText:'Application portal'}).click();
+  const sidebar = page.getByRole('navigation', {name:'Portal navigation'});
+  await expect(sidebar.getByRole('link', {name:'Applications',exact:true})).toHaveAttribute('aria-current','page');
+  await page.getByRole('button', {name:'Collapse sidebar'}).click();
+  await expect(page.getByRole('button', {name:'Expand sidebar'})).toHaveAttribute('aria-expanded','false');
+  if(isMobile) {
+    await expect(sidebar).toBeHidden();
+    await page.getByRole('button', {name:'Expand sidebar'}).click();
+  }
+  await sidebar.getByRole('link', {name:'Email health',exact:true}).click();
+  await expect(page.getByRole('heading', {name:'Email health',exact:true})).toBeVisible();
+  await expect(sidebar.getByRole('link', {name:'Email health',exact:true})).toHaveAttribute('aria-current','page');
+  if(!isMobile) {
+    await expect(page.getByRole('button', {name:'Expand sidebar'})).toBeVisible();
+    await page.getByRole('button', {name:'Expand sidebar'}).click();
+  }
+  await sidebar.getByRole('link', {name:'Applications',exact:true}).click();
+  await expect(page.getByRole('heading', {name:'Applications',exact:true})).toBeVisible();
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
+  await page.screenshot({path:`test-results/portal-sidebar-${test.info().project.name}.png`,fullPage:true});
 });

@@ -79,6 +79,7 @@ function createBackend() {
     if(url.pathname==='/functions/v1/email-health'){
       if(role!=='admin'){error('Administrator required',403);return;}
       if(state.failEmailHealth){error('Reporting unavailable',503);return;}
+      if(state.emailHealthDelayMs) await new Promise(resolve=>setTimeout(resolve,state.emailHealthDelayMs));
       state.healthReads=(state.healthReads??0)+1;
       send(require('./email-health-fixture.cjs')(body.days));return;
     }

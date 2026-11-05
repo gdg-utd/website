@@ -19,3 +19,16 @@ export function bounceRate(metrics: EmailMetrics | null) {
   if (metrics?.hardBounces === undefined || metrics.softBounces === undefined) return "—";
   return emailRate(metrics.hardBounces + metrics.softBounces, metrics.requests);
 }
+
+export function dailyEmailQuota(data: Pick<EmailHealth, "account" | "dailyLimit">) {
+  const configured = data.dailyLimit;
+  const configuredLimit = typeof configured === "number" && Number.isSafeInteger(configured) && configured > 0 ? configured : null;
+  const plans = data.account?.plans ?? [];
+  // Free email credits reset daily. Paid/prepaid balances can cover another period.
+  // https://developers.brevo.com/reference/get-account (credits = remaining credits)
+  // https://help.brevo.com/hc/en-us/articles/208580669 (Free = 300 emails/day)
+  const freePlan = plans.length === 1 && plans[0].type === "free" && plans[0].creditsType === "sendLimit" ? plans[0] : null;
+  const limit = configuredLimit ?? (freePlan ? 300 : null);
+  const remaining = freePlan && limit !== null && Number.isSafeInteger(freePlan.credits) && freePlan.credits >= 0 && freePlan.credits <= limit ? freePlan.credits : null;
+  return { limit, remaining, used: limit !== null && remaining !== null ? limit - remaining : null };
+}

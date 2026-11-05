@@ -27,7 +27,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
 
   const [{ data: profile }, { data: staff }] = await Promise.all([
     supabase.from("profiles").select("first_name, last_name, onboarding_completed_at").eq("id", userId).maybeSingle(),
-    supabase.from("application_admins").select("user_id, role").eq("user_id", userId).eq("active", true).maybeSingle(),
+    supabase.from("application_admins").select("user_id").eq("user_id", userId).eq("active", true).maybeSingle(),
   ]);
 
   if (profile && !profile.onboarding_completed_at) {
@@ -49,7 +49,6 @@ export default async function DashboardLayout({ children }: { children: ReactNod
         </Link>
         <div>
           {staff && <Link className="dashboard-admin-link" href="/admin/applications">Application portal</Link>}
-          {staff?.role === "admin" && <Link className="dashboard-admin-link" href="/admin/email-health">Email health</Link>}
           <Link className="dashboard-home-link" href="/">Back to website</Link>
           <form action={logout}>
             <button className="account-logout" type="submit">Log out</button>
@@ -68,7 +67,6 @@ export default async function DashboardLayout({ children }: { children: ReactNod
           </div>
           <DashboardNavigation />
           {staff && <Link className="dashboard-mobile-admin-link" href="/admin/applications">Application portal <span aria-hidden="true">→</span></Link>}
-          {staff?.role === "admin" && <Link className="dashboard-mobile-admin-link" href="/admin/email-health">Email health <span aria-hidden="true">→</span></Link>}
         </aside>
         <div id="main-content" tabIndex={-1} className="dashboard-content">{children}</div>
       </div>

@@ -98,3 +98,19 @@ test('rates distinguish no activity and missing data from a real zero bounce rat
   assert.equal(context.exports.bounceRate({requests:0,hardBounces:0,softBounces:0}),'—');
   assert.equal(context.exports.bounceRate({requests:100}),'—');
 });
+
+test('daily usage uses the remaining Free balance and never treats paid credits as a daily balance', () => {
+  const source = ts.transpileModule(fs.readFileSync('src/lib/email-health.ts','utf8'), {compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText;
+  const context = {exports:{}}; vm.runInNewContext(source,context);
+  const quota = (plans, dailyLimit=null) => JSON.parse(JSON.stringify(context.exports.dailyEmailQuota({account:{plans},dailyLimit})));
+  const free = credits => [{type:'free',creditsType:'sendLimit',credits}];
+  assert.deepEqual(quota(free(247)),{limit:300,used:53,remaining:247});
+  assert.deepEqual(quota(free(300)),{limit:300,used:0,remaining:300});
+  assert.deepEqual(quota(free(0)),{limit:300,used:300,remaining:0});
+  assert.deepEqual(quota([{type:'subscription',creditsType:'sendLimit',credits:5000}],300),{limit:300,used:null,remaining:null});
+  assert.equal(quota([...free(247),{type:'payAsYouGo',creditsType:'sendLimit',credits:1000}]).used,null);
+  assert.equal(quota(free(301)).remaining,null);
+  assert.equal(quota(free(-1)).remaining,null);
+  assert.equal(quota(free(NaN)).remaining,null);
+  assert.deepEqual(quota([]),{limit:null,used:null,remaining:null});
+});

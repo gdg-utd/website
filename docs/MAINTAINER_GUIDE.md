@@ -377,8 +377,13 @@ Keep this guide aligned with the code. When a workflow, secret, function, or dep
 
 ## Email health overview
 
-Active administrators can open `/admin/email-health` from the application portal or
-member dashboard. Reviewers and members cannot access account-wide email reporting.
+Active administrators can open `/admin/email-health` from the application portal’s
+shared, collapsible sidebar. The member dashboard links only to the application
+portal. The sidebar shows Applications to staff and Email health to administrators;
+add future portal destinations to `src/app/admin/portal-shell.tsx`, with matching
+page-level authorization. The report is divided into Overview, Delivery, Application queue,
+Activity, and Contacts & senders. Switching the 7/30-day period shows an immediate
+loading indicator and preserves the selected section after the report arrives. Reviewers and members cannot access account-wide email reporting.
 The page includes Brevo transactional metrics for 7 or 30 days, daily history,
 recent provider events, current blocked/unsubscribed contacts, sender status, and
 application notification queue counts. Queue counts cover all time; the recent
@@ -392,12 +397,15 @@ It reuses the existing Supabase and Brevo function secrets; no database migratio
 or additional client credential is needed. Keep gateway JWT checks enabled.
 The website invokes the function on the server using the signed-in session.
 
-Brevo account responses do not reliably specify a daily sending allowance. If
-known, configure `BREVO_DAILY_EMAIL_LIMIT` as a positive integer in the Edge Function
-secrets. Without it, the daily limit is shown as unavailable. Even with a limit,
-transactional requests alone do not establish the remaining account allowance:
-marketing campaigns may consume shared credits. Plan credits are displayed as
-reported, without treating them as a daily limit or calculating remaining credits.
+The sending-capacity meter uses remaining account credits for an unambiguous Free
+email plan, which has a published 300-email daily allowance. It shows used / limit,
+remaining emails, and a progress bar that turns amber at 80% and red when exhausted.
+An optional verified `BREVO_DAILY_EMAIL_LIMIT` overrides the standard limit. The
+meter uses the account balance rather than transactional requests, so campaign use
+of the same daily allowance is included. Mixed plans, paid/prepaid balances, missing
+credits, and balances outside the daily limit are never treated as a daily balance;
+those states show remaining usage as unavailable. Paid plan credits can cover a
+different period. See [Brevo's Free-plan allowance](https://help.brevo.com/hc/en-us/articles/208580669-FAQs-What-are-the-limits-of-the-Free-plan).
 Provider date buckets use Brevo's reporting boundaries; event timestamps are
 shown in America/Chicago. Delivery and bounce rates use requests as denominator;
 zero requests or unavailable data yields no rate, not a misleading zero percent.
