@@ -136,7 +136,40 @@ const root = path.resolve(__dirname, "..");
     "PASS: schedule SQL supplies the private worker token to a stubbed local HTTP transport.",
   );
   for (const file of files.filter((file) => file > "20261025222803_update_f26_role_applications.sql")) {
+    const refiningQuestions = file.endsWith('_refine_officer_application_questions.sql');
+    const beforeQuestions = refiningQuestions ? await db.query('select * from public.application_openings order by slug') : null;
+    const beforeApplications = refiningQuestions ? await db.query('select * from public.applications order by id') : null;
     await db.exec(fs.readFileSync(root + "/supabase/migrations/" + file, "utf8"));
+    if (refiningQuestions) {
+      const after = await db.query('select * from public.application_openings order by slug');
+      for (const opening of after.rows) {
+        const previous = beforeQuestions.rows.find(row => row.slug === opening.slug);
+        if (!opening.slug.endsWith('-officer')) { assert.deepEqual(opening, previous); continue; }
+        const { form_schema, form_version, updated_at, ...metadata } = opening;
+        assert.deepEqual(metadata, Object.fromEntries(Object.entries(previous).filter(([key]) => !['form_schema', 'form_version', 'updated_at'].includes(key))));
+        assert.equal(form_version, previous.form_version + 1);
+        assert.ok(updated_at);
+        assert.equal(form_schema.sections[1].id, 'questionnaire');
+        assert.deepEqual(form_schema.sections[0], previous.form_schema.sections[0]);
+        assert.deepEqual(form_schema.sections[2], previous.form_schema.sections[2]);
+        const fields = form_schema.sections.flatMap(section => section.fields);
+        assert.equal(new Set(fields.map(field => field.id)).size, fields.length);
+        assert.ok(!fields.some(field => field.id === 'other_roles'));
+        const last = form_schema.sections[1].fields.at(-1);
+        assert.equal(last.id, 'additional_information');
+        assert.equal(last.required, false);
+        if (opening.slug === 'sprint-officer') {
+          assert.ok(!fields.some(field => field.id === 'project_idea'));
+          assert.equal(fields.find(field => field.id === 'track_interests').label, 'Which track(s) are you interested in mentoring?');
+          assert.match(fields.find(field => field.id === 'meeting_availability').help, /meet in person with your mentees/);
+        }
+        if (opening.slug === 'marketing-officer') assert.equal(fields.find(field => field.id === 'portfolio_url').required, false);
+      }
+      assert.deepEqual((await db.query('select * from public.applications order by id')).rows, beforeApplications.rows);
+      await db.exec(fs.readFileSync(root + '/supabase/migrations/' + file, 'utf8'));
+      assert.deepEqual((await db.query('select * from public.application_openings order by slug')).rows, after.rows);
+      console.log('PASS: revised officer questions, optional portfolio, preserved applications and opening metadata, unchanged mentee form, and idempotent migration.');
+    }
   }
   for (const section of fs.readFileSync(root + "/tests/authorization-regressions.sql", "utf8").split(/\n(?=-- [A-Z])/)) {
     try { await db.exec(section); }
