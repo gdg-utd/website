@@ -691,6 +691,7 @@ test('staff access grants, changes, removes and restores roles with confirmation
   await login(page,'admin','/admin/staff-access');
   await expect(page.getByRole('heading',{name:'Staff access',exact:true})).toBeVisible();
   await page.getByRole('button',{name:'Add staff',exact:true}).click();
+  await expect(page.locator('dialog[open]').getByLabel('Access level',{exact:true})).toHaveValue('reviewer');
   await page.getByLabel('Account email',{exact:true}).fill('member@utdallas.edu');
   await page.getByRole('button',{name:'Review access',exact:true}).click();
   await expect(page.locator('dialog[open]')).toContainText('member@utdallas.edu');
@@ -700,6 +701,7 @@ test('staff access grants, changes, removes and restores roles with confirmation
   await expect(member).toContainText('Reviewer');
   await member.getByRole('button',{name:'Change access',exact:true}).click();
   await expect(page.getByRole('button',{name:'Confirm access',exact:true})).toBeDisabled();
+  await expect(page.locator('dialog[open]').getByLabel('Access level',{exact:true})).toHaveValue('reviewer');
   await page.locator('dialog[open]').getByLabel('Access level',{exact:true}).selectOption('admin');
   await page.getByRole('button',{name:'Confirm access',exact:true}).click();
   await expect(member).toContainText('Administrator');

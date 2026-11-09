@@ -55,7 +55,7 @@ export function StaffAccessPanel({ data, currentUserId }: { data: StaffAccessDat
       <span className="staff-dialog-eyebrow">Workspace access</span><h2 id="staff-add-title">Add someone to the team</h2><p>Grant access to an existing website account.</p>
       <form onSubmit={event => { event.preventDefault(); review({ email: email.trim().toLowerCase(), role, expected: "new" }); }}>
         <label>Account email<input type="email" autoComplete="off" required maxLength={254} value={email} onChange={event => setEmail(event.target.value)} placeholder="name@utdallas.edu" /></label>
-        <label>Access level<select value={role} onChange={event => setRole(event.target.value)}><option value="reviewer">Reviewer</option><option value="admin">Administrator</option></select></label>
+        <div className="staff-access-level"><label htmlFor="staff-add-role">Access level</label><select id="staff-add-role" value={role} onChange={event => setRole(event.target.value)}><option value="reviewer">Reviewer</option><option value="admin">Administrator</option></select></div>
         <div className="staff-permission-note"><strong>{roleName(role)}</strong><p>{role === "admin" ? "Can publish decisions, manage email reporting, and manage the team’s access." : "Can review submitted applications and stage decisions for an administrator."}</p></div>
         <p className="staff-form-hint">They must have a website account. No invitation email is sent.</p>
         <div className="staff-confirm-actions"><button type="button" onClick={() => addDialog.current?.close()}>Cancel</button><button type="submit" className="staff-primary-button" disabled={pending}>Review access</button></div>
@@ -66,12 +66,13 @@ export function StaffAccessPanel({ data, currentUserId }: { data: StaffAccessDat
       <h2 id="staff-confirm-title">{change?.role === "revoked" ? "Remove staff access?" : change?.expected !== "new" ? "Change access" : "Confirm access change"}</h2>
       <p><strong>{change?.email}</strong></p><p>{change?.role === "revoked" ? "This person will lose access to the application portal. Their member account and applications will remain." : `Grant ${roleName(change?.role ?? "reviewer").toLowerCase()} access to this account?`}</p>
       {change && change.role !== "revoked" && change.expected !== "new" && (
-        <label className="staff-access-level">Access level
-          <select value={change.role} disabled={pending} onChange={event => { setChange({ ...change, role: event.target.value }); setError(""); }}>
+        <div className="staff-access-level">
+          <label htmlFor="staff-change-role">Access level</label>
+          <select id="staff-change-role" value={change.role} disabled={pending} onChange={event => { setChange({ ...change, role: event.target.value }); setError(""); }}>
             <option value="reviewer">Reviewer</option>
             <option value="admin">Administrator</option>
           </select>
-        </label>
+        </div>
       )}
       {change?.role === "admin" && <p>This includes publishing decisions and granting or removing other staff members’ access.</p>}
       {error && <p className="admin-notice admin-notice-error" role="alert">{error}</p>}
