@@ -1535,12 +1535,12 @@ dialog.admin-drawer::backdrop { background: rgba(31,35,40,.34); backdrop-filter:
 .staff-history strong { color: #55657b; font-weight: 550; }
 .staff-history li span { color: #85909f; }
 .staff-history small { color: #a0a8b3; font-size: 10px; }
-.staff-confirm-dialog { width: min(460px,calc(100% - 32px)); padding: 28px; border: 1px solid #e0e5ed; border-radius: 12px; box-shadow: 0 20px 80px #20212425; color: #354255; }
+.staff-confirm-dialog { position: fixed; inset: 0; margin: auto; max-height: calc(100svh - 32px); overflow-y: auto; width: min(460px,calc(100% - 32px)); padding: 28px; border: 1px solid #e0e5ed; border-radius: 12px; box-shadow: 0 20px 80px #20212425; color: #354255; }
 .staff-confirm-dialog::backdrop { background: #17253f55; backdrop-filter: blur(3px); }
 .staff-dialog-eyebrow { display: block; color: #8c98a8; text-transform: uppercase; letter-spacing: .1em; font-size: 9px; margin-bottom: 12px; }
 .staff-confirm-dialog h2 { margin: 0 0 10px; color: #28364a; font-size: 22px; letter-spacing: -.035em; font-weight: 600; }
 .staff-confirm-dialog p { font-size: 12px; color: #7c8797; line-height: 1.7; overflow-wrap: anywhere; }
-.staff-add-dialog form > label { display: grid; gap: 8px; margin-top: 20px; color: #55657b; font-size: 11px; font-weight: 550; }
+.staff-add-dialog form > label, .staff-access-level { display: grid; gap: 8px; margin-top: 20px; color: #55657b; font-size: 11px; font-weight: 550; }
 .staff-add-dialog input, .staff-add-dialog select { min-height: 40px; width: 100%; padding: 10px 12px; border: 1px solid #dce2eb; border-radius: 6px; color: #354255; font: inherit; font-size: 12px; background: #fff; }
 .staff-permission-note { margin-top: 15px; padding: 14px; background: #f6f8fb; border-radius: 6px; font-size: 11px; }
 .staff-permission-note strong { color: #65758d; font-weight: 550; }

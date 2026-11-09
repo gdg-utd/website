@@ -45,7 +45,7 @@ export function StaffAccessPanel({ data, currentUserId }: { data: StaffAccessDat
       <ul className="staff-members">{visible.map(member => <li key={member.user_id}>
         <div className="staff-person"><span className="staff-avatar" aria-hidden="true">{(member.name || member.email).split(/\s+/).slice(0,2).map(part => part[0]).join("").toUpperCase()}</span><div className="staff-member-identity"><strong>{member.name || member.email}{member.user_id === currentUserId && <span className="staff-you">You</span>}</strong><span>{member.email}</span></div></div>
         <span className={`staff-role-badge staff-role-${member.active ? member.role : "removed"}`}><span aria-hidden="true">●</span>{member.active ? roleName(member.role) : "Removed"}</span>
-        <div className="staff-member-actions">{member.user_id === currentUserId ? <small title="Another administrator can change your access.">Your account</small> : member.active ? <><button type="button" disabled={pending} onClick={() => review({ email: member.email, role: member.role === "admin" ? "reviewer" : "admin", expected: member.role })}>Make {member.role === "admin" ? "reviewer" : "administrator"}</button><button type="button" className="staff-remove" disabled={pending} onClick={() => review({ email: member.email, role: "revoked", expected: member.role })}>Remove access</button></> : <button type="button" disabled={pending} onClick={() => review({ email: member.email, role: "reviewer", expected: "new" })}>Restore as reviewer</button>}</div>
+        <div className="staff-member-actions">{member.user_id === currentUserId ? <small title="Another administrator can change your access.">Your account</small> : member.active ? <><button type="button" disabled={pending} onClick={() => review({ email: member.email, role: member.role, expected: member.role })}>Change access</button><button type="button" className="staff-remove" disabled={pending} onClick={() => review({ email: member.email, role: "revoked", expected: member.role })}>Remove access</button></> : <button type="button" disabled={pending} onClick={() => review({ email: member.email, role: "reviewer", expected: "new" })}>Restore as reviewer</button>}</div>
       </li>)}</ul>
       {!visible.length && <div className="staff-empty"><span aria-hidden="true">⌕</span><h2>{query ? "No matching people" : "No removed staff"}</h2><p>{query ? "Try another name or email address." : "People whose access is removed will appear here."}</p></div>}
       <footer className="staff-directory-footer"><span>{visible.length} {visible.length === 1 ? "person" : "people"}</span><span>Only administrators can manage access.</span></footer>
@@ -61,13 +61,21 @@ export function StaffAccessPanel({ data, currentUserId }: { data: StaffAccessDat
         <div className="staff-confirm-actions"><button type="button" onClick={() => addDialog.current?.close()}>Cancel</button><button type="submit" className="staff-primary-button" disabled={pending}>Review access</button></div>
       </form>
     </dialog>
-    <dialog ref={dialog} className="staff-confirm-dialog" aria-labelledby="staff-confirm-title" onCancel={event => { if (pending) event.preventDefault(); }}>
+    <dialog ref={dialog} className="staff-confirm-dialog staff-add-dialog" aria-labelledby="staff-confirm-title" onCancel={event => { if (pending) event.preventDefault(); }}>
       <span className="staff-dialog-eyebrow">Workspace access</span>
-      <h2 id="staff-confirm-title">{change?.role === "revoked" ? "Remove staff access?" : "Confirm access change"}</h2>
+      <h2 id="staff-confirm-title">{change?.role === "revoked" ? "Remove staff access?" : change?.expected !== "new" ? "Change access" : "Confirm access change"}</h2>
       <p><strong>{change?.email}</strong></p><p>{change?.role === "revoked" ? "This person will lose access to the application portal. Their member account and applications will remain." : `Grant ${roleName(change?.role ?? "reviewer").toLowerCase()} access to this account?`}</p>
+      {change && change.role !== "revoked" && change.expected !== "new" && (
+        <label className="staff-access-level">Access level
+          <select value={change.role} disabled={pending} onChange={event => { setChange({ ...change, role: event.target.value }); setError(""); }}>
+            <option value="reviewer">Reviewer</option>
+            <option value="admin">Administrator</option>
+          </select>
+        </label>
+      )}
       {change?.role === "admin" && <p>This includes publishing decisions and granting or removing other staff members’ access.</p>}
       {error && <p className="admin-notice admin-notice-error" role="alert">{error}</p>}
-      <div className="staff-confirm-actions"><button type="button" disabled={pending} onClick={() => dialog.current?.close()}>Cancel</button><button type="button" className="admin-publish-all" disabled={pending} onClick={save}>{pending ? "Saving…" : change?.role === "revoked" ? "Confirm removal" : "Confirm access"}</button></div>
+      <div className="staff-confirm-actions"><button type="button" disabled={pending} onClick={() => dialog.current?.close()}>Cancel</button><button type="button" className="admin-publish-all" disabled={pending || change?.role === change?.expected} onClick={save}>{pending ? "Saving…" : change?.role === "revoked" ? "Confirm removal" : "Confirm access"}</button></div>
     </dialog>
   </div>;
 }

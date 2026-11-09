@@ -698,7 +698,9 @@ test('staff access grants, changes, removes and restores roles with confirmation
   await expect(page.getByRole('status')).toContainText('Reviewer access saved');
   const member=page.locator('.staff-members li').filter({hasText:'member@utdallas.edu'});
   await expect(member).toContainText('Reviewer');
-  await member.getByRole('button',{name:'Make administrator'}).click();
+  await member.getByRole('button',{name:'Change access',exact:true}).click();
+  await expect(page.getByRole('button',{name:'Confirm access',exact:true})).toBeDisabled();
+  await page.locator('dialog[open]').getByLabel('Access level',{exact:true}).selectOption('admin');
   await page.getByRole('button',{name:'Confirm access',exact:true}).click();
   await expect(member).toContainText('Administrator');
   await member.getByRole('button',{name:'Remove access'}).click();
