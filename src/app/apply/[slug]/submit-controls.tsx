@@ -4,20 +4,20 @@ import { useState } from "react";
 import { useFormStatus } from "react-dom";
 import { ConfirmationDialog } from "@/components/confirmation-dialog";
 
-export function ApplicationSubmitControls() {
+export function ApplicationSubmitControls({ uploadingResume }: { uploadingResume: boolean }) {
   const { pending } = useFormStatus();
   const [confirmationOpen, setConfirmationOpen] = useState(false);
 
   return (
     <>
       <div className="application-form-actions">
-        <button className="application-save" name="intent" value="save" disabled={pending} formNoValidate>
+        <button className="application-save" name="intent" value="save" disabled={pending || uploadingResume} formNoValidate>
           {pending ? "Saving…" : "Save draft"}
         </button>
         <button
           className="application-submit"
           type="button"
-          disabled={pending}
+          disabled={pending || uploadingResume}
           aria-haspopup="dialog"
           onClick={(event) => {
             const form = event.currentTarget.form;
@@ -50,7 +50,7 @@ export function ApplicationSubmitControls() {
             <button type="button" className="confirmation-cancel" onClick={() => setConfirmationOpen(false)} autoFocus>
               Keep editing
             </button>
-            <button className="confirmation-primary" name="intent" value="submit" disabled={pending}>
+            <button className="confirmation-primary" name="intent" value="submit" disabled={pending || uploadingResume}>
               {pending ? "Submitting…" : "Yes, submit application"}
             </button>
           </>

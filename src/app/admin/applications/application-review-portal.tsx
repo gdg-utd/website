@@ -1,5 +1,6 @@
 "use client";
 
+import { resumePreviewUrl } from "@/lib/resume";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { EmailDelivery } from "./email-delivery";
@@ -493,7 +494,11 @@ function ApplicationReviewContent({
             {section.fields.map((field) => (
               <div className="admin-response" key={field.id}>
                 <h5>{field.label}</h5>
-                {field.type === "url" && field.answer ? (
+                {field.resumePath ? (
+                  <a href={resumePreviewUrl(field.resumePath)} target="_blank" rel="noreferrer">
+                    {field.answer} ↗
+                  </a>
+                ) : field.type === "url" && field.answer ? (
                   <a href={field.answer} target="_blank" rel="noreferrer">
                     {field.answer} ↗
                   </a>

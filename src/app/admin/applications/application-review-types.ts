@@ -3,6 +3,7 @@ export type ApplicationReviewField = {
   label: string;
   type: string;
   answer: string;
+  resumePath?: string;
 };
 
 export type ApplicationReviewSection = {

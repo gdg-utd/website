@@ -4,6 +4,8 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { ProfileForm } from "./profile-form";
 import { createClient } from "@/lib/supabase/server";
+import { describeResume } from "@/lib/resume-server";
+import { ResumeSection } from "./resume-section";
 import { PasswordResetSection } from "./password-reset-section";
 
 export const metadata: Metadata = { title: "Your profile" };
@@ -55,7 +57,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
   const { data: profile, error } = await supabase
     .from("profiles")
     .select(
-      "first_name, last_name, net_id, degree, major, personal_email, linkedin_url, github_url, portfolio_url",
+      "first_name, last_name, net_id, degree, major, personal_email, linkedin_url, github_url, portfolio_url, resume_path",
     )
     .eq("id", userId)
     .maybeSingle();
@@ -91,6 +93,8 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
       )}
 
       <ProfileForm profile={profile} email={email} />
+
+      <ResumeSection resume={describeResume(profile.resume_path)} />
 
       <PasswordResetSection />
     </>

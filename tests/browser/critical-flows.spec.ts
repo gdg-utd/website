@@ -200,6 +200,59 @@ test('application draft, resume, required agreements, confirmation, and submitte
   await expect(page.getByRole('button',{name:'Save draft'})).toHaveCount(0);
 });
 
+test('résumé defaults, per-application changes, and private submitted previews', async ({page,request,context}) => {
+  const pdf = (name: string) => ({name, mimeType:'application/pdf', buffer:Buffer.from('%PDF-1.7\n%%EOF')});
+  await login(page);
+  await page.getByLabel('Upload a default résumé (optional)').setInputFiles(pdf('Default résumé.pdf'));
+  await page.getByRole('button',{name:'Save résumé'}).click();
+  const profilePreview = page.getByRole('link',{name:/Preview Default résumé.pdf/});
+  await expect(profilePreview).toBeVisible();
+  const defaultUrl = (await profilePreview.getAttribute('href'))!;
+
+  await page.goto('/apply/sprint-mentee');
+  const firstSection = page.getByRole('region',{name:'About you'});
+  await expect(firstSection.getByRole('link',{name:/Preview Default résumé.pdf/})).toBeVisible();
+  await firstSection.getByRole('button',{name:'Remove from application'}).click();
+  await page.getByRole('button',{name:'Save draft',exact:true}).click();
+  await expect(page.getByRole('status')).toContainText('Draft saved');
+  await page.reload();
+  await expect(firstSection.getByRole('link',{name:/Preview Default résumé.pdf/})).toHaveCount(0);
+  await firstSection.getByRole('button',{name:'Use profile résumé'}).click();
+  await expect(firstSection.getByRole('link',{name:/Preview Default résumé.pdf/})).toBeVisible();
+
+  await firstSection.getByLabel('Replace résumé for this application').setInputFiles({
+    name:'Invalid.pdf', mimeType:'application/pdf', buffer:Buffer.from('Not a PDF'),
+  });
+  await expect(firstSection.getByRole('alert')).toContainText('Choose a valid PDF');
+  await firstSection.getByLabel('Replace résumé for this application').setInputFiles(pdf('Tailored.pdf'));
+  await expect(firstSection.getByRole('link',{name:/Preview Tailored.pdf/})).toBeVisible();
+  await page.getByLabel('Why would you like to join?').fill('I want to build with a team.');
+  await page.getByLabel('Web development',{exact:true}).check();
+  await page.getByLabel('Agreement: I will attend team meetings.').check();
+  await page.getByRole('button',{name:'Submit application'}).click();
+  await page.getByRole('button',{name:'Yes, submit application'}).click();
+  await expect(page).toHaveURL(/\/dashboard\/applications\?submitted=/);
+
+  await page.goto('/dashboard/profile');
+  await expect(profilePreview).toBeVisible();
+  await page.getByRole('button',{name:'Remove default'}).click();
+  await expect(profilePreview).toHaveCount(0);
+  await page.goto('/apply/sprint-mentee');
+  const attachment = page.getByRole('link',{name:/Preview submitted résumé .*Tailored.pdf/});
+  await expect(attachment).toBeVisible();
+  const attachmentUrl = (await attachment.getAttribute('href'))!;
+  expect((await request.get(attachmentUrl,{maxRedirects:0})).status()).toBe(401);
+
+  await context.clearCookies();
+  await login(page,'reviewer','/admin/applications');
+  await page.getByRole('button',{name:'Review',exact:true}).first().click();
+  await expect(page.getByRole('dialog',{name:'Application review'}).getByRole('link',{name:/Tailored.pdf/})).toHaveAttribute('href',attachmentUrl);
+  const preview = await context.request.get(attachmentUrl,{maxRedirects:0});
+  expect(preview.status()).toBe(307);
+  expect(preview.headers()['location']).toContain('/storage/v1/object/sign/member-resumes/');
+  expect((await context.request.get(defaultUrl,{maxRedirects:0})).status()).toBe(404);
+});
+
 test('RSVP confirmation stays disabled until every agreement is checked', async ({page,request}) => {
   await request.post(`${backend}/__reset`,{data:{offer:true}});
   await login(page,'member','/dashboard/applications');

@@ -4,6 +4,7 @@ import {
   parseApplicationOpening,
   type ApplicationResponses,
 } from "@/lib/applications";
+import { describeResume } from "@/lib/resume-server";
 import { createClient } from "@/lib/supabase/server";
 import type { ApplicationReview } from "@/app/admin/applications/application-review-types";
 
@@ -129,6 +130,7 @@ export async function GET(
       ? stagedEvent.details.decision
       : undefined;
 
+  const resume = describeResume(application.resume_path);
   const review: ApplicationReview = {
     id: application.id,
     applicantName: `${application.applicant_first_name} ${application.applicant_last_name}`,
@@ -153,15 +155,24 @@ export async function GET(
             : undefined,
         }
       : undefined,
-    sections: opening.form_schema.sections.map((section) => ({
+    sections: opening.form_schema.sections.map((section, index) => ({
       id: section.id,
       title: section.title,
-      fields: section.fields.map((field) => ({
-        id: field.id,
-        label: field.label,
-        type: field.type,
-        answer: answerLabel(field, responses[field.id]),
-      })),
+      fields: [
+        ...section.fields.map((field) => ({
+          id: field.id,
+          label: field.label,
+          type: field.type,
+          answer: answerLabel(field, responses[field.id]),
+        })),
+        ...(index === 0 && resume ? [{
+          id: "submitted-resume",
+          label: "Résumé",
+          type: "resume",
+          answer: resume.name,
+          resumePath: resume.path,
+        }] : []),
+      ],
     })),
     historyCursor: events && events.length > 50 ? events[49].id : null,
     emails: delivery ?? [],

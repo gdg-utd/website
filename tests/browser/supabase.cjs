@@ -13,7 +13,7 @@ function createBackend() {
   let state;
   let heldRequests=[];
   function reset(options={}) {
-    state = {profiles:{},applications:[],events:[],quotas:{},passwords:{},unexpected:[],...options};
+    state = {profiles:{},resumes:{},applications:[],events:[],quotas:{},passwords:{},unexpected:[],...options};
     for (const role of Object.keys(ids)) state.profiles[ids[role]]={id:ids[role],first_name:'Browser',last_name:role,degree:'Bachelor of Science',major:'Computer Science',net_id:'abc123',personal_email:null,linkedin_url:null,github_url:null,portfolio_url:null,onboarding_completed_at:'2026-01-01T00:00:00Z'};
     if (options.submitted) state.applications=[application({submission_state:'submitted',responses:{motivation:'A synthetic application for browser review.',areas:['web'],agreement:true}})];
     if (options.offer) state.applications=[application({id:9,submission_state:'submitted',published_decision:'accepted',responses:{agreement:true},application_rsvps:{status:'awaiting_response',deadline_at:new Date(Date.now()+3600000).toISOString(),responded_at:null}})];
@@ -84,6 +84,23 @@ function createBackend() {
       send(require('./email-health-fixture.cjs')(body.days));return;
     }
     if(url.pathname==='/functions/v1/send-application-email'){send({sent:true});return;}
+    const resumeUpload = url.pathname.match(/^\/storage\/v1\/object\/member-resumes\/(.+)$/);
+    if (resumeUpload && req.method === 'POST') {
+      const resumePath = resumeUpload[1];
+      if (!role || !resumePath.startsWith(ids[role] + '/')) {error('Forbidden',403);return;}
+      state.resumes[resumePath] = true;
+      send({Key:'member-resumes/' + resumePath});return;
+    }
+    const resumeSign = url.pathname.match(/^\/storage\/v1\/object\/sign\/member-resumes\/(.+)$/);
+    if (resumeSign && req.method === 'POST') {
+      const resumePath = resumeSign[1];
+      const ownsResume = role && resumePath.startsWith(ids[role] + '/');
+      const reviewing = ['admin','reviewer'].includes(role) && state.applications.some(
+        application => application.submission_state === 'submitted' && application.resume_path === resumePath,
+      );
+      if (!state.resumes[resumePath] || (!ownsResume && !reviewing)) {error('Not found',404);return;}
+      send({signedURL:'/object/sign/member-resumes/' + resumePath + '?token=fixture'});return;
+    }
     if(url.pathname.startsWith('/rest/v1/')) {
       const table=url.pathname.slice('/rest/v1/'.length);
       if(state.holdTables?.includes(table)) await new Promise(resolve=>heldRequests.push(resolve));

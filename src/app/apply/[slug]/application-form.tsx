@@ -1,74 +1,127 @@
 "use client";
 import { FormErrorSummary } from "@/components/form-error-summary";
-import { useActionState, useRef } from "react";
+import { useActionState, useRef, useState, useTransition } from "react";
 import { UtdProgramFields } from "@/components/utd-program-fields";
 import { initialEditFormState } from "@/lib/edit-form-state";
 import { buildResponses, type ApplicationOpening, type ApplicationField, type ApplicationResponses } from "@/lib/applications";
-import { saveApplication } from "./actions";
+import { resumeUploadError, type Resume } from "@/lib/resume";
+import { saveApplication, uploadApplicationResume } from "./actions";
+import { ResumeField } from "./resume-field";
 import { ApplicationSubmitControls } from "./submit-controls";
 import { useUnsavedChanges } from "./use-unsaved-changes";
 import { useApplicationSession } from "./use-application-session";
 
-export function ApplicationForm({ opening, initialResponses }: { opening: ApplicationOpening; initialResponses: ApplicationResponses }) {
+export function ApplicationForm({
+  opening, initialResponses, initialResume, profileResume,
+}: {
+  opening: ApplicationOpening;
+  initialResponses: ApplicationResponses;
+  initialResume: Resume | null;
+  profileResume: Resume | null;
+}) {
   const [state, formAction] = useActionState(saveApplication, initialEditFormState);
   const formRef = useRef<HTMLFormElement>(null);
-  useUnsavedChanges(formRef, state.revision);
+  const [resume, setResume] = useState(initialResume);
+  const [resumeError, setResumeError] = useState("");
+  const [uploading, startUpload] = useTransition();
+  useUnsavedChanges(formRef, state.revision, resume?.path ?? "");
+
   useApplicationSession(opening.slug);
+  function uploadResume(file: File) {
+    const error = resumeUploadError(file);
+    setResumeError(error);
+    if (error) return;
+
+    const data = new FormData();
+    data.set("resume", file);
+    startUpload(async () => {
+      try {
+        const result = await uploadApplicationResume(data);
+        if (result.resume) setResume(result.resume);
+        else setResumeError(result.error);
+      } catch {
+        setResumeError("We could not upload your résumé. Please try again.");
+      }
+    });
+  }
+
   const submitted = new FormData();
   for (const [name, value] of Object.entries(state.values ?? {})) {
     for (const item of Array.isArray(value) ? value : [value]) submitted.append(name, item);
   }
   const responses = state.values ? buildResponses(opening.form_schema, submitted) : initialResponses;
   return (
-              <form ref={formRef} className="application-form" action={formAction} key={state.revision}>
-                {state.error && <FormErrorSummary message={state.error}>Your responses are still here.</FormErrorSummary>}
-                <input type="hidden" name="openingVersion" value={opening.form_version} />
-                <input type="hidden" name="openingSlug" value={opening.slug} />
-                {opening.form_schema.sections.map((section, sectionIndex) => (
-                  <section
-                    className="application-form-group"
-                    aria-labelledby={`application-section-${section.id}`}
-                    key={section.id}
-                  >
-                    <header className="application-form-group-heading">
-                      <span>{String(sectionIndex + 1).padStart(2, "0")}</span>
-                      <h2 id={`application-section-${section.id}`}>{section.title}</h2>
-                      {section.description && <p>{section.description}</p>}
-                    </header>
-                    <div className="application-form-fields">
-                      {section.fields.map((field) => {
-                        const degreeField = section.fields.find((item) => item.id === "degree");
-                        const majorField = section.fields.find((item) => item.id === "major");
+    <form
+      ref={formRef}
+      className="application-form"
+      action={formAction}
+      key={state.revision}
+      onSubmit={(event) => {
+        if (uploading) event.preventDefault();
+      }}
+    >
+      {state.error && <FormErrorSummary message={state.error}>Your responses are still here.</FormErrorSummary>}
+      <input type="hidden" name="openingVersion" value={opening.form_version} />
+      <input type="hidden" name="openingSlug" value={opening.slug} />
+      <input type="hidden" name="resumePath" value={resume?.path ?? ""} />
+      {opening.form_schema.sections.map((section, sectionIndex) => (
+        <section
+          className="application-form-group"
+          aria-labelledby={`application-section-${section.id}`}
+          key={section.id}
+        >
+          <header className="application-form-group-heading">
+            <span>{String(sectionIndex + 1).padStart(2, "0")}</span>
+            <h2 id={`application-section-${section.id}`}>{section.title}</h2>
+            {section.description && <p>{section.description}</p>}
+          </header>
+          <div className="application-form-fields">
+            {section.fields.map((field) => {
+              const degreeField = section.fields.find((item) => item.id === "degree");
+              const majorField = section.fields.find((item) => item.id === "major");
 
-                        if (degreeField && majorField && field.id === "major") return null;
-                        if (degreeField && majorField && field.id === "degree") {
-                          return (
-                            <UtdProgramFields
-                              degreeName="field:degree"
-                              majorName="field:major"
-                              idPrefix={`application-${section.id}-program`}
-                              defaultDegree={typeof responses.degree === "string" ? responses.degree : ""}
-                              defaultMajor={typeof responses.major === "string" ? responses.major : ""}
-                              degreeRequired={degreeField.required}
-                              majorRequired={majorField.required}
-                              degreeClassName="application-text-field"
-                              majorClassName="application-text-field"
-                              key="utd-program"
-                            />
-                          );
-                        }
+              if (degreeField && majorField && field.id === "major") return null;
+              if (degreeField && majorField && field.id === "degree") {
+                return (
+                  <UtdProgramFields
+                    degreeName="field:degree"
+                    majorName="field:major"
+                    idPrefix={`application-${section.id}-program`}
+                    defaultDegree={typeof responses.degree === "string" ? responses.degree : ""}
+                    defaultMajor={typeof responses.major === "string" ? responses.major : ""}
+                    degreeRequired={degreeField.required}
+                    majorRequired={majorField.required}
+                    degreeClassName="application-text-field"
+                    majorClassName="application-text-field"
+                    key="utd-program"
+                  />
+                );
+              }
 
-                        return <ApplicationInput field={field} value={responses[field.id]} key={field.id} />;
-                      })}
-                    </div>
-                  </section>
-                ))}
+              return <ApplicationInput field={field} value={responses[field.id]} key={field.id} />;
+            })}
+            {sectionIndex === 0 && (
+              <ResumeField
+                resume={resume}
+                profileResume={profileResume}
+                error={resumeError}
+                uploading={uploading}
+                onSelect={(selected) => {
+                  setResume(selected);
+                  setResumeError("");
+                }}
+                onUpload={uploadResume}
+              />
+            )}
+          </div>
+        </section>
+      ))}
 
-                <div className="application-form-submit-row">
-                  <p>Save a draft at any time. After submitting, contact the GDG UTDallas team if something needs to be corrected.</p>
-                  <ApplicationSubmitControls />
-                </div>
-              </form>
+      <div className="application-form-submit-row">
+        <p>Save a draft at any time. After submitting, contact the GDG UTDallas team if something needs to be corrected.</p>
+        <ApplicationSubmitControls uploadingResume={uploading} />
+      </div>
+    </form>
   );
 }
 

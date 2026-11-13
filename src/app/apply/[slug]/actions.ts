@@ -10,6 +10,7 @@ import {
   validateResponses,
 } from "@/lib/applications";
 import { deliverApplicationEmail } from "@/lib/application-email";
+import { describeResume, storeResume } from "@/lib/resume-server";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
 
@@ -21,6 +22,15 @@ function textField(formData: FormData, name: string) {
 function applicationPath(slug: string, message?: string) {
   const path = `/apply/${encodeURIComponent(slug)}`;
   return message ? `${path}?message=${encodeURIComponent(message)}` : path;
+}
+
+export async function uploadApplicationResume(formData: FormData) {
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getClaims();
+  const userId = data?.claims?.sub;
+  if (!userId) return { error: "Sign in again to upload your résumé." };
+
+  return storeResume(supabase, userId, formData.get("resume"));
 }
 
 export async function saveApplication(previous: EditFormState, formData: FormData) {
@@ -79,6 +89,13 @@ export async function saveApplication(previous: EditFormState, formData: FormDat
     return editFormError(previous, formData, "This application has already been submitted.");
   }
 
+  const resumePath = textField(formData, "resumePath");
+  if (resumePath && !describeResume(resumePath)) {
+    return editFormError(previous, formData, "Choose a valid résumé.");
+  }
+  const resumeSelection = formData.has("resumePath")
+    ? { resume_path: resumePath || null, resume_selection_saved: true }
+    : {};
   const submissionState = intent === "submit" ? "submitted" : "draft";
   let error;
   let savedApplicationId = existing?.id;
@@ -86,7 +103,7 @@ export async function saveApplication(previous: EditFormState, formData: FormDat
   if (existing) {
     const result = await supabase
       .from("applications")
-      .update({ responses, submission_state: submissionState })
+      .update({ responses, submission_state: submissionState, ...resumeSelection })
       .eq("id", existing.id)
       .select("id")
       .single();
@@ -97,6 +114,7 @@ export async function saveApplication(previous: EditFormState, formData: FormDat
       opening_id: opening.id,
       applicant_id: userId,
       responses,
+      ...resumeSelection,
       submission_state: submissionState,
     } as unknown as Database["public"]["Tables"]["applications"]["Insert"];
     const result = await supabase.from("applications").insert(insert).select("id").single();
@@ -105,6 +123,9 @@ export async function saveApplication(previous: EditFormState, formData: FormDat
   }
 
   if (error) {
+    if (error.code === "22023" && error.message === "Select a resume uploaded by your account.") {
+      return editFormError(previous, formData, "That résumé is unavailable. Choose a different PDF or remove it.");
+    }
     console.error("Unable to save application", error.code, error.message);
     return editFormError(previous, formData, "We could not save your application. Please try again.");
   }

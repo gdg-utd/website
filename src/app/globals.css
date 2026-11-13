@@ -663,6 +663,20 @@ img { display: block; }
 .application-text-field input, .application-text-field select { height: 51px; }
 .application-text-field input:focus, .application-text-field textarea:focus, .application-text-field select:focus { border-color: var(--blue-dark); box-shadow: 0 0 0 3px rgba(26,115,232,.12); }
 .application-text-field select:disabled { background: #f5f6f8; color: #626a72; cursor: not-allowed; }
+.application-resume-field { min-width: 0; margin: 0; padding: 18px; display: grid; gap: 12px; border: 1px solid #d5dae1; }
+.application-resume-field legend { padding-inline: 6px; color: #30353a; font-size: 14px; font-weight: 670; }
+.application-resume-field p { margin: 0; color: #626a72; font-size: 13px; }
+.resume-preview { color: var(--blue-dark); font-size: 13px; font-weight: 650; text-decoration: underline; overflow-wrap: anywhere; }
+.resume-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+.resume-secondary, .resume-upload, .resume-profile-actions .resume-secondary {
+  position: relative; display: inline-flex; align-items: center; min-height: 44px; padding: 10px 14px;
+  border: 1px solid #a8c7fa; background: #fff; color: var(--blue-dark); font: inherit;
+  font-size: 12px; font-weight: 670; cursor: pointer;
+}
+.resume-secondary:hover, .resume-upload:hover, .resume-profile-actions .resume-secondary:hover { background: #e8f0fe; }
+.resume-upload:focus-within { outline: 2px solid var(--blue-dark); outline-offset: 3px; }
+.resume-upload input { position: absolute; inset: 0; width: 100%; opacity: 0; cursor: pointer; }
+.resume-error, .application-resume-field .resume-error { color: #a50e0e; }
 .application-choice-field { min-width: 0; margin: 0; padding: 0; border: 0; }
 .application-options { margin-top: 13px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
 .application-options label { min-height: 48px; padding: 10px 13px; display: flex; align-items: center; gap: 10px; border: 1px solid #d0d5db; cursor: pointer; }

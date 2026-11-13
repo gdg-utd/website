@@ -5,11 +5,11 @@ import { useEffect, useRef, type RefObject } from "react";
 const WARNING = "You have unsaved changes. Leave without saving?";
 
 function answers(form: HTMLFormElement) {
-  return JSON.stringify(Array.from(new FormData(form)).filter(([name]) => name.startsWith("field:")));
+  return JSON.stringify(Array.from(new FormData(form)).filter(([name]) => name.startsWith("field:") || name === "resumePath"));
 }
 
 /** No storage or network writes: the last rendered saved draft is the baseline. */
-export function useUnsavedChanges(formRef: RefObject<HTMLFormElement | null>, revision: number) {
+export function useUnsavedChanges(formRef: RefObject<HTMLFormElement | null>, revision: number, resumePath: string) {
   const refreshRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
@@ -80,5 +80,5 @@ export function useUnsavedChanges(formRef: RefObject<HTMLFormElement | null>, re
   }, [formRef]);
 
   // A failed save reconstructs the form, but must not make its answers "saved".
-  useEffect(() => { refreshRef.current?.(); }, [revision]);
+  useEffect(() => { refreshRef.current?.(); }, [revision, resumePath]);
 }

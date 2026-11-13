@@ -258,6 +258,8 @@ export type Database = {
           opening_id: number
           published_decision: string
           reopen_reason: string | null
+          resume_path: string | null
+          resume_selection_saved: boolean
           responses: Json
           submission_state: string
           submitted_at: string | null
@@ -277,6 +279,8 @@ export type Database = {
           opening_id: number
           published_decision?: string
           reopen_reason?: string | null
+          resume_path?: string | null
+          resume_selection_saved?: boolean
           responses?: Json
           submission_state?: string
           submitted_at?: string | null
@@ -296,6 +300,8 @@ export type Database = {
           opening_id?: number
           published_decision?: string
           reopen_reason?: string | null
+          resume_path?: string | null
+          resume_selection_saved?: boolean
           responses?: Json
           submission_state?: string
           submitted_at?: string | null
@@ -361,6 +367,7 @@ export type Database = {
           onboarding_completed_at: string | null
           personal_email: string | null
           portfolio_url: string | null
+          resume_path: string | null
           updated_at: string
         }
         Insert: {
@@ -376,6 +383,7 @@ export type Database = {
           onboarding_completed_at?: string | null
           personal_email?: string | null
           portfolio_url?: string | null
+          resume_path?: string | null
           updated_at?: string
         }
         Update: {
@@ -391,6 +399,7 @@ export type Database = {
           onboarding_completed_at?: string | null
           personal_email?: string | null
           portfolio_url?: string | null
+          resume_path?: string | null
           updated_at?: string
         }
         Relationships: []

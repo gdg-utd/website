@@ -11,6 +11,8 @@ import {
   parseApplicationOpening,
   type ApplicationResponses,
 } from "@/lib/applications";
+import { resumePreviewUrl } from "@/lib/resume";
+import { describeResume } from "@/lib/resume-server";
 import { createClient } from "@/lib/supabase/server";
 import { ApplicationForm } from "./application-form";
 import { ApplicationReopeningNotice } from "@/components/application-reopening-notice";
@@ -63,7 +65,7 @@ export default async function ApplicationPage({ params, searchParams }: Applicat
       .maybeSingle(),
     supabase
       .from("profiles")
-      .select("onboarding_completed_at")
+      .select("onboarding_completed_at, resume_path")
       .eq("id", userId)
       .maybeSingle(),
   ]);
@@ -81,7 +83,7 @@ export default async function ApplicationPage({ params, searchParams }: Applicat
 
   const { data: application, error: applicationError } = await supabase
     .from("applications")
-    .select("id, responses, submission_state, submitted_at, form_version, updated_at, reopen_reason")
+    .select("id, responses, submission_state, submitted_at, form_version, updated_at, reopen_reason, resume_path, resume_selection_saved")
     .eq("opening_id", opening.id)
     .eq("applicant_id", userId)
     .maybeSingle();
@@ -96,6 +98,9 @@ export default async function ApplicationPage({ params, searchParams }: Applicat
   const notice = query.message ? notices[query.message] : undefined;
   const accepting = isOpeningAccepting(opening);
   const submitted = application?.submission_state === "submitted";
+  const profileResume = describeResume(profile?.resume_path);
+  const savedResume = describeResume(application?.resume_path);
+  const initialResume = application?.resume_selection_saved ? savedResume : profileResume;
 
   return (
     <div className="application-form-page">
@@ -125,6 +130,11 @@ export default async function ApplicationPage({ params, searchParams }: Applicat
                 <p className="section-label">Application received</p>
                 <h2>Your application is submitted.</h2>
                 <p>Submitted {formatCentralDate(application.submitted_at)} CT. Submitted applications cannot be edited.</p>
+                {savedResume && (
+                  <p><a className="resume-preview" href={resumePreviewUrl(savedResume.path)} target="_blank" rel="noreferrer">
+                    Preview submitted résumé ({savedResume.name}) ↗
+                  </a></p>
+                )}
                 <Link className="primary-link" href="/dashboard">View dashboard <span aria-hidden="true">→</span></Link>
               </div>
             ) : !accepting ? (
@@ -134,7 +144,13 @@ export default async function ApplicationPage({ params, searchParams }: Applicat
                 <Link className="secondary-link" href="/apply">View available positions</Link>
               </div>
             ) : (
-              <ApplicationForm key={application?.updated_at ?? "new"} opening={opening} initialResponses={responses} />
+              <ApplicationForm
+                key={application?.updated_at ?? "new"}
+                opening={opening}
+                initialResponses={responses}
+                profileResume={profileResume}
+                initialResume={initialResume}
+              />
             )}
           </div>
         </section>

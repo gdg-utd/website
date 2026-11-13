@@ -135,6 +135,14 @@ const root = path.resolve(__dirname, "..");
   console.log(
     "PASS: schedule SQL supplies the private worker token to a stubbed local HTTP transport.",
   );
+  await db.exec(`
+    create schema storage;
+    create table storage.buckets (id text primary key, name text, public boolean, file_size_limit bigint, allowed_mime_types text[]);
+    create table storage.objects (bucket_id text references storage.buckets(id), name text, primary key (bucket_id, name));
+    alter table storage.objects enable row level security;
+    grant usage on schema storage to authenticated, anon;
+    grant select, insert, update, delete on storage.objects to authenticated, anon;
+  `);
   for (const file of files.filter((file) => file > "20261025222803_update_f26_role_applications.sql")) {
     const refiningQuestions = file.endsWith('_refine_officer_application_questions.sql');
     const beforeQuestions = refiningQuestions ? await db.query('select * from public.application_openings order by slug') : null;
@@ -171,7 +179,13 @@ const root = path.resolve(__dirname, "..");
       console.log('PASS: revised officer questions, optional portfolio, preserved applications and opening metadata, unchanged mentee form, and idempotent migration.');
     }
   }
-  for (const section of fs.readFileSync(root + "/tests/authorization-regressions.sql", "utf8").split(/\n(?=-- [A-Z])/)) {
+  const authorization = fs.readFileSync(root + "/tests/authorization-regressions.sql", "utf8");
+  const firstScenario = authorization.indexOf("-- Anonymous callers");
+  await db.exec(authorization.slice(0, firstScenario));
+  await db.exec(fs.readFileSync(root + "/tests/resume-regressions.sql", "utf8"));
+  await db.exec("rollback");
+  console.log("PASS: private resume uploads, reviewer access, immutable submitted versions, and cross-account isolation.");
+  for (const section of authorization.split(/\n(?=-- [A-Z])/)) {
     try { await db.exec(section); }
     catch (error) { error.message = `${section.split("\n")[0]}: ${error.message}`; throw error; }
   }
