@@ -7,7 +7,7 @@ const root = path.resolve(__dirname, "..");
 (async () => {
   const db = new PGlite({ extensions: { pgcrypto } });
   await db.exec(
-    `create role anon; create role authenticated; create role service_role bypassrls; create schema auth; create schema extensions; create extension pgcrypto with schema extensions; create table auth.users(id uuid primary key,email text,raw_user_meta_data jsonb default '{}'::jsonb,deleted_at timestamptz); create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$; grant usage on schema auth to anon,authenticated,service_role; grant execute on function auth.uid() to public;`,
+    `create role anon; create role authenticated; create role service_role bypassrls; create schema auth; create schema extensions; create extension pgcrypto with schema extensions; create table auth.users(id uuid primary key,email text,raw_user_meta_data jsonb default '{}'::jsonb,deleted_at timestamptz,email_confirmed_at timestamptz); create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$; grant usage on schema auth to anon,authenticated,service_role; grant execute on function auth.uid() to public;`,
   );
   const files = fs
     .readdirSync(root + "/supabase/migrations")
@@ -138,7 +138,7 @@ const root = path.resolve(__dirname, "..");
   await db.exec(`
     create schema storage;
     create table storage.buckets (id text primary key, name text, public boolean, file_size_limit bigint, allowed_mime_types text[]);
-    create table storage.objects (bucket_id text references storage.buckets(id), name text, primary key (bucket_id, name));
+    create table storage.objects (bucket_id text references storage.buckets(id), name text, created_at timestamptz not null default now(), primary key (bucket_id, name));
     alter table storage.objects enable row level security;
     grant usage on schema storage to authenticated, anon;
     grant select, insert, update, delete on storage.objects to authenticated, anon;
@@ -179,12 +179,22 @@ const root = path.resolve(__dirname, "..");
       console.log('PASS: revised officer questions, optional portfolio, preserved applications and opening metadata, unchanged mentee form, and idempotent migration.');
     }
   }
+  await db.exec(`
+    begin;
+    select vault.create_secret('https://resume-fixture.supabase.co', 'resume_cleanup_project_url');
+    truncate net.fixture_requests;
+  `);
+  const cleanupJob = await db.query("select command from cron.fixture_jobs where command like '%resume_cleanup_project_url%'");
+  await db.exec(cleanupJob.rows[0].command);
+  assert.equal((await db.query("select public.is_resume_cleanup_worker(headers->>'x-resume-cleanup-token') as allowed from net.fixture_requests")).rows[0].allowed, true);
+  assert.equal((await db.query("select public.is_resume_cleanup_worker('wrong-token') as allowed")).rows[0].allowed, false);
+  await db.exec("rollback");
   const authorization = fs.readFileSync(root + "/tests/authorization-regressions.sql", "utf8");
   const firstScenario = authorization.indexOf("-- Anonymous callers");
   await db.exec(authorization.slice(0, firstScenario));
   await db.exec(fs.readFileSync(root + "/tests/resume-regressions.sql", "utf8"));
   await db.exec("rollback");
-  console.log("PASS: private resume uploads, reviewer access, immutable submitted versions, and cross-account isolation.");
+  console.log("PASS: resume upload quotas, blocked direct writes, worker authentication, cleanup retries and preservation of profile, draft and submitted PDFs.");
   for (const section of authorization.split(/\n(?=-- [A-Z])/)) {
     try { await db.exec(section); }
     catch (error) { error.message = `${section.split("\n")[0]}: ${error.message}`; throw error; }

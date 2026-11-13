@@ -21,3 +21,9 @@ import_map = "./functions/process-application-emails/deno.json"
 verify_jwt = true
 entrypoint = "./functions/email-health/index.ts"
 import_map = "./functions/email-health/deno.json"
+
+[functions.resume-storage]
+# Verifies the member session for uploads and the Vault token for cleanup.
+verify_jwt = false
+entrypoint = "./functions/resume-storage/index.ts"
+import_map = "./functions/resume-storage/deno.json"

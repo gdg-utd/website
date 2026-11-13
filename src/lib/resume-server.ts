@@ -1,3 +1,4 @@
+import { FunctionsHttpError } from "@supabase/supabase-js";
 import type { createClient } from "@/lib/supabase/server";
 import { resumeUploadError, type Resume } from "@/lib/resume";
 
@@ -23,15 +24,20 @@ export async function storeResume(
 
   const filename = Buffer.from(file.name.replace(/[\x00-\x1f\x7f]/g, "").trim());
   if (filename.length > 180) return { error: "Shorten the PDF filename and try again." };
-  const path = `${userId}/${crypto.randomUUID()}/${filename.toString("base64url")}.pdf`;
-  const { error } = await supabase.storage.from(RESUME_BUCKET).upload(path, await file.arrayBuffer(), {
-    contentType: "application/pdf",
-    cacheControl: "0",
-    upsert: false,
+  const { data, error } = await supabase.functions.invoke<{ path: string }>("resume-storage", {
+    body: await file.arrayBuffer(),
+    headers: {
+      "Content-Type": "application/pdf",
+      "X-Resume-Filename": filename.toString("base64url"),
+    },
   });
-  if (error) {
-    console.error("Unable to upload resume", error.name);
+  if (error instanceof FunctionsHttpError && error.context.status === 429) {
+    return { error: "The resume upload limit has been reached. Try again later." };
+  }
+  const resume = describeResume(data?.path);
+  if (error || !resume || !resume.path.startsWith(`${userId}/`)) {
+    console.error("Unable to upload resume", error?.name ?? "missing-upload");
     return { error: "We could not upload your resume. Please try again." };
   }
-  return { resume: { path, name: filename.toString("utf8") } };
+  return { resume };
 }

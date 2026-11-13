@@ -487,6 +487,7 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      claim_unused_resume_files: { Args: never; Returns: string[] }
       consume_password_reset_rate_limit: {
         Args: {
           p_key_hash: string
@@ -514,6 +515,7 @@ export type Database = {
         Args: { candidate_email: string }
         Returns: boolean
       }
+      is_resume_cleanup_worker: { Args: { p_token: string }; Returns: boolean }
       mark_officer_application_not_selected: {
         Args: { target_application_id: number }
         Returns: boolean
@@ -543,6 +545,7 @@ export type Database = {
         Args: { p_email: string; p_email_key: string; p_global_key: string }
         Returns: string
       }
+      reserve_resume_upload: { Args: { p_member_id: string; p_bytes: number }; Returns: boolean }
       respond_to_mentee_offer: {
         Args: {
           agreements_confirmed?: boolean

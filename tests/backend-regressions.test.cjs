@@ -533,3 +533,75 @@ test("recovery emails retain only validated local return destinations", async ()
     global.Deno=originalDeno; Module._load=originalLoad; global.fetch=originalFetch;
   }
 });
+
+test("resume storage authenticates uploads, enforces byte limits and quota, and deletes only claimed paths", async () => {
+  const originalDeno = global.Deno, originalLoad = Module._load;
+  const memberId = "11111111-1111-4111-8111-111111111111";
+  const claimed = [memberId + "/22222222-2222-4222-8222-222222222222/b2xkLnBkZg.pdf"];
+  const cleanupToken = "a".repeat(64);
+  let handler, quota = false;
+  const uploads = [], removals = [];
+  global.Deno = {
+    env: { get: (key) => ({ SUPABASE_URL: "https://example.supabase.co", SUPABASE_SERVICE_ROLE_KEY: "service", SUPABASE_ANON_KEY: "public" })[key] },
+    serve: (callback) => { handler = callback; },
+  };
+  Module._load = function (name, ...args) {
+    if (name === "@supabase/supabase-js") return {
+      createClient: (_url, key, options) => key === "service" ? {
+        rpc: async (name, args) => {
+          if (name === "is_resume_cleanup_worker") return { data: args.p_token === cleanupToken };
+          if (name === "claim_unused_resume_files") return { data: claimed };
+          assert.equal(name, "reserve_resume_upload");
+          assert.deepEqual(args, { p_member_id: memberId, p_bytes: 8 });
+          return { data: quota };
+        },
+        storage: { from: (bucket) => {
+          assert.equal(bucket, "member-resumes");
+          return {
+            upload: async (...args) => { uploads.push(args); return { error: null }; },
+            remove: async (paths) => { removals.push(paths); return { data: paths }; },
+          };
+        }},
+      } : {
+        auth: { getUser: async () => ({
+          data: { user: options.global.headers.Authorization === "Bearer member" ? {
+            id: memberId, email: "member@utdallas.edu", email_confirmed_at: "2026-11-13",
+          } : null },
+        }) },
+      },
+    };
+    return originalLoad.call(this, name, ...args);
+  };
+  try {
+    require("../supabase/functions/resume-storage/index.ts");
+    const request = (body, headers = {}) => new Request("https://example.invalid", { method: "POST", headers, body });
+    const uploadHeaders = {
+      authorization: "Bearer member",
+      "content-type": "application/pdf",
+      "x-resume-filename": "dGVzdC5wZGY",
+    };
+    assert.equal((await handler(request())).status, 401);
+    assert.equal((await handler(request("%PDF-1.7", { ...uploadHeaders, authorization: "Bearer invalid" }))).status, 401);
+    assert.equal((await handler(request("fake-pdf", uploadHeaders))).status, 400);
+    assert.equal((await handler(request(Buffer.alloc(4194305), uploadHeaders))).status, 413);
+    assert.equal((await handler(request("%PDF-1.7", uploadHeaders))).status, 429);
+    assert.equal(uploads.length, 0);
+    quota = true;
+    const response = await handler(request("%PDF-1.7", uploadHeaders));
+    assert.equal(response.status, 200);
+    const { path } = await response.json();
+    assert.match(path, new RegExp(`^${memberId}/[0-9a-f-]{36}/dGVzdC5wZGY\\.pdf$`));
+    assert.equal(uploads.length, 1);
+    assert.equal(uploads[0][0], path);
+    assert.equal(uploads[0][2].upsert, false);
+    assert.equal((await handler(request(null, { "x-resume-cleanup-token": "b".repeat(64) }))).status, 401);
+    assert.deepEqual(removals, []);
+    const cleanup = await handler(request(null, { "x-resume-cleanup-token": cleanupToken }));
+    assert.equal(cleanup.status, 200);
+    assert.deepEqual(await cleanup.json(), { removed: 1 });
+    assert.deepEqual(removals, [claimed]);
+  } finally {
+    global.Deno = originalDeno;
+    Module._load = originalLoad;
+  }
+});

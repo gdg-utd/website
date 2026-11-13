@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-require-imports -- Isolated HTTP service double for browser tests. */
 const http = require('node:http');
-const { createHmac } = require('node:crypto');
+const { createHmac, randomUUID } = require('node:crypto');
 const ids = { member:'11111111-1111-4111-8111-111111111111', admin:'22222222-2222-4222-8222-222222222222', reviewer:'33333333-3333-4333-8333-333333333333' };
 const originalPassword = 'BrowserTest123!';
 const schema = {sections:[{id:'about',title:'About you',fields:[
@@ -86,11 +86,13 @@ function createBackend() {
     }
     if(url.pathname==='/functions/v1/send-application-email'){send({sent:true});return;}
     const resumeUpload = url.pathname.match(/^\/storage\/v1\/object\/member-resumes\/(.+)$/);
-    if (resumeUpload && req.method === 'POST') {
-      const resumePath = resumeUpload[1];
-      if (!role || !resumePath.startsWith(ids[role] + '/')) {error('Forbidden',403);return;}
+    if (url.pathname === '/functions/v1/resume-storage' && req.method === 'POST') {
+      if (!role) {error('Forbidden',401);return;}
+      const filename = req.headers['x-resume-filename'];
+      if (!filename || !raw.startsWith('%PDF-')) {error('Invalid resume',400);return;}
+      const resumePath = ids[role] + '/' + randomUUID() + '/' + filename + '.pdf';
       state.resumes[resumePath] = bytes;
-      send({Key:'member-resumes/' + resumePath});return;
+      send({path:resumePath});return;
     }
     const resumeSign = url.pathname.match(/^\/storage\/v1\/object\/sign\/member-resumes\/(.+)$/);
     const resumeDownload = req.method === 'GET' ? resumeUpload : null;

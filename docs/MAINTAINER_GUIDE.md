@@ -163,10 +163,15 @@ Compare local and remote migration history before applying anything. Some older 
 | `email-health` | Enabled | Valid user session plus active `admin` role; read-only reporting |
 | `request-password-reset` | Disabled | Public recovery entrypoint with server-side quotas |
 | `process-application-emails` | Disabled | Private Vault-backed worker token checked inside the function |
+| `resume-storage` | Disabled | Confirmed UT Dallas member session for uploads, private Vault token for cleanup |
 
 Disabling gateway JWT checks does not make the worker open for public use. An unauthenticated worker request should return **401**. A scheduled empty-queue run can correctly return **200** with zero processed messages.
 
 The current retry schedule migration contains the production function URL. **Do not copy that schedule unchanged into a development project.** Point a development schedule at its own function and Vault token, or leave retries disabled there.
+
+Resume uploads use the `resume-storage` function. Coordinate the migration and website rollout so the new website can call the worker when direct bucket uploads are disabled. Deploy the function before promoting the matching website build. The migration generates `resume_cleanup_worker_token` in Vault. To enable the cleanup schedule, create a Vault secret named `resume_cleanup_project_url` containing the target project's Supabase API origin without a trailing slash. Verify the scheduled worker returns HTTP 200 before considering cleanup active.
+
+The worker reserves up to 10 uploads per account per rolling hour and up to 256 MiB across accounts per rolling day. Cleanup runs every 10 minutes and claims up to 100 files older than 24 hours that are absent from profiles and all application rows. It retries failed Storage API deletions on subsequent runs.
 
 After database changes, regenerate `src/lib/supabase/database.types.ts` from the target schema, inspect the diff, and rerun type checks. Run Supabase’s security advisors and investigate new findings; do not disable database policies to make an error disappear.
 
