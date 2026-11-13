@@ -15,11 +15,11 @@ export async function storeResume(
   userId: string,
   file: FormDataEntryValue | null,
 ): Promise<{ resume: Resume; error?: never } | { resume?: never; error: string }> {
-  if (!(file instanceof File)) return { error: "Choose a PDF résumé." };
+  if (!(file instanceof File)) return { error: "Choose a PDF resume." };
   const validationError = resumeUploadError(file);
   if (validationError) return { error: validationError };
   const header = await file.slice(0, 5).text();
-  if (header !== "%PDF-") return { error: "Choose a valid PDF résumé." };
+  if (header !== "%PDF-") return { error: "Choose a valid PDF resume." };
 
   const filename = Buffer.from(file.name.replace(/[\x00-\x1f\x7f]/g, "").trim());
   if (filename.length > 180) return { error: "Shorten the PDF filename and try again." };
@@ -30,8 +30,8 @@ export async function storeResume(
     upsert: false,
   });
   if (error) {
-    console.error("Unable to upload résumé", error.name);
-    return { error: "We could not upload your résumé. Please try again." };
+    console.error("Unable to upload resume", error.name);
+    return { error: "We could not upload your resume. Please try again." };
   }
   return { resume: { path, name: filename.toString("utf8") } };
 }

@@ -167,7 +167,7 @@ export async function GET(
         })),
         ...(index === 0 && resume ? [{
           id: "submitted-resume",
-          label: "Résumé",
+          label: "Resume",
           type: "resume",
           answer: resume.name,
           resumePath: resume.path,

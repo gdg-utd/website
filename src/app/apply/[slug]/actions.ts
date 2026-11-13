@@ -28,7 +28,7 @@ export async function uploadApplicationResume(formData: FormData) {
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
   const userId = data?.claims?.sub;
-  if (!userId) return { error: "Sign in again to upload your résumé." };
+  if (!userId) return { error: "Sign in again to upload your resume." };
 
   return storeResume(supabase, userId, formData.get("resume"));
 }
@@ -91,7 +91,7 @@ export async function saveApplication(previous: EditFormState, formData: FormDat
 
   const resumePath = textField(formData, "resumePath");
   if (resumePath && !describeResume(resumePath)) {
-    return editFormError(previous, formData, "Choose a valid résumé.");
+    return editFormError(previous, formData, "Choose a valid resume.");
   }
   const resumeSelection = formData.has("resumePath")
     ? { resume_path: resumePath || null, resume_selection_saved: true }
@@ -124,7 +124,7 @@ export async function saveApplication(previous: EditFormState, formData: FormDat
 
   if (error) {
     if (error.code === "22023" && error.message === "Select a resume uploaded by your account.") {
-      return editFormError(previous, formData, "That résumé is unavailable. Choose a different PDF or remove it.");
+      return editFormError(previous, formData, "That resume is unavailable. Choose a different PDF or remove it.");
     }
     console.error("Unable to save application", error.code, error.message);
     return editFormError(previous, formData, "We could not save your application. Please try again.");

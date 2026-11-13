@@ -132,7 +132,7 @@ export default async function ApplicationPage({ params, searchParams }: Applicat
                 <p>Submitted {formatCentralDate(application.submitted_at)} CT. Submitted applications cannot be edited.</p>
                 {savedResume && (
                   <p><a className="resume-preview" href={resumePreviewUrl(savedResume.path)} target="_blank" rel="noreferrer">
-                    Preview submitted résumé ({savedResume.name}) ↗
+                    Preview submitted resume ({savedResume.name}) ↗
                   </a></p>
                 )}
                 <Link className="primary-link" href="/dashboard">View dashboard <span aria-hidden="true">→</span></Link>

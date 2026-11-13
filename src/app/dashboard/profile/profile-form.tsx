@@ -4,9 +4,11 @@ import { useActionState } from "react";
 import { UtdProgramFields } from "@/components/utd-program-fields";
 import { initialEditFormState } from "@/lib/edit-form-state";
 import { updateProfile } from "./actions";
+import type { Resume } from "@/lib/resume";
+import { ProfileResumeField } from "./profile-resume-field";
 
 type ProfileValues = { first_name: string | null; last_name: string | null; net_id: string | null; degree: string | null; major: string | null; personal_email: string | null; linkedin_url: string | null; github_url: string | null; portfolio_url: string | null };
-export function ProfileForm({ profile, email }: { profile: ProfileValues | null; email: string }) {
+export function ProfileForm({ profile, email, resume }: { profile: ProfileValues | null; email: string; resume: Resume | null }) {
   const [state, formAction, pending] = useActionState(updateProfile, initialEditFormState);
   function value(name: string, original?: string | null) {
     const submitted = state.values?.[name];
@@ -59,6 +61,7 @@ export function ProfileForm({ profile, email }: { profile: ProfileValues | null;
               defaultMajor={value("major", profile?.major)}
               majorClassName="dashboard-profile-full-field"
             />
+            <ProfileResumeField resume={resume} profilePending={pending} />
           </div>
         </section>
 

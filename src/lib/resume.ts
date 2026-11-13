@@ -8,7 +8,7 @@ export type Resume = {
 
 export function resumeUploadError(file: File) {
   if (file.size > MAX_RESUME_BYTES) return "Choose a PDF that is 4 MB or smaller.";
-  if (!file.size || !file.name.toLowerCase().endsWith(".pdf")) return "Choose a PDF résumé.";
+  if (!file.size || !file.name.toLowerCase().endsWith(".pdf")) return "Choose a PDF resume.";
   return "";
 }
 

@@ -4,11 +4,11 @@ import { revalidatePath } from "next/cache";
 import { storeResume } from "@/lib/resume-server";
 import { createClient } from "@/lib/supabase/server";
 
-export async function updateProfileResume(_previous: { message: string; error: boolean }, formData: FormData) {
+export async function updateProfileResume(formData: FormData) {
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
   const userId = data?.claims?.sub;
-  if (!userId) return { message: "Sign in again to update your résumé.", error: true };
+  if (!userId) return { message: "Sign in again to update your resume.", error: true };
 
   let path: string | null = null;
   const removing = formData.get("intent") === "remove";
@@ -25,10 +25,10 @@ export async function updateProfileResume(_previous: { message: string; error: b
     .single();
 
   if (error) {
-    console.error("Unable to update profile résumé", error.code);
-    return { message: "We could not update your profile résumé. Please try again.", error: true };
+    console.error("Unable to update profile resume", error.code);
+    return { message: "We could not update your profile resume. Please try again.", error: true };
   }
   revalidatePath("/dashboard/profile");
   revalidatePath("/apply/[slug]", "page");
-  return { message: removing ? "Default résumé removed." : "Default résumé saved.", error: false };
+  return { message: removing ? "Default resume removed." : "Default resume saved.", error: false };
 }

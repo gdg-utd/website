@@ -203,29 +203,37 @@ test('application draft, resume, required agreements, confirmation, and submitte
 test('résumé defaults, per-application changes, and private submitted previews', async ({page,request,context}) => {
   const pdf = (name: string) => ({name, mimeType:'application/pdf', buffer:Buffer.from('%PDF-1.7\n%%EOF')});
   await login(page);
-  await page.getByLabel('Upload a default résumé (optional)').setInputFiles(pdf('Default résumé.pdf'));
-  await page.getByRole('button',{name:'Save résumé'}).click();
-  const profilePreview = page.getByRole('link',{name:/Preview Default résumé.pdf/});
+  const profileResume = page.getByRole('region',{name:'Personal information'}).getByRole('group',{name:'Resume',exact:true});
+  const choosePdf = async (field: typeof profileResume, button: string, file: ReturnType<typeof pdf>) => {
+    const chooser = page.waitForEvent('filechooser');
+    await field.getByRole('button',{name:button,exact:true}).click();
+    await (await chooser).setFiles(file);
+  };
+  const firstName = page.getByLabel('First name');
+  await firstName.fill('Unsaved profile edit');
+  await choosePdf(profileResume, 'Upload PDF', pdf('Default résumé.pdf'));
+  const profilePreview = profileResume.getByRole('link',{name:'Default résumé.pdf',exact:true});
   await expect(profilePreview).toBeVisible();
+  await expect(firstName).toHaveValue('Unsaved profile edit');
   const defaultUrl = (await profilePreview.getAttribute('href'))!;
 
   await page.goto('/apply/sprint-mentee');
-  const firstSection = page.getByRole('region',{name:'About you'});
-  await expect(firstSection.getByRole('link',{name:/Preview Default résumé.pdf/})).toBeVisible();
-  await firstSection.getByRole('button',{name:'Remove from application'}).click();
+  const firstSection = page.getByRole('region',{name:'About you'}).getByRole('group',{name:'Resume',exact:true});
+  await expect(firstSection.getByRole('link',{name:'Default résumé.pdf',exact:true})).toBeVisible();
+  await firstSection.getByRole('button',{name:'Remove resume',exact:true}).click();
   await page.getByRole('button',{name:'Save draft',exact:true}).click();
   await expect(page.getByRole('status')).toContainText('Draft saved');
   await page.reload();
-  await expect(firstSection.getByRole('link',{name:/Preview Default résumé.pdf/})).toHaveCount(0);
-  await firstSection.getByRole('button',{name:'Use profile résumé'}).click();
-  await expect(firstSection.getByRole('link',{name:/Preview Default résumé.pdf/})).toBeVisible();
+  await expect(firstSection.getByRole('link',{name:'Default résumé.pdf',exact:true})).toHaveCount(0);
+  await firstSection.getByRole('button',{name:'Use profile resume',exact:true}).click();
+  await expect(firstSection.getByRole('link',{name:'Default résumé.pdf',exact:true})).toBeVisible();
 
-  await firstSection.getByLabel('Replace résumé for this application').setInputFiles({
+  await choosePdf(firstSection, 'Replace', {
     name:'Invalid.pdf', mimeType:'application/pdf', buffer:Buffer.from('Not a PDF'),
   });
   await expect(firstSection.getByRole('alert')).toContainText('Choose a valid PDF');
-  await firstSection.getByLabel('Replace résumé for this application').setInputFiles(pdf('Tailored.pdf'));
-  await expect(firstSection.getByRole('link',{name:/Preview Tailored.pdf/})).toBeVisible();
+  await choosePdf(firstSection, 'Replace', pdf('Tailored.pdf'));
+  await expect(firstSection.getByRole('link',{name:'Tailored.pdf',exact:true})).toBeVisible();
   await page.getByLabel('Why would you like to join?').fill('I want to build with a team.');
   await page.getByLabel('Web development',{exact:true}).check();
   await page.getByLabel('Agreement: I will attend team meetings.').check();
@@ -235,10 +243,10 @@ test('résumé defaults, per-application changes, and private submitted previews
 
   await page.goto('/dashboard/profile');
   await expect(profilePreview).toBeVisible();
-  await page.getByRole('button',{name:'Remove default'}).click();
+  await profileResume.getByRole('button',{name:'Remove resume',exact:true}).click();
   await expect(profilePreview).toHaveCount(0);
   await page.goto('/apply/sprint-mentee');
-  const attachment = page.getByRole('link',{name:/Preview submitted résumé .*Tailored.pdf/});
+  const attachment = page.getByRole('link',{name:/Preview submitted resume .*Tailored.pdf/});
   await expect(attachment).toBeVisible();
   const attachmentUrl = (await attachment.getAttribute('href'))!;
   expect((await request.get(attachmentUrl,{maxRedirects:0})).status()).toBe(401);

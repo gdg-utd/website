@@ -5,7 +5,6 @@ import { redirect } from "next/navigation";
 import { ProfileForm } from "./profile-form";
 import { createClient } from "@/lib/supabase/server";
 import { describeResume } from "@/lib/resume-server";
-import { ResumeSection } from "./resume-section";
 import { PasswordResetSection } from "./password-reset-section";
 
 export const metadata: Metadata = { title: "Your profile" };
@@ -92,9 +91,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
         </p>
       )}
 
-      <ProfileForm profile={profile} email={email} />
-
-      <ResumeSection resume={describeResume(profile.resume_path)} />
+      <ProfileForm profile={profile} email={email} resume={describeResume(profile.resume_path)} />
 
       <PasswordResetSection />
     </>

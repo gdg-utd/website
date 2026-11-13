@@ -40,7 +40,7 @@ export function ApplicationForm({
         if (result.resume) setResume(result.resume);
         else setResumeError(result.error);
       } catch {
-        setResumeError("We could not upload your résumé. Please try again.");
+        setResumeError("We could not upload your resume. Please try again.");
       }
     });
   }
