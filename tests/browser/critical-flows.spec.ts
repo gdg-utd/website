@@ -118,8 +118,21 @@ test('reset requests display a quota error on the fourth request', async ({page}
 
 test('profile saves persist and logout protects the dashboard again', async ({page}) => {
   await login(page);
-  await page.getByLabel('First name').fill('Updated');
-  await page.getByRole('button',{name:'Save changes',exact:true}).click();
+  const firstName = page.getByLabel('First name');
+  const originalName = await firstName.inputValue();
+  const save = page.getByRole('button',{name:'Save changes',exact:true});
+  await expect(save).toBeHidden();
+  await firstName.fill('Updated');
+  await expect(page.getByText('You have unsaved changes.',{exact:true})).toBeVisible();
+  await firstName.fill(originalName);
+  await expect(save).toBeHidden();
+  await page.getByLabel('Major',{exact:true}).selectOption('Software Engineering');
+  await expect(save).toBeVisible();
+  await page.getByLabel('Major',{exact:true}).selectOption('Computer Science');
+  await expect(save).toBeHidden();
+  await firstName.fill('Updated');
+  await save.click();
+  await expect(save).toBeHidden();
   await expect(page.getByRole('status')).toContainText('Your profile was updated');
   await page.reload();
   await expect(page.getByLabel('First name')).toHaveValue('Updated');
@@ -136,6 +149,7 @@ test('failed profile saves preserve entered fields', async ({page,request}) => {
   await page.getByRole('button',{name:'Save changes',exact:true}).click();
   await expect(page.locator('main').getByRole('alert')).toContainText('We could not update your profile');
   await expect(page.getByLabel('First name')).toHaveValue('Keep this name');
+  await expect(page.getByRole('button',{name:'Save changes',exact:true})).toBeEnabled();
 });
 
 test('signed-in password changes validate current password and return to profile', async ({page}) => {
@@ -232,6 +246,7 @@ test('résumé defaults, per-application changes, and private submitted previews
   await profileDialog.getByRole('button',{name:'Close preview'}).click();
   await expect(profileDialog).toBeHidden();
   await expect(firstName).toHaveValue('Unsaved profile edit');
+  await expect(page.getByRole('button',{name:'Save changes',exact:true})).toBeVisible();
 
   await page.goto('/apply/sprint-mentee');
   const firstSection = page.getByRole('region',{name:'About you'}).getByRole('group',{name:'Resume',exact:true});

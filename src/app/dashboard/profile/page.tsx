@@ -56,7 +56,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
   const { data: profile, error } = await supabase
     .from("profiles")
     .select(
-      "first_name, last_name, net_id, degree, major, personal_email, linkedin_url, github_url, portfolio_url, resume_path",
+      "first_name, last_name, net_id, degree, major, personal_email, linkedin_url, github_url, portfolio_url, resume_path, updated_at",
     )
     .eq("id", userId)
     .maybeSingle();
@@ -91,7 +91,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
         </p>
       )}
 
-      <ProfileForm profile={profile} email={email} resume={describeResume(profile.resume_path)} />
+      <ProfileForm key={profile.updated_at} profile={profile} email={email} resume={describeResume(profile.resume_path)} />
 
       <PasswordResetSection />
     </>
