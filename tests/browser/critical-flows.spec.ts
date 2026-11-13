@@ -119,7 +119,7 @@ test('reset requests display a quota error on the fourth request', async ({page}
 test('profile saves persist and logout protects the dashboard again', async ({page}) => {
   await login(page);
   await page.getByLabel('First name').fill('Updated');
-  await page.getByRole('button',{name:/save/i}).click();
+  await page.getByRole('button',{name:'Save changes',exact:true}).click();
   await expect(page.getByRole('status')).toContainText('Your profile was updated');
   await page.reload();
   await expect(page.getByLabel('First name')).toHaveValue('Updated');
@@ -133,7 +133,7 @@ test('failed profile saves preserve entered fields', async ({page,request}) => {
   await request.post(`${backend}/__reset`,{data:{failProfileSave:true}});
   await login(page);
   await page.getByLabel('First name').fill('Keep this name');
-  await page.getByRole('button',{name:/save/i}).click();
+  await page.getByRole('button',{name:'Save changes',exact:true}).click();
   await expect(page.locator('main').getByRole('alert')).toContainText('We could not update your profile');
   await expect(page.getByLabel('First name')).toHaveValue('Keep this name');
 });
