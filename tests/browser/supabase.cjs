@@ -35,7 +35,8 @@ function createBackend() {
     res.setHeader('Access-Control-Allow-Headers','authorization,apikey,content-type,x-client-info,x-supabase-api-version');
     if(req.method==='OPTIONS'){res.end();return;}
     const chunks=[];for await (const chunk of req)chunks.push(chunk);
-    const raw=Buffer.concat(chunks).toString();
+    const bytes=Buffer.concat(chunks);
+    const raw=bytes.toString();
     let body;try{body=raw?JSON.parse(raw):{};}catch{body={};}
     const send=(data,status=200)=>{res.statusCode=status;res.end(JSON.stringify(data));};
     const error=(message,status=400,code='test_error')=>send({message,msg:message,code,error_code:code},status);
@@ -88,17 +89,22 @@ function createBackend() {
     if (resumeUpload && req.method === 'POST') {
       const resumePath = resumeUpload[1];
       if (!role || !resumePath.startsWith(ids[role] + '/')) {error('Forbidden',403);return;}
-      state.resumes[resumePath] = true;
+      state.resumes[resumePath] = bytes;
       send({Key:'member-resumes/' + resumePath});return;
     }
     const resumeSign = url.pathname.match(/^\/storage\/v1\/object\/sign\/member-resumes\/(.+)$/);
-    if (resumeSign && req.method === 'POST') {
-      const resumePath = resumeSign[1];
+    const resumeDownload = req.method === 'GET' ? resumeUpload : null;
+    if ((resumeSign && req.method === 'POST') || resumeDownload) {
+      const resumePath = (resumeDownload ?? resumeSign)[1];
       const ownsResume = role && resumePath.startsWith(ids[role] + '/');
       const reviewing = ['admin','reviewer'].includes(role) && state.applications.some(
         application => application.submission_state === 'submitted' && application.resume_path === resumePath,
       );
       if (!state.resumes[resumePath] || (!ownsResume && !reviewing)) {error('Not found',404);return;}
+      if (resumeDownload) {
+        res.setHeader('Content-Type', 'application/pdf');
+        res.end(state.resumes[resumePath]);return;
+      }
       send({signedURL:'/object/sign/member-resumes/' + resumePath + '?token=fixture'});return;
     }
     if(url.pathname.startsWith('/rest/v1/')) {

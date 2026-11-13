@@ -12,6 +12,7 @@ export function contentSecurityPolicy(
     "font-src 'self'",
     `connect-src 'self' ${supabase.origin} wss://${supabase.host} https://vitals.vercel-insights.com https://va.vercel-scripts.com${development ? " ws://localhost:* ws://127.0.0.1:*" : ""}`,
     "object-src 'none'",
+    "frame-src blob:",
     "base-uri 'self'",
     "form-action 'self'",
     "frame-ancestors 'none'",

@@ -1,7 +1,8 @@
 "use client";
 
 import { useId, useRef } from "react";
-import { RESUME_FILE_HELP, resumePreviewUrl, type Resume } from "@/lib/resume";
+import { RESUME_FILE_HELP, type Resume } from "@/lib/resume";
+import { ResumePreview } from "./resume-preview";
 
 export function ResumeInput({
   resume,
@@ -30,9 +31,10 @@ export function ResumeInput({
       <span className="resume-label" id={headingId}>Resume</span>
       <div className="resume-row">
         {resume ? (
-          <a className="resume-preview resume-filename" href={resumePreviewUrl(resume.path)} target="_blank" rel="noreferrer">
-            {resume.name} <span aria-hidden="true">↗</span>
-          </a>
+          <div className="resume-file">
+            <span className="resume-filename">{resume.name}</span>
+            <ResumePreview resume={resume} />
+          </div>
         ) : (
           <span className="resume-filename resume-empty">No file attached</span>
         )}

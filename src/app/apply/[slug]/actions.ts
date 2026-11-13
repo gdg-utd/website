@@ -24,7 +24,7 @@ function applicationPath(slug: string, message?: string) {
   return message ? `${path}?message=${encodeURIComponent(message)}` : path;
 }
 
-export async function uploadApplicationResume(formData: FormData) {
+export async function uploadApplicationResume(formData: FormData): ReturnType<typeof storeResume> {
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
   const userId = data?.claims?.sub;

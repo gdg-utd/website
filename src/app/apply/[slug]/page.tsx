@@ -11,7 +11,7 @@ import {
   parseApplicationOpening,
   type ApplicationResponses,
 } from "@/lib/applications";
-import { resumePreviewUrl } from "@/lib/resume";
+import { ResumePreview } from "@/components/resume-preview";
 import { describeResume } from "@/lib/resume-server";
 import { createClient } from "@/lib/supabase/server";
 import { ApplicationForm } from "./application-form";
@@ -131,9 +131,12 @@ export default async function ApplicationPage({ params, searchParams }: Applicat
                 <h2>Your application is submitted.</h2>
                 <p>Submitted {formatCentralDate(application.submitted_at)} CT. Submitted applications cannot be edited.</p>
                 {savedResume && (
-                  <p><a className="resume-preview" href={resumePreviewUrl(savedResume.path)} target="_blank" rel="noreferrer">
-                    Preview submitted resume ({savedResume.name}) ↗
-                  </a></p>
+                  <div className="resume-row resume-submitted-row">
+                    <div className="resume-file">
+                      <span className="resume-filename">{savedResume.name}</span>
+                      <ResumePreview resume={savedResume} />
+                    </div>
+                  </div>
                 )}
                 <Link className="primary-link" href="/dashboard">View dashboard <span aria-hidden="true">→</span></Link>
               </div>
