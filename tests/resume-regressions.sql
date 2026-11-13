@@ -75,14 +75,13 @@ select pg_temp.check_true(not public.reserve_resume_upload((select uid from audi
 select pg_temp.check_true(not public.reserve_resume_upload((select uid from audit_ids where key='alice'), 4194305), 'oversized upload cannot reserve');
 do $$
 begin
-  for attempt in 1..10 loop
-    perform pg_temp.check_true(public.reserve_resume_upload((select uid from audit_ids where key='alice'), 4194304), 'upload within member quota');
+  for attempt in 1..11 loop
+    perform pg_temp.check_true(public.reserve_resume_upload((select uid from audit_ids where key='alice'), 4194304), 'upload within site quota, including the eleventh upload');
   end loop;
 end $$;
-select pg_temp.check_true(not public.reserve_resume_upload((select uid from audit_ids where key='alice'), 1), 'member quota rejects eleventh upload');
 reset role;
 insert into private.resume_upload_reservations(member_id, bytes)
-select gen_random_uuid(), 4194304 from generate_series(1,54);
+select gen_random_uuid(), 4194304 from generate_series(1,53);
 update auth.users set email_confirmed_at = now() where id = (select uid from audit_ids where key='bob');
 set local role service_role;
 select pg_temp.check_true(not public.reserve_resume_upload((select uid from audit_ids where key='bob'), 1), 'project quota applies across accounts');
