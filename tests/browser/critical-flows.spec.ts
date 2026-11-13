@@ -126,9 +126,10 @@ test('profile saves persist and logout protects the dashboard again', async ({pa
   await expect(page.getByText('You have unsaved changes.',{exact:true})).toBeVisible();
   await firstName.fill(originalName);
   await expect(save).toBeHidden();
-  await page.getByLabel('Major',{exact:true}).selectOption('Software Engineering');
+  const major = page.getByRole('region',{name:'Personal information'}).locator('select[name="major"]');
+  await major.selectOption('Software Engineering');
   await expect(save).toBeVisible();
-  await page.getByLabel('Major',{exact:true}).selectOption('Computer Science');
+  await major.selectOption('Computer Science');
   await expect(save).toBeHidden();
   await firstName.fill('Updated');
   await save.click();
