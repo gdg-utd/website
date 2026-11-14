@@ -2,7 +2,7 @@ import { connection } from "next/server";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { VercelAnalytics } from "@/components/vercel-analytics";
-import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
+import { SITE_DESCRIPTION, SITE_NAME, SITE_SHORT_NAME, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -17,6 +17,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
+  applicationName: SITE_SHORT_NAME,
   title: {
     default: SITE_NAME,
     template: `%s | ${SITE_NAME}`,
@@ -29,7 +30,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: SITE_NAME,
     description: SITE_DESCRIPTION,
-    siteName: SITE_NAME,
+    siteName: SITE_SHORT_NAME,
     type: "website",
   },
   twitter: {

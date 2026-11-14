@@ -14,7 +14,7 @@ import {
   type ChapterEvent,
 } from "@/lib/gdg";
 import { createClient } from "@/lib/supabase/server";
-import { SITE_NAME, SITE_URL } from "@/lib/site";
+import { SITE_NAME, SITE_SHORT_NAME, SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/" },
@@ -25,7 +25,7 @@ const websiteStructuredData = {
   "@type": "WebSite",
   "@id": `${SITE_URL}/#website`,
   url: SITE_URL,
-  name: "GDG UTD",
+  name: SITE_SHORT_NAME,
   alternateName: [SITE_NAME, "GDG UTDallas", "GDSC UTD"],
 };
 
@@ -137,7 +137,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
             <p className="overline">Google Developer Groups</p>
             <h1 id="hero-title">GDG on Campus<br /><span>UT Dallas.</span></h1>
             <p className="hero-intro">
-              GDG on Campus UTD organizes workshops, project programs, and meetups for students interested in software and technology.
+              GDG UTD organizes workshops, project programs, and meetups for students interested in software and technology.
             </p>
             <div className="hero-actions">
               <a className="primary-button" href={CHAPTER_URL} target="_blank" rel="noreferrer">
