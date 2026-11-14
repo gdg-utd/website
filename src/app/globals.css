@@ -1353,14 +1353,14 @@ img { display: block; }
 .skip-link { position: fixed; left: 16px; top: 12px; z-index: 1000; padding: 12px 18px; transform: translateY(-180%); background: #174ea6; color: white; border-radius: 4px; font-weight: 650; }
 .skip-link:focus { transform: translateY(0); }
 .dashboard-mobile-admin-link { display: none; }
-dialog.admin-drawer { position: fixed; inset: 0 0 0 auto; height: 100dvh; max-height: 100dvh; max-width: 100%; margin: 0 0 0 auto; padding: 0; border: 0; border-left: 1px solid #cdd2d8; color: inherit; }
+dialog.admin-drawer { --application-review-width: min(760px, calc(100vw - 64px)); position: fixed; inset: 0 0 0 auto; width: var(--application-review-width); height: 100dvh; max-height: 100dvh; max-width: 100%; margin: 0 0 0 auto; padding: 0; border: 0; color: inherit; }
 dialog.admin-drawer::backdrop { background: rgba(31,35,40,.34); backdrop-filter: blur(2px); }
 dialog.admin-drawer { overflow: hidden; }
-dialog.admin-drawer.admin-drawer-split { inset-inline: 0; width: 100%; border-left: 0; }
+dialog.admin-drawer.admin-drawer-split { inset-inline: 0; width: 100%; }
 .admin-review-layout { display: grid; height: 100%; grid-template-columns: minmax(0, 1fr); }
-.admin-drawer-split .admin-review-layout { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
-.admin-review-pane { min-width: 0; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
-.admin-resume-pane { min-width: 0; min-height: 0; border-right: 1px solid #d7dce2; background: #fff; }
+.admin-drawer-split .admin-review-layout { grid-template-columns: minmax(0, 1fr) var(--application-review-width); }
+.admin-review-pane { min-width: 0; min-height: 0; overflow-y: auto; overscroll-behavior: contain; border-left: 1px solid #cdd2d8; }
+.admin-resume-pane { min-width: 0; min-height: 0; background: #fff; }
 .admin-resume-trigger {
   padding: 0; border: 0; background: transparent; color: var(--blue-dark); font: inherit;
   font-size: 13px; text-decoration: underline; text-underline-offset: 3px; text-align: left;
@@ -1373,10 +1373,11 @@ dialog.admin-drawer.admin-drawer-split { inset-inline: 0; width: 100%; border-le
 @media (max-width: 900px) {
   .admin-drawer-split .admin-review-layout { grid-template-columns: minmax(0, 1fr); }
   .admin-drawer-split .admin-review-pane { display: none; }
-  .admin-resume-pane { border-right: 0; }
 }
 .form-error-summary { margin: 0 0 20px; padding: 16px; border: 1px solid #e9b8b8; background: #fff4f4; color: #952b2b; line-height: 1.6; }
 @media (max-width: 720px) {
+  dialog.admin-drawer { --application-review-width: 100vw; }
+  .admin-review-pane { border-left: 0; }
   .dashboard-mobile-admin-link { display: flex; justify-content: space-between; padding: 13px 18px; border-top: 1px solid #dce1e7; color: #174ea6; font-size: 12px; font-weight: 650; }
   .dashboard-navigation a { padding-inline: 4px; gap: 0; white-space: nowrap; }
 }

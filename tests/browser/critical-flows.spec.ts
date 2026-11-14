@@ -289,6 +289,9 @@ test('résumé defaults, per-application changes, and private submitted previews
   await page.getByRole('button',{name:'Review',exact:true}).first().click();
   const review = page.getByRole('dialog',{name:'Application review'});
   const resume = review.getByRole('button',{name:'Tailored.pdf',exact:true});
+  await expect(resume).toBeVisible();
+  const applicationPane = review.locator('.admin-review-pane');
+  const originalBounds = await applicationPane.boundingBox();
   await resume.click();
   const previewPane = review.getByRole('region',{name:'Resume preview'});
   await expect(previewPane.getByTitle('Resume PDF')).toHaveAttribute('src', /^blob:/);
@@ -297,7 +300,9 @@ test('résumé defaults, per-application changes, and private submitted previews
   expect(drawerBounds!.width).toBe(page.viewportSize()!.width);
   if (!test.info().project.name.includes('mobile')) {
     const pdfBounds = await previewPane.boundingBox();
-    const reviewBounds = await review.locator('.admin-review-pane').boundingBox();
+    const reviewBounds = await applicationPane.boundingBox();
+    expect(reviewBounds!.width).toBeCloseTo(originalBounds!.width);
+    expect(reviewBounds!.x).toBeCloseTo(originalBounds!.x);
     expect(pdfBounds!.x + pdfBounds!.width).toBeLessThanOrEqual(reviewBounds!.x + 1);
   }
   await previewPane.getByRole('button',{name:'Close preview'}).click();
