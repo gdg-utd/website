@@ -171,7 +171,7 @@ The current retry schedule migration contains the production function URL. **Do 
 
 Resume uploads use the `resume-storage` function. Coordinate the migration and website rollout so the new website can call the worker when direct bucket uploads are disabled. Deploy the function before promoting the matching website build. The migration generates `resume_cleanup_worker_token` in Vault. To enable the cleanup schedule, create a Vault secret named `resume_cleanup_project_url` containing the target project's Supabase API origin without a trailing slash. Verify the scheduled worker returns HTTP 200 before considering cleanup active.
 
-The worker reserves up to 10 uploads per account per rolling hour and up to 256 MiB across accounts per rolling day. Cleanup runs every 10 minutes and claims up to 100 files older than 24 hours that are absent from profiles and all application rows. It retries failed Storage API deletions on subsequent runs.
+The worker reserves up to 256 MiB across accounts per rolling 24 hours. Cleanup runs every 10 minutes and claims up to 100 files older than 24 hours that are absent from profiles and all application rows. It retries failed Storage API deletions on subsequent runs.
 
 After database changes, regenerate `src/lib/supabase/database.types.ts` from the target schema, inspect the diff, and rerun type checks. Run Supabase’s security advisors and investigate new findings; do not disable database policies to make an error disappear.
 

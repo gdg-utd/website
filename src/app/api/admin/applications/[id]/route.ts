@@ -62,7 +62,7 @@ export async function GET(
       .maybeSingle(),
     supabase
       .from("application_events")
-      .select("id, event_type, details, created_at")
+      .select("id, actor_id, event_type, details, created_at")
       .eq("application_id", id)
       .lt("id", before)
       .order("id", { ascending: false })
@@ -106,16 +106,27 @@ export async function GET(
     !Array.isArray(application.responses)
       ? (application.responses as ApplicationResponses)
       : {};
-  const { data: stagedEvent, error: stageError } = await supabase
-    .from("application_events")
-    .select("details")
-    .eq("application_id", id)
-    .eq("event_type", "decision_staged")
-    .gte("created_at", application.submitted_at ?? "1970-01-01")
-    .order("created_at", { ascending: false })
-    .order("id", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  const pageEvents = (events ?? []).slice(0, 50);
+  const [{ data: stagedEvent, error: stageError }, { data: actors, error: actorError }] = await Promise.all([
+    supabase
+      .from("application_events")
+      .select("details")
+      .eq("application_id", id)
+      .eq("event_type", "decision_staged")
+      .gte("created_at", application.submitted_at ?? "1970-01-01")
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    pageEvents.length
+      ? supabase.rpc("application_event_actors", {
+        target_application_id: id,
+        event_ids: pageEvents.map((event) => event.id),
+      })
+      : Promise.resolve({ data: [], error: null }),
+  ]);
+  if (actorError) console.error("Unable to load application audit actors", actorError.code);
+  const actorNames = new Map(actors?.map((actor) => [actor.event_id, actor.actor_name]));
   if (stageError)
     return Response.json(
       { error: "Unable to load staged decision. Please try again." },
@@ -176,7 +187,7 @@ export async function GET(
     })),
     historyCursor: events && events.length > 50 ? events[49].id : null,
     emails: delivery ?? [],
-    events: (events ?? []).slice(0, 50).map((event) => {
+    events: pageEvents.map((event) => {
       const eventDecision =
         event.details &&
         typeof event.details === "object" &&
@@ -208,6 +219,11 @@ export async function GET(
         reason: event.event_type === "reopened" && event.details && typeof event.details === "object" && !Array.isArray(event.details) && typeof event.details.reason === "string"
           ? event.details.reason : undefined,
         createdLabel: formatCentralDate(event.created_at),
+        actorName: actorNames.get(event.id) ?? (
+          event.actor_id === application.applicant_id || event.event_type === "submitted"
+            ? `${application.applicant_first_name} ${application.applicant_last_name}`
+            : event.actor_id === null ? "System or deleted account" : "Name unavailable"
+        ),
       };
     }),
   };

@@ -104,6 +104,11 @@ export async function stageApplicationDecision(
     return { status: "error", message: "The staged decision could not be saved." };
   }
 
+  const { data: actor } = await supabase.from("profiles")
+    .select("first_name, last_name")
+    .eq("id", userId)
+    .maybeSingle();
+
   return {
     status: "updated",
     stagedDecision: decision,
@@ -113,6 +118,7 @@ export async function stageApplicationDecision(
         ? "Acceptance staged"
         : decision === "rejected" ? "Not selected staged" : "Staged decision cleared",
       createdLabel: formatCentralDate(stagedEvent.created_at),
+      actorName: [actor?.first_name, actor?.last_name].filter(Boolean).join(" ").trim() || "Name unavailable",
     },
   };
 }

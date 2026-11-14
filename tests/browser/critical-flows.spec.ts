@@ -287,10 +287,19 @@ test('résumé defaults, per-application changes, and private submitted previews
   await context.clearCookies();
   await login(page,'reviewer','/admin/applications');
   await page.getByRole('button',{name:'Review',exact:true}).first().click();
-  await expect(page.getByRole('dialog',{name:'Application review'}).getByRole('link',{name:/Tailored.pdf/})).toHaveAttribute('href', new URL(attachmentUrl).pathname + new URL(attachmentUrl).search.replace('&preview=1', ''));
-  const preview = await context.request.get(attachmentUrl.replace('&preview=1', ''),{maxRedirects:0});
-  expect(preview.status()).toBe(307);
-  expect(preview.headers()['location']).toContain('/storage/v1/object/sign/member-resumes/');
+  const review = page.getByRole('dialog',{name:'Application review'});
+  const resume = review.getByRole('button',{name:'Tailored.pdf',exact:true});
+  await resume.click();
+  const previewPane = review.getByRole('region',{name:'Resume preview'});
+  await expect(previewPane.getByTitle('Resume PDF')).toHaveAttribute('src', /^blob:/);
+  if (!test.info().project.name.includes('mobile')) {
+    const pdfBounds = await previewPane.boundingBox();
+    const reviewBounds = await review.locator('.admin-review-pane').boundingBox();
+    expect(pdfBounds!.x + pdfBounds!.width).toBeLessThanOrEqual(reviewBounds!.x + 1);
+  }
+  await previewPane.getByRole('button',{name:'Close preview'}).click();
+  await expect(previewPane).toBeHidden();
+  await expect(resume).toBeFocused();
   expect((await context.request.get(defaultUrl,{maxRedirects:0})).status()).toBe(404);
 });
 
@@ -386,6 +395,10 @@ test('administrators review, stage, cancel confirmation, and publish decisions',
   await expect(publish).toBeDisabled();
   await review.getByRole('button',{name:'Stage acceptance',exact:true}).click();
   await expect(review.getByText('Acceptance is staged.',{exact:true})).toBeVisible();
+  const activity = review.getByRole('listitem').filter({hasText:'Acceptance staged'});
+  await expect(activity.getByText('Browser admin',{exact:true})).toBeVisible();
+  await page.reload();
+  await expect(activity.getByText('Browser admin',{exact:true})).toBeVisible();
   await publish.click();
   await page.getByRole('button',{name:'Cancel',exact:true}).click();
   const before = await (await request.get(`${backend}/__state`)).json();

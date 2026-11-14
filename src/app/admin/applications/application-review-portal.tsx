@@ -1,6 +1,7 @@
 "use client";
 
-import { resumePreviewUrl } from "@/lib/resume";
+import { ResumeDocument } from "@/components/resume-preview";
+import type { Resume } from "@/lib/resume";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { EmailDelivery } from "./email-delivery";
@@ -43,6 +44,8 @@ export function ApplicationReviewPortal({
 }: ApplicationReviewPortalProps) {
   const router = useRouter();
   const drawerRef = useRef<HTMLDialogElement>(null);
+  const resumeOpener = useRef<HTMLButtonElement>(null);
+  const [preview, setPreview] = useState<Resume | null>(null);
   const [selectedId, setSelectedId] = useState(initialApplicationId);
   const [loadState, setLoadState] = useState<{
     id: number;
@@ -58,6 +61,7 @@ export function ApplicationReviewPortal({
 
   const selectApplication = useCallback((id: number | null) => {
     setLoadState(null);
+    setPreview(null);
     setSelectedId(id);
   }, []);
 
@@ -134,6 +138,15 @@ export function ApplicationReviewPortal({
   function closeApplication() {
     selectApplication(null);
     updateUrl(null);
+  }
+
+  const focusPreviewClose = useCallback((button: HTMLButtonElement | null) => {
+    button?.focus();
+  }, []);
+
+  function closePreview() {
+    setPreview(null);
+    requestAnimationFrame(() => resumeOpener.current?.focus());
   }
 
   useEffect(() => {
@@ -243,11 +256,12 @@ export function ApplicationReviewPortal({
       {selectedId && (
         <dialog
           ref={drawerRef}
-          className="admin-drawer"
+          className={`admin-drawer${preview ? " admin-drawer-split" : ""}`}
           aria-label="Application review"
           onCancel={(event) => {
             event.preventDefault();
-            closeApplication();
+            if (preview) closePreview();
+            else closeApplication();
           }}
           onClick={(event) => {
             if (event.target !== event.currentTarget) return;
@@ -261,25 +275,45 @@ export function ApplicationReviewPortal({
               closeApplication();
           }}
         >
-          {loading && <ApplicationReviewLoading onClose={closeApplication} />}
-          {error && (
-            <ApplicationReviewError
-              message={error}
-              onClose={closeApplication}
-            />
-          )}
-          {review && (
-            <ApplicationReviewContent
-              key={review.id}
-              review={review}
-              returnPosition={returnPosition}
-              role={role}
-              onClose={closeApplication}
-              onStageChanged={(previousDecision, result) =>
-                handleStageChanged(review.id, previousDecision, result)
-              }
-            />
-          )}
+          <div className="admin-review-layout">
+            {preview && (
+              <section className="admin-resume-pane resume-preview-panel" aria-label="Resume preview">
+                <header className="resume-preview-header">
+                  <h2>{preview.name}</h2>
+                  <button
+                    className="resume-button resume-remove"
+                    type="button"
+                    aria-label="Close preview"
+                    ref={focusPreviewClose}
+                    onClick={closePreview}
+                  >
+                    <span aria-hidden="true">×</span>
+                  </button>
+                </header>
+                <ResumeDocument key={preview.path} resume={preview} />
+              </section>
+            )}
+            <div className="admin-review-pane">
+              {loading && <ApplicationReviewLoading onClose={closeApplication} />}
+              {error && <ApplicationReviewError message={error} onClose={closeApplication} />}
+              {review && (
+                <ApplicationReviewContent
+                  key={review.id}
+                  review={review}
+                  returnPosition={returnPosition}
+                  role={role}
+                  onClose={closeApplication}
+                  onPreviewResume={(resume, opener) => {
+                    resumeOpener.current = opener;
+                    setPreview(resume);
+                  }}
+                  onStageChanged={(previousDecision, result) =>
+                    handleStageChanged(review.id, previousDecision, result)
+                  }
+                />
+              )}
+            </div>
+          </div>
         </dialog>
       )}
     </>
@@ -337,11 +371,13 @@ function ApplicationReviewContent({
   role,
   onClose,
   onStageChanged,
+  onPreviewResume,
 }: {
   review: ApplicationReview;
   returnPosition?: string;
   role: "admin" | "reviewer";
   onClose: () => void;
+  onPreviewResume: (resume: Resume, opener: HTMLButtonElement) => void;
   onStageChanged: (
     previousDecision: ApplicationStageDecision,
     result: Extract<ApplicationStageResult, { status: "updated" }>,
@@ -491,13 +527,20 @@ function ApplicationReviewContent({
         {review.sections.map((section) => (
           <div className="admin-response-section" key={section.id}>
             <h4>{section.title}</h4>
-            {section.fields.map((field) => (
+            {section.fields.map(({ resumePath, ...field }) => (
               <div className="admin-response" key={field.id}>
                 <h5>{field.label}</h5>
-                {field.resumePath ? (
-                  <a href={resumePreviewUrl(field.resumePath)} target="_blank" rel="noreferrer">
-                    {field.answer} ↗
-                  </a>
+                {resumePath ? (
+                  <button
+                    className="admin-resume-trigger"
+                    type="button"
+                    onClick={(event) => onPreviewResume(
+                      { name: field.answer, path: resumePath },
+                      event.currentTarget,
+                    )}
+                  >
+                    {field.answer}
+                  </button>
                 ) : field.type === "url" && field.answer ? (
                   <a href={field.answer} target="_blank" rel="noreferrer">
                     {field.answer} ↗
@@ -532,7 +575,10 @@ function ApplicationReviewContent({
             ),
           ].map((event) => (
             <li key={event.id}>
-              <span>{event.label}</span>
+              <div className="admin-audit-event">
+                <span>{event.label}</span>
+                <span className="admin-audit-actor">{event.actorName}</span>
+              </div>
               <time>{event.createdLabel} CT</time>
               {event.reason && <p className="admin-reopen-reason">{event.reason}</p>}
             </li>

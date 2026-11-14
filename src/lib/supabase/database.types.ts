@@ -448,6 +448,10 @@ export type Database = {
       get_staff_access: { Args: never; Returns: Json }
       set_staff_access: { Args: { target_email: string; desired_role: string; expected_role: string }; Returns: undefined }
 
+      application_event_actors: {
+        Args: { target_application_id: number; event_ids: number[] }
+        Returns: { event_id: number; actor_name: string | null }[]
+      }
       application_email_status: {
         Args: { target_application_id: number }
         Returns: {

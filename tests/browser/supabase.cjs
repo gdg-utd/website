@@ -158,6 +158,16 @@ function createBackend() {
         app.application_rsvps.status=body.response;
         send([{rsvp_status:body.response,response_recorded_at:new Date().toISOString()}]);return;
       }
+      if (table === 'rpc/application_event_actors') {
+        const application = state.applications.find(a => a.id === body.target_application_id && a.submission_state === 'submitted');
+        const events = ['admin','reviewer'].includes(role) && application
+          ? state.events.filter(event => event.application_id === application.id && body.event_ids.includes(event.id))
+          : [];
+        send(events.map(event => {
+          const profile = state.profiles[event.actor_id];
+          return { event_id: event.id, actor_name: profile ? `${profile.first_name} ${profile.last_name}` : null };
+        }));return;
+      }
       if(table==='rpc/application_email_status'){send([{id:1,template_key:'confirmation',status:'sent',attempts:1,next_attempt_at:new Date().toISOString(),last_error:null}]);return;}
       let rows=[];
       if(table==='profiles')rows=Object.values(state.profiles);

@@ -49,7 +49,7 @@ export function ResumePreview({ resume }: { resume: Resume }) {
   );
 }
 
-function ResumeDocument({ resume }: { resume: Resume }) {
+export function ResumeDocument({ resume }: { resume: Resume }) {
   const [url, setUrl] = useState("");
   const [error, setError] = useState(false);
   const source = resumePreviewUrl(resume.path);

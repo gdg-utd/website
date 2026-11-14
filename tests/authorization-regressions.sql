@@ -96,6 +96,10 @@ end $$;
 select pg_temp.denied('select public.retry_application_email(0)','applicant manual retry');
 select pg_temp.denied('select public.reopen_application('||(select id from audit_ids where key='alice-app')||',''Correction requested'')','applicant reopen RPC');
 select pg_temp.denied('select private.reopen_application('||(select id from audit_ids where key='alice-app')||',''Correction requested'')','private helper also checks admin role');
+select pg_temp.check_true(
+  (select count(*)=0 from public.application_event_actors((select id from audit_ids where key='alice-app'), array[1::bigint])),
+  'applicant cannot resolve audit actors'
+);
 reset role;
 
 -- Reviewer reads/stages/clears; publishing, reopening, queue and role changes denied.
@@ -109,6 +113,14 @@ insert into public.application_events(application_id,actor_id,event_type,details
 select id,(select uid from audit_ids where key='reviewer'),'decision_staged','{"decision":"cleared"}' from audit_ids where key='alice-app';
 insert into public.application_events(application_id,actor_id,event_type,details)
 select id,(select uid from audit_ids where key='reviewer'),'decision_staged','{"decision":"accepted"}' from audit_ids where key='alice-app';
+select pg_temp.check_true(
+  (select count(*)=3 and bool_and(actor_name='Audit reviewer')
+   from public.application_event_actors(
+     (select id from audit_ids where key='alice-app'),
+     array(select id from public.application_events where event_type='decision_staged')
+   )),
+  'audit actors resolve only for events on the requested application'
+);
 select pg_temp.denied('select public.publish_staged_application_decisions('||(select id from audit_ids where key='audit-opening-a')||')','reviewer bulk publish');
 select pg_temp.denied('select public.application_email_status('||(select id from audit_ids where key='alice-app')||')','reviewer delivery payload');
 select pg_temp.denied('select public.release_expired_mentee_offers('||(select id from audit_ids where key='sprint-mentee')||')','reviewer expiry release');

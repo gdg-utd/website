@@ -16,6 +16,7 @@ export type ApplicationReviewEvent = {
   id: number;
   label: string;
   createdLabel: string;
+  actorName: string;
   reason?: string;
 };
 
