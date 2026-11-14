@@ -6,6 +6,7 @@ import { FunctionsHttpError } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getPasswordStrength } from "@/lib/password";
+import { clearLocalAuthCookies, clearPasswordRecovery } from "@/lib/password-recovery";
 
 export type AuthActionState = {
   status: "idle" | "error" | "success";
@@ -236,6 +237,15 @@ export async function requestPasswordReset(
 
 export async function logout() {
   const supabase = await createClient();
-  await supabase.auth.signOut();
+  try {
+    const { error } = await supabase.auth.signOut();
+    if (error) console.error("Unable to revoke sessions during logout", error.name);
+  } catch {
+    console.error("Unable to reach authentication service during logout");
+  } finally {
+    // Remote revocation can fail during an outage. Always end access in this browser.
+    await clearLocalAuthCookies();
+    await clearPasswordRecovery();
+  }
   redirect("/");
 }

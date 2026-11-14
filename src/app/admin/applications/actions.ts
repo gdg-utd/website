@@ -153,7 +153,7 @@ export async function publishApplicationDecision(formData: FormData) {
     ? staged.details.decision
     : null;
 
-  if (decision !== "accepted" && decision !== "rejected") {
+  if (!application?.submitted_at || (decision !== "accepted" && decision !== "rejected")) {
     redirect(portalPath({ message: "stage-required", applicationId: id, position }));
   }
 
@@ -163,11 +163,12 @@ export async function publishApplicationDecision(formData: FormData) {
     .eq("id", id)
     .eq("submission_state", "submitted")
     .eq("published_decision", "undecided")
+    .eq("submitted_at", application.submitted_at)
     .select("id, application_openings(slug)")
     .maybeSingle();
 
-  if (error) {
-    console.error("Unable to publish decision", error.code, error.message);
+  if (error || !publishedApplication) {
+    console.error("Unable to publish decision", error?.code ?? "application-changed");
     redirect(portalPath({ message: "publish-failed", applicationId: id, position }));
   }
 

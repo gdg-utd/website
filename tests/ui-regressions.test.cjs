@@ -66,6 +66,7 @@ test('unconfirmed login redirects to OTP; incorrect credentials remain a login e
   const originalLoad = Module._load;
   let authError = {code:'email_not_confirmed',message:'Email not confirmed'};
   Module._load = function(name, ...args) {
+    if (name === '@/lib/password-recovery') return {};
     if (name === 'next/navigation') return {redirect(destination) { throw Object.assign(new Error('redirect'), {destination}); }};
     if (name === '@/lib/supabase/server') return {createClient:async () => ({auth:{signInWithPassword:async () => ({data:null,error:authError})}})};
     return originalLoad.call(this,name,...args);

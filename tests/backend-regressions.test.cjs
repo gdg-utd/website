@@ -438,6 +438,7 @@ test("reset quota responses reach the form as an error instead of email success"
   let result = { data: { accepted: true }, error: null };
   let invocations = 0;
   Module._load = function (name, ...args) {
+    if (name === "@/lib/password-recovery") return {};
     if (name === "@/lib/supabase/server") return { createClient: async () => ({
       functions: { invoke: async () => { invocations++; return result; } },
     }) };
