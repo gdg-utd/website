@@ -292,6 +292,9 @@ test('résumé defaults, per-application changes, and private submitted previews
   await resume.click();
   const previewPane = review.getByRole('region',{name:'Resume preview'});
   await expect(previewPane.getByTitle('Resume PDF')).toHaveAttribute('src', /^blob:/);
+  const drawerBounds = await review.boundingBox();
+  expect(drawerBounds!.x).toBeCloseTo(0);
+  expect(drawerBounds!.width).toBe(page.viewportSize()!.width);
   if (!test.info().project.name.includes('mobile')) {
     const pdfBounds = await previewPane.boundingBox();
     const reviewBounds = await review.locator('.admin-review-pane').boundingBox();
