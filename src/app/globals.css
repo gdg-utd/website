@@ -1356,7 +1356,7 @@ img { display: block; }
 dialog.admin-drawer { position: fixed; inset: 0 0 0 auto; height: 100dvh; max-height: 100dvh; max-width: 100%; margin: 0 0 0 auto; padding: 0; border: 0; border-left: 1px solid #cdd2d8; color: inherit; }
 dialog.admin-drawer::backdrop { background: rgba(31,35,40,.34); backdrop-filter: blur(2px); }
 dialog.admin-drawer { overflow: hidden; }
-dialog.admin-drawer.admin-drawer-split { width: min(1440px, calc(100% - 32px)); }
+dialog.admin-drawer.admin-drawer-split { inset-inline: 0; width: 100%; border-left: 0; }
 .admin-review-layout { display: grid; height: 100%; grid-template-columns: minmax(0, 1fr); }
 .admin-drawer-split .admin-review-layout { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
 .admin-review-pane { min-width: 0; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
@@ -1371,7 +1371,6 @@ dialog.admin-drawer.admin-drawer-split { width: min(1440px, calc(100% - 32px)); 
 .admin-drawer-history li:has(.admin-reopen-reason) { flex-wrap: wrap; gap: 0 20px; }
 .admin-drawer-history .admin-reopen-reason { flex-basis: 100%; }
 @media (max-width: 900px) {
-  dialog.admin-drawer.admin-drawer-split { width: 100%; }
   .admin-drawer-split .admin-review-layout { grid-template-columns: minmax(0, 1fr); }
   .admin-drawer-split .admin-review-pane { display: none; }
   .admin-resume-pane { border-right: 0; }
