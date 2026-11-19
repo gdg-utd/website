@@ -483,7 +483,7 @@ img { display: block; }
 .onboarding-header > div > span i { width: 20px; height: 20px; display: grid; place-items: center; border-radius: 50%; background: #e6f4ea; color: #137333; font-style: normal; font-size: 10px; }
 .onboarding-header form { margin: 0; }
 .onboarding-header button { padding: 0; border: 0; background: transparent; color: #626a72; font: inherit; font-size: 11px; cursor: pointer; }
-.onboarding-header button:hover { color: var(--blue-dark); }
+.onboarding-header button:is(:hover, :focus-visible) { color: #b3261e; }
 .onboarding-progress { height: 7px; margin: 0 52px; overflow: hidden; border-radius: 999px; background: #e8ebf0; }
 .onboarding-progress span { width: 50%; height: 100%; display: block; border-radius: inherit; background: linear-gradient(90deg, #0b57d0, #4285f4); transition: width .28s ease; }
 .onboarding-progress span.is-profile { width: 100%; }
