@@ -1,5 +1,6 @@
 import { DataUnavailable } from "@/components/data-unavailable";
 import { normalizeQuery } from "@/lib/navigation";
+import { NET_ID_FORMAT_HINT } from "@/lib/net-id";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { ProfileForm } from "./profile-form";
@@ -22,7 +23,7 @@ const messages: Record<string, { text: string; error?: boolean }> = {
   saved: { text: "Your profile was updated." },
   "invalid-name": { text: "Enter a valid first and last name.", error: true },
   "invalid-netid": {
-    text: "Enter a valid NetID using letters and numbers only.",
+    text: NET_ID_FORMAT_HINT,
     error: true,
   },
   "invalid-program": {

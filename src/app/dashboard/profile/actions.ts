@@ -1,6 +1,7 @@
 "use server";
 
 import { editFormError, type EditFormState } from "@/lib/edit-form-state";
+import { isValidNetId, NET_ID_FORMAT_HINT } from "@/lib/net-id";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -51,8 +52,8 @@ export async function updateProfile(previous: EditFormState, formData: FormData)
     return editFormError(previous, formData, "Enter a valid first and last name.");
   }
 
-  if (netId && !/^[A-Za-z0-9]{2,30}$/.test(netId)) {
-    return editFormError(previous, formData, "Enter a valid NetID using letters and numbers only.");
+  if (netId && !isValidNetId(netId)) {
+    return editFormError(previous, formData, NET_ID_FORMAT_HINT);
   }
 
   if ((degree || major) && !isValidUtdProgram(degree, major)) {

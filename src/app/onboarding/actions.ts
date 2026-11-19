@@ -1,6 +1,7 @@
 "use server";
 
 import { safeNextPath } from "@/lib/navigation";
+import { isValidNetId, NET_ID_FORMAT_HINT } from "@/lib/net-id";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -45,8 +46,8 @@ export async function completeOnboarding(
   const portfolioUrl = field(formData, "portfolioUrl");
   const linkedinUrl = field(formData, "linkedinUrl");
 
-  if (!/^[A-Za-z0-9]{2,30}$/.test(netId)) {
-    return { status: "error", message: "Enter a valid UT Dallas NetID using letters and numbers." };
+  if (!isValidNetId(netId)) {
+    return { status: "error", message: NET_ID_FORMAT_HINT };
   }
 
   if (!isValidUtdProgram(degree, major)) {

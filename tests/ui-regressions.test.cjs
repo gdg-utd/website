@@ -52,6 +52,17 @@ test('password rules accept both length boundaries and reject overlong input', (
   assert.equal(getPasswordStrength('Aa1!'+'x'.repeat(125)).isValid,false);
 });
 
+test('application NetID answers require three letters followed by six digits', () => {
+  const netIdField = { id: 'netid', type: 'short_text', label: 'NetID', required: true, max_length: 80 };
+  const netIdSchema = { sections: [{ fields: [netIdField] }] };
+  for (const netid of ['abc123456', 'ABC012345']) {
+    assert.deepEqual(validateResponses(netIdSchema, { netid }), []);
+  }
+  for (const netid of ['', 'ab123456', 'abcd123456', 'a1c123456', 'abc12345x', 'ébc123456']) {
+    assert.deepEqual(validateResponses(netIdSchema, { netid }), ['NetID']);
+  }
+});
+
 test('unavailable event feed never advertises expired fallback events', async () => {
   const original = global.fetch;
   global.fetch = async () => ({ok:false,status:503});

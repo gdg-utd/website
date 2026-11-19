@@ -25,7 +25,7 @@ const root = path.resolve(__dirname, "..");
   }
   const uid = "11111111-1111-4111-8111-111111111111";
   await db.exec(
-    `insert into auth.users(id,email,raw_user_meta_data) values('${uid}','local-test@utdallas.edu','{"first_name":"Local","last_name":"Test"}'); select set_config('request.jwt.claim.sub','${uid}',false); insert into public.application_admins(user_id,role) values('${uid}','admin'); update public.profiles set degree='Bachelor of Science',major='Computer Science' where id='${uid}'; alter table public.applications disable trigger user;`,
+    `insert into auth.users(id,email,raw_user_meta_data) values('${uid}','local-test@utdallas.edu','{"first_name":"Local","last_name":"Test"}'); select set_config('request.jwt.claim.sub','${uid}',false); insert into public.application_admins(user_id,role) values('${uid}','admin'); update public.profiles set degree='Bachelor of Science',major='Computer Science',net_id='abc123' where id='${uid}'; alter table public.applications disable trigger user;`,
   );
   await db.exec(`insert into public.applications(opening_id,applicant_id,applicant_email,applicant_first_name,applicant_last_name,form_version,responses,submission_state,submitted_at)
  select o.id,'${uid}','local-test@utdallas.edu','Local','Test',case when o.slug='industry-officer' then o.form_version-1 else o.form_version end,
@@ -179,6 +179,18 @@ const root = path.resolve(__dirname, "..");
       console.log('PASS: revised officer questions, optional portfolio, preserved applications and opening metadata, unchanged mentee form, and idempotent migration.');
     }
   }
+  await db.exec("set role authenticated");
+  const legacyNetId = await db.query("update public.profiles set net_id = net_id where id = $1 returning net_id", [uid]);
+  assert.equal(legacyNetId.rows[0].net_id, "abc123");
+  for (const value of ["ab123456", "abcd123456", "abc12345x", "a1c123456"]) {
+    await assert.rejects(db.query("update public.profiles set net_id = $1 where id = $2", [value, uid]), { code: "23514", constraint: "profiles_net_id_format" });
+  }
+  for (const value of ["ABC012345", null]) {
+    const updated = await db.query("update public.profiles set net_id = $1 where id = $2 returning net_id", [value, uid]);
+    assert.equal(updated.rows[0].net_id, value);
+  }
+  await db.exec("reset role");
+  console.log("PASS: profile NetID validation, historical value preservation, and optional NetID clearing.");
   await db.exec(`
     begin;
     select vault.create_secret('https://resume-fixture.supabase.co', 'resume_cleanup_project_url');

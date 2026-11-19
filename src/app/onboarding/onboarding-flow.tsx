@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { UtdProgramFields } from "@/components/utd-program-fields";
+import { NET_ID_FORMAT_HINT, NET_ID_LENGTH, NET_ID_PATTERN } from "@/lib/net-id";
 import {
   completeOnboarding,
   type OnboardingActionState,
@@ -90,14 +91,15 @@ export function OnboardingFlow({ firstName, nextPath, profile }: OnboardingFlowP
                 <input
                   name="netId"
                   defaultValue={profile.netId ?? ""}
-                  maxLength={30}
+                  maxLength={NET_ID_LENGTH}
                   autoCapitalize="none"
                   autoCorrect="off"
                   placeholder="abc123456"
-                  pattern="[A-Za-z0-9]{2,30}"
+                  pattern={NET_ID_PATTERN}
+                  title={NET_ID_FORMAT_HINT}
                   required
                 />
-                <small>Use the NetID assigned by UT Dallas.</small>
+                <small>{NET_ID_FORMAT_HINT}</small>
               </label>
 
               <UtdProgramFields

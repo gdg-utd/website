@@ -33,7 +33,7 @@ function createBackend() {
       });
       Object.assign(state.profiles[id], {
         degree: 'Bachelor of Science', major: 'Computer Science',
-        net_id: 'abc123', onboarding_completed_at: fixtureDate,
+        net_id: 'abc123456', onboarding_completed_at: fixtureDate,
       });
     }
     createAccount({

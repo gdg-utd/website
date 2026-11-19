@@ -1,5 +1,6 @@
 import type { Json, Tables } from "@/lib/supabase/database.types";
 import { isValidUtdProgram } from "@/lib/utd-academic-programs";
+import { isValidNetId } from "@/lib/net-id";
 
 export type ApplicationFieldType =
   | "short_text"
@@ -125,6 +126,9 @@ export function validateResponses(
       }
 
       if (typeof value === "string" && field.max_length && value.length > field.max_length) {
+        errors.push(field.label);
+      }
+      if (field.id === "netid" && field.type === "short_text" && typeof value === "string" && value && !isValidNetId(value)) {
         errors.push(field.label);
       }
       if (field.type === "url" && typeof value === "string" && value) {

@@ -4,6 +4,7 @@ import { useActionState, useRef, useState, useTransition } from "react";
 import { UtdProgramFields } from "@/components/utd-program-fields";
 import { initialEditFormState } from "@/lib/edit-form-state";
 import { buildResponses, type ApplicationOpening, type ApplicationField, type ApplicationResponses } from "@/lib/applications";
+import { NET_ID_FORMAT_HINT, NET_ID_LENGTH, NET_ID_PATTERN } from "@/lib/net-id";
 import { resumeUploadError, type Resume } from "@/lib/resume";
 import { saveApplication, uploadApplicationResume } from "./actions";
 import { ResumeField } from "./resume-field";
@@ -127,7 +128,9 @@ export function ApplicationForm({
 
 function ApplicationInput({ field, value }: { field: ApplicationField; value: ApplicationResponses[string] | undefined }) {
   const id = `application-field-${field.id}`;
-  const descriptionId = field.help ? `${id}-help` : undefined;
+  const isNetId = field.id === "netid" && field.type === "short_text";
+  const help = isNetId ? NET_ID_FORMAT_HINT : field.help;
+  const descriptionId = help ? `${id}-help` : undefined;
   const textValue = typeof value === "string" ? value : "";
 
   if (field.type === "checkbox") {
@@ -166,7 +169,7 @@ function ApplicationInput({ field, value }: { field: ApplicationField; value: Ap
   return (
     <label className="application-text-field" htmlFor={id}>
       <span>{field.label}{field.required && <i aria-hidden="true"> *</i>}</span>
-      {field.help && <small id={descriptionId}>{field.help}</small>}
+      {help && <small id={descriptionId}>{help}</small>}
       {field.type === "long_text" ? (
         <textarea
           id={id}
@@ -184,8 +187,10 @@ function ApplicationInput({ field, value }: { field: ApplicationField; value: Ap
           name={`field:${field.id}`}
           type={field.type === "url" ? "url" : "text"}
           defaultValue={textValue}
-          placeholder={field.placeholder}
-          maxLength={field.max_length}
+          placeholder={isNetId ? "abc123456" : field.placeholder}
+          maxLength={isNetId ? NET_ID_LENGTH : field.max_length}
+          pattern={isNetId ? NET_ID_PATTERN : undefined}
+          title={isNetId ? NET_ID_FORMAT_HINT : undefined}
           aria-describedby={descriptionId}
           required={field.required}
         />

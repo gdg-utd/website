@@ -3,6 +3,7 @@ import { FormErrorSummary } from "@/components/form-error-summary";
 import { useActionState, useState } from "react";
 import { UtdProgramFields } from "@/components/utd-program-fields";
 import { initialEditFormState } from "@/lib/edit-form-state";
+import { NET_ID_FORMAT_HINT, NET_ID_LENGTH, NET_ID_PATTERN } from "@/lib/net-id";
 import { updateProfile } from "./actions";
 import type { Resume } from "@/lib/resume";
 import { ProfileResumeField } from "./profile-resume-field";
@@ -82,7 +83,17 @@ export function ProfileForm({ profile, email, resume }: { profile: ProfileValues
             </label>
             <label>
               <span>NetID</span>
-              <input name="netId" defaultValue={value("netId")} maxLength={30} autoCapitalize="none" autoCorrect="off" placeholder="abc123456" />
+              <input
+                name="netId"
+                defaultValue={value("netId")}
+                maxLength={NET_ID_LENGTH}
+                pattern={NET_ID_PATTERN}
+                title={NET_ID_FORMAT_HINT}
+                autoCapitalize="none"
+                autoCorrect="off"
+                placeholder="abc123456"
+              />
+              <small>{NET_ID_FORMAT_HINT}</small>
             </label>
             <UtdProgramFields
               degreeName="degree"

@@ -125,17 +125,20 @@ test('new member signs up, confirms email, completes onboarding, and uses the me
   await expect(major).toBeDisabled();
   await finish.click();
   await expect(netId).toBeFocused();
-  await netId.fill('test123456');
+  await netId.fill('tes12345x');
+  expect(await netId.evaluate(input => (input as HTMLInputElement).validity.patternMismatch)).toBe(true);
+  await netId.fill('tes123456');
   await page.getByLabel(/^Degree/).selectOption('Bachelor of Science');
   await major.selectOption('Computer Science');
   await page.getByLabel('GitHub',{exact:true}).fill('https://github.com/synthetic-member');
   await finish.click();
   await expect(page).toHaveURL(/\/dashboard\/profile$/);
-  await expect(page.getByLabel('First name',{exact:true})).toHaveValue('Taylor');
-  await expect(page.getByLabel('Last name',{exact:true})).toHaveValue('Tester');
-  await expect(page.getByLabel(/^NetID/)).toHaveValue('test123456');
-  await expect(page.getByLabel(/^Degree/)).toHaveValue('Bachelor of Science');
-  await expect(major).toHaveValue('Computer Science');
+  const profile = page.getByRole('region',{name:'Personal information',exact:true});
+  await expect(profile.getByRole('textbox',{name:'First name',exact:true})).toHaveValue('Taylor');
+  await expect(profile.getByRole('textbox',{name:'Last name',exact:true})).toHaveValue('Tester');
+  await expect(profile.getByRole('textbox',{name:/^NetID\b/})).toHaveValue('tes123456');
+  await expect(profile.getByRole('combobox',{name:'Degree',exact:true})).toHaveValue('Bachelor of Science');
+  await expect(profile.getByRole('combobox',{name:'Major',exact:true})).toHaveValue('Computer Science');
 
   await page.goto('/dashboard/applications');
   await expect(page.getByRole('heading',{name:'No applications yet.'})).toBeVisible();
@@ -148,7 +151,7 @@ test('new member signs up, confirms email, completes onboarding, and uses the me
   await page.getByRole('button',{name:'Log out'}).click();
   await expect(page).toHaveURL('http://localhost:3100/');
   await login(page,'newmember');
-  await expect(page.getByLabel('GitHub',{exact:true})).toHaveValue('https://github.com/synthetic-member');
+  await expect(page.getByRole('textbox',{name:'GitHub',exact:true})).toHaveValue('https://github.com/synthetic-member');
 });
 
 test('reset requests display a quota error on the fourth request', async ({page}) => {
