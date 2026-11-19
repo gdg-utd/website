@@ -90,17 +90,65 @@ test('incorrect credentials show an error; unconfirmed users go directly to OTP'
   await expect(page.getByRole('heading',{level:1})).toContainText('Enter your confirmation code.');
 });
 
-test('signup validates password confirmation and proceeds to email verification', async ({page}) => {
-  await page.goto('/signup');
-  await page.getByLabel('First name',{exact:true}).fill('Browser');
-  await page.getByLabel('Last name',{exact:true}).fill('Member');
-  await page.getByLabel('Email',{exact:true}).fill('newmember@utdallas.edu');
+test('new member signs up, confirms email, completes onboarding, and uses the member portal', async ({page,request}) => {
+  const email = 'newmember@utdallas.edu';
+  await request.post(`${backend}/__reset`,{data:{submitted:true}});
+  await page.goto('/signup?next=%2Fdashboard%2Fprofile');
+  await page.getByLabel('First name',{exact:true}).fill('Taylor');
+  await page.getByLabel('Last name',{exact:true}).fill('Tester');
+  await page.getByLabel('Email',{exact:true}).fill('newmember@example.com');
+  await expect(page.getByText('Enter an email ending in @utdallas.edu.')).toBeVisible();
+  await page.getByLabel('Email',{exact:true}).fill(email);
   await page.getByLabel('Password',{exact:true}).fill(password);
   await page.getByLabel('Confirm password',{exact:true}).fill('DifferentPassword123!');
-  await expect(page.getByRole('button',{name:'Create account',exact:true})).toBeDisabled();
+  const create = page.getByRole('button',{name:'Create account',exact:true});
+  await expect(create).toBeDisabled();
   await page.getByLabel('Confirm password',{exact:true}).fill(password);
-  await page.getByRole('button',{name:'Create account',exact:true}).click();
+  await create.click();
   await expect(page).toHaveURL(/\/auth\/confirm\?/);
+
+  const code = page.getByLabel('Six-digit email confirmation code');
+  const confirm = page.getByRole('button',{name:'Confirm email',exact:true});
+  await code.fill('654321');
+  await confirm.click();
+  await expect(page.getByRole('status')).toContainText('That code is invalid or has expired');
+  await code.fill('123456');
+  await confirm.click();
+  await expect(page).toHaveURL(/\/onboarding\?next=%2Fdashboard%2Fprofile$/);
+  await expect(page.getByText('Welcome, Taylor',{exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'Continue',exact:true}).click();
+
+  const netId = page.getByLabel(/^NetID/);
+  const major = page.getByLabel(/^Major/);
+  const finish = page.getByRole('button',{name:'Finish setup',exact:true});
+  await expect(netId).toHaveValue('');
+  await expect(major).toBeDisabled();
+  await finish.click();
+  await expect(netId).toBeFocused();
+  await netId.fill('test123456');
+  await page.getByLabel(/^Degree/).selectOption('Bachelor of Science');
+  await major.selectOption('Computer Science');
+  await page.getByLabel('GitHub',{exact:true}).fill('https://github.com/synthetic-member');
+  await finish.click();
+  await expect(page).toHaveURL(/\/dashboard\/profile$/);
+  await expect(page.getByLabel('First name',{exact:true})).toHaveValue('Taylor');
+  await expect(page.getByLabel('Last name',{exact:true})).toHaveValue('Tester');
+  await expect(page.getByLabel(/^NetID/)).toHaveValue('test123456');
+  await expect(page.getByLabel(/^Degree/)).toHaveValue('Bachelor of Science');
+  await expect(major).toHaveValue('Computer Science');
+
+  await page.goto('/dashboard/applications');
+  await expect(page.getByRole('heading',{name:'No applications yet.'})).toBeVisible();
+  await page.goto('/apply/sprint-mentee');
+  await page.getByLabel('Why would you like to join?').fill('I want to build my first project.');
+  await page.getByRole('button',{name:'Save draft',exact:true}).click();
+  await expect(page.getByRole('status')).toContainText('Draft saved');
+  await page.goto('/dashboard/applications');
+  await expect(page.getByRole('link',{name:'Continue application'})).toBeVisible();
+  await page.getByRole('button',{name:'Log out'}).click();
+  await expect(page).toHaveURL('http://localhost:3100/');
+  await login(page,'newmember');
+  await expect(page.getByLabel('GitHub',{exact:true})).toHaveValue('https://github.com/synthetic-member');
 });
 
 test('reset requests display a quota error on the fourth request', async ({page}) => {

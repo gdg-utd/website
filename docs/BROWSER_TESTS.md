@@ -1,6 +1,6 @@
 # Browser tests
 
-The suite exercises the real production Next.js application through Playwright. Thirty-nine critical flows run on desktop Chromium and mobile Chromium (Pixel 7 emulation), giving 78 checks per complete run.
+The suite exercises the real production Next.js application through Playwright. Cases run on desktop Chromium and mobile Chromium (Pixel 7 emulation).
 
 ## Run locally
 
@@ -33,6 +33,18 @@ npm run build:check
 
 This uses synthetic public configuration, not production secrets. Once that build is available, `npx playwright test` runs the tests without rebuilding. Prefer `npm run test:browser` when unsure whether the existing build matches the test configuration.
 
+## Try test accounts yourself
+
+Run `npm run test:accounts` and open [the local sign-up page](http://localhost:3100/signup) once the server is ready. Sign up with an invented address such as `newmember@utdallas.edu`, choose a test password, and enter **123456** on the confirmation screen. You can then complete onboarding, edit the profile, and try the SPRINT application.
+
+| Start as | Local login email |
+| --- | --- |
+| Returning member | `member@utdallas.edu` |
+| Reviewer | `reviewer@utdallas.edu` |
+| Admin | `admin@utdallas.edu` |
+
+All three seeded accounts use `BrowserTest123!`. The sandbox runs the same production build and loopback fixture as the browser suite. Accounts and changes live in memory and reset when you restart it. Stop it with Ctrl+C before running the automated suite, which uses the same ports. Rebuild normally before running the app against a different backend.
+
 ## Coverage
 
 | Flow | What is checked |
@@ -40,7 +52,7 @@ This uses synthetic public configuration, not production secrets. Once that buil
 | Public pages | SPRINT renders, mobile navigation opens/closes, gallery images load and animate, security headers exist, and the page does not overflow horizontally |
 | Protected routes | Signed-out access redirects to login; external return URLs stay on the website |
 | Login | Incorrect credentials show an error; unconfirmed accounts return to OTP |
-| Signup | Password mismatch blocks submission; valid input reaches email verification |
+| Signup and onboarding | Signup shows domain and password feedback; an invalid code fails; the valid code opens onboarding; required fields are checked; profile data survives a fresh login; the new member sees their own applications and can save a draft |
 | Reset quotas | The fourth reset request shows the quota warning rather than the success message |
 | Profile save | Edited values persist after reload; logout protects the dashboard again |
 | Save failure | An unsuccessful profile update preserves entered values |
